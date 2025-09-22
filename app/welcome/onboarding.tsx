@@ -1,40 +1,72 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-const { width } = Dimensions.get('window');
-
-const onboardingData = [
+const slides = [
   {
     id: 1,
-    title: 'Trusted Dog Walkers',
-    description: 'All our walkers go through rigorous background checks and dog handling assessments.',
-    icon: '🐕',
+    title: 'Your dog\'s happiness\nis our priority',
+    subtitle: 'Professional care',
+    description: 'Every walker is thoroughly vetted, background-checked, and trained in dog safety protocols.',
+    illustration: '🐕‍🦺',
+    color: '#007AFF',
   },
   {
-    id: 2,  
-    title: 'Real-Time Tracking',
-    description: 'Follow your dog\'s walk in real-time with GPS tracking and photo updates.',
-    icon: '📍',
+    id: 2,
+    title: 'Never wonder where\nyour pup is',
+    subtitle: 'Live tracking',
+    description: 'Watch your dog\'s adventure unfold with real-time GPS tracking and instant photo updates.',
+    illustration: '📱',
+    color: '#007AFF',
   },
   {
     id: 3,
-    title: 'Safe & Secure',
-    description: '24/7 emergency support, insurance coverage, and secure payment processing.',
-    icon: '🛡️',
+    title: 'Book a walk in\nseconds',
+    subtitle: 'Instant booking',
+    description: 'Schedule now or later. Your perfect walker is just a tap away, available 24/7.',
+    illustration: '⚡',
+    color: '#007AFF',
   },
 ];
 
 export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [fadeAnim] = useState(new Animated.Value(1));
+  const [slideAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentIndex]);
 
   const handleNext = () => {
-    if (currentIndex < onboardingData.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    if (currentIndex < slides.length - 1) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: -50, duration: 200, useNativeDriver: true }),
+      ]).start(() => {
+        setCurrentIndex(currentIndex + 1);
+        slideAnim.setValue(50);
+        Animated.parallel([
+          Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.spring(slideAnim, { toValue: 0, tension: 100, friction: 8, useNativeDriver: true }),
+        ]).start();
+      });
     } else {
       router.push('/welcome/get-started');
     }
@@ -44,42 +76,7 @@ export default function OnboardingScreen() {
     router.push('/welcome/get-started');
   };
 
-  // Secure slide data access without dynamic property access
-  const getCurrentSlide = () => {
-    // Validate index and return appropriate slide data statically
-    if (currentIndex === 0) {
-      return {
-        id: 1,
-        title: 'Trusted Dog Walkers',
-        description: 'All our walkers go through rigorous background checks and dog handling assessments.',
-        icon: '🐕',
-      };
-    } else if (currentIndex === 1) {
-      return {
-        id: 2,  
-        title: 'Real-Time Tracking',
-        description: 'Follow your dog\'s walk in real-time with GPS tracking and photo updates.',
-        icon: '📍',
-      };
-    } else if (currentIndex === 2) {
-      return {
-        id: 3,
-        title: 'Safe & Secure',
-        description: '24/7 emergency support, insurance coverage, and secure payment processing.',
-        icon: '🛡️',
-      };
-    } else {
-      // Default fallback
-      return {
-        id: 1,
-        title: 'Trusted Dog Walkers',
-        description: 'All our walkers go through rigorous background checks and dog handling assessments.',
-        icon: '🐕',
-      };
-    }
-  };
-
-  const currentSlide = getCurrentSlide();
+  const currentSlide = slides[currentIndex];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -88,32 +85,52 @@ export default function OnboardingScreen() {
           <ThemedText style={styles.skipText}>Skip</ThemedText>
         </TouchableOpacity>
 
-        <ThemedView style={styles.slideContainer}>
-          <ThemedText style={styles.icon}>{currentSlide.icon}</ThemedText>
-          <ThemedText type="title" style={styles.title}>
+        <Animated.View 
+          style={[
+            styles.slideContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <View style={[styles.illustrationContainer, { backgroundColor: currentSlide.color + '15' }]}>
+            <ThemedText style={styles.illustration}>{currentSlide.illustration}</ThemedText>
+          </View>
+
+          <ThemedText style={[styles.subtitle, { color: currentSlide.color }]}>
+            {currentSlide.subtitle}
+          </ThemedText>
+
+          <ThemedText style={styles.title}>
             {currentSlide.title}
           </ThemedText>
+
           <ThemedText style={styles.description}>
             {currentSlide.description}
           </ThemedText>
-        </ThemedView>
+        </Animated.View>
 
         <ThemedView style={styles.bottomContainer}>
-          <ThemedView style={styles.pagination}>
-            {onboardingData.map((_, index) => (
-              <ThemedView
+          <View style={styles.pagination}>
+            {slides.map((_, index) => (
+              <View
                 key={index}
                 style={[
                   styles.paginationDot,
-                  index === currentIndex && styles.paginationDotActive,
+                  index === currentIndex && [styles.paginationDotActive, { backgroundColor: currentSlide.color }],
                 ]}
               />
             ))}
-          </ThemedView>
+          </View>
 
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <TouchableOpacity 
+            style={[styles.nextButton, { backgroundColor: currentSlide.color }]} 
+            onPress={handleNext}
+            activeOpacity={0.8}
+          >
             <ThemedText style={styles.nextButtonText}>
-              {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
+              {currentIndex === slides.length - 1 ? 'Get Started' : 'Continue'}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>
@@ -134,11 +151,13 @@ const styles = StyleSheet.create({
   skipButton: {
     alignSelf: 'flex-end',
     paddingTop: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
+    paddingHorizontal: 4,
   },
   skipText: {
-    color: '#6B7280',
+    color: '#8E8E93',
     fontSize: 16,
+    fontWeight: '500',
   },
   slideContainer: {
     flex: 1,
@@ -146,30 +165,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  icon: {
-    fontSize: 80,
-    marginBottom: 40,
+  illustrationContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  illustration: {
+    fontSize: 64,
+    lineHeight: 74,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 12,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    lineHeight: 34,
   },
   description: {
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 24,
+    maxWidth: 320,
   },
   bottomContainer: {
     paddingBottom: 40,
+    alignItems: 'center',
   },
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 40,
+    alignItems: 'center',
+    marginBottom: 32,
   },
   paginationDot: {
     width: 8,
@@ -179,14 +219,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: '#007AFF',
     width: 24,
+    height: 8,
+    borderRadius: 4,
   },
   nextButton: {
-    backgroundColor: '#007AFF',
     paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingHorizontal: 48,
+    borderRadius: 12,
+    minWidth: 160,
     alignItems: 'center',
   },
   nextButtonText: {

@@ -1,58 +1,120 @@
-import { router } from 'expo-router';
-import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+﻿import { router } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, Animated, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 export default function GetStartedScreen() {
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   const handleOwner = () => {
-    // TODO: Set user role to 'owner' in state management
-    router.replace('/(tabs)');
+    router.push('/auth/register');
   };
 
   const handleWalker = () => {
-    // TODO: Set user role to 'walker' in state management  
-    router.replace('/(tabs)');
+    router.push('/auth/register');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <ThemedView style={styles.header}>
-          <ThemedText type="title" style={styles.title}>Choose Your Role</ThemedText>
+          <ThemedText style={styles.title}>Welcome to Dog Walker</ThemedText>
           <ThemedText style={styles.subtitle}>
-            How would you like to use Dog Walker?
+            Choose how you'd like to get started
           </ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.roleButton} onPress={handleOwner}>
-            <ThemedText style={styles.roleIcon}>🐕</ThemedText>
-            <ThemedText style={styles.roleTitle}>I&apos;m a Pet Owner</ThemedText>
-            <ThemedText style={styles.roleDescription}>
-              Find trusted dog walkers for my furry friend
-            </ThemedText>
+        <ThemedView style={styles.cardsContainer}>
+          <TouchableOpacity
+            style={[styles.roleCard, styles.ownerCard]}
+            onPress={handleOwner}
+            activeOpacity={0.85}
+          >
+            <View style={styles.cardContent}>
+              <View style={styles.iconContainer}>
+                <ThemedText style={styles.cardIcon}>🏠</ThemedText>
+              </View>
+              
+              <ThemedText style={styles.cardTitle}>I need a dog walker</ThemedText>
+              <ThemedText style={styles.cardDescription}>
+                Find trusted walkers for your furry friend
+              </ThemedText>
+              
+              <View style={styles.benefitsList}>
+                <View style={styles.benefitItem}>
+                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
+                  <ThemedText style={styles.benefitText}>Vetted professionals</ThemedText>
+                </View>
+                <View style={styles.benefitItem}>
+                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
+                  <ThemedText style={styles.benefitText}>Real-time tracking</ThemedText>
+                </View>
+                <View style={styles.benefitItem}>
+                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
+                  <ThemedText style={styles.benefitText}>Instant booking</ThemedText>
+                </View>
+              </View>
+            </View>
+            
+            <View style={[styles.cardFooter, styles.ownerFooter]}>
+              <ThemedText style={styles.footerText}>Get Started as Pet Owner</ThemedText>
+            </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.roleButton} onPress={handleWalker}>
-            <ThemedText style={styles.roleIcon}>🚶</ThemedText>
-            <ThemedText style={styles.roleTitle}>I&apos;m a Dog Walker</ThemedText>
-            <ThemedText style={styles.roleDescription}>
-              Earn money walking dogs in my neighborhood
-            </ThemedText>
+          <TouchableOpacity
+            style={[styles.roleCard, styles.walkerCard]}
+            onPress={handleWalker}
+            activeOpacity={0.85}
+          >
+            <View style={styles.cardContent}>
+              <View style={styles.iconContainer}>
+                <ThemedText style={styles.cardIcon}>🚶‍♂️</ThemedText>
+              </View>
+              
+              <ThemedText style={styles.cardTitle}>I want to walk dogs</ThemedText>
+              <ThemedText style={styles.cardDescription}>
+                Earn money doing what you love
+              </ThemedText>
+              
+              <View style={styles.benefitsList}>
+                <View style={styles.benefitItem}>
+                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
+                  <ThemedText style={styles.benefitText}>Flexible schedule</ThemedText>
+                </View>
+                <View style={styles.benefitItem}>
+                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
+                  <ThemedText style={styles.benefitText}>Great earnings</ThemedText>
+                </View>
+                <View style={styles.benefitItem}>
+                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
+                  <ThemedText style={styles.benefitText}>Love dogs daily</ThemedText>
+                </View>
+              </View>
+            </View>
+            
+            <View style={[styles.cardFooter, styles.walkerFooter]}>
+              <ThemedText style={styles.footerText}>Get Started as Walker</ThemedText>
+            </View>
           </TouchableOpacity>
         </ThemedView>
 
-        <ThemedView style={styles.footer}>
-          <TouchableOpacity onPress={() => router.push('/auth/login')}>
-            <ThemedText style={styles.signInText}>
-              Already have an account? Sign In
-            </ThemedText>
-          </TouchableOpacity>
+        <ThemedView style={styles.bottomInfo}>
+          <ThemedText style={styles.infoText}>
+            🔒 Safe, secure, and trusted by thousands
+          </ThemedText>
         </ThemedView>
-      </ThemedView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -60,68 +122,126 @@ export default function GetStartedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'space-between',
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   header: {
     alignItems: 'center',
     marginBottom: 40,
+    paddingTop: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
   },
-  buttonContainer: {
-    gap: 20,
+  cardsContainer: {
     flex: 1,
-    justifyContent: 'center',
+    gap: 20,
+    paddingBottom: 20,
   },
-  roleButton: {
-    backgroundColor: '#F9FAFB',
-    padding: 32,
+  roleCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
+    padding: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    overflow: 'hidden',
+    flex: 1,
+  },
+  ownerCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
+  },
+  walkerCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#10B981',
+  },
+  cardContent: {
+    padding: 24,
+    flex: 1,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
+    marginBottom: 20,
   },
-  roleIcon: {
-    fontSize: 48,
-    marginBottom: 16,
+  cardIcon: {
+    fontSize: 28,
   },
-  roleTitle: {
+  cardTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000000',
     marginBottom: 8,
   },
-  roleDescription: {
+  cardDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  benefitsList: {
+    gap: 8,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  benefitIcon: {
+    fontSize: 12,
+    color: '#10B981',
+    fontWeight: '600',
+    width: 16,
+  },
+  benefitText: {
+    fontSize: 14,
+    color: '#374151',
+    flex: 1,
+  },
+  cardFooter: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  ownerFooter: {
+    backgroundColor: '#007AFF',
+  },
+  walkerFooter: {
+    backgroundColor: '#10B981',
+  },
+  footerText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bottomInfo: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  infoText: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 20,
-  },
-  footer: {
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  signInText: {
-    color: '#007AFF',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
