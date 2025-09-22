@@ -41,3 +41,7 @@ app-example
 # generated native folders
 /ios
 /android
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
