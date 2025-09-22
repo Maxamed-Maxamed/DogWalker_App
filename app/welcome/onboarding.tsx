@@ -44,10 +44,42 @@ export default function OnboardingScreen() {
     router.push('/welcome/get-started');
   };
 
-  // Safe array access with bounds checking to prevent object injection
-  const currentSlide = currentIndex >= 0 && currentIndex < onboardingData.length 
-    ? onboardingData[currentIndex] 
-    : onboardingData[0];
+  // Secure slide data access without dynamic property access
+  const getCurrentSlide = () => {
+    // Validate index and return appropriate slide data statically
+    if (currentIndex === 0) {
+      return {
+        id: 1,
+        title: 'Trusted Dog Walkers',
+        description: 'All our walkers go through rigorous background checks and dog handling assessments.',
+        icon: '🐕',
+      };
+    } else if (currentIndex === 1) {
+      return {
+        id: 2,  
+        title: 'Real-Time Tracking',
+        description: 'Follow your dog\'s walk in real-time with GPS tracking and photo updates.',
+        icon: '📍',
+      };
+    } else if (currentIndex === 2) {
+      return {
+        id: 3,
+        title: 'Safe & Secure',
+        description: '24/7 emergency support, insurance coverage, and secure payment processing.',
+        icon: '🛡️',
+      };
+    } else {
+      // Default fallback
+      return {
+        id: 1,
+        title: 'Trusted Dog Walkers',
+        description: 'All our walkers go through rigorous background checks and dog handling assessments.',
+        icon: '🐕',
+      };
+    }
+  };
+
+  const currentSlide = getCurrentSlide();
 
   return (
     <SafeAreaView style={styles.container}>
