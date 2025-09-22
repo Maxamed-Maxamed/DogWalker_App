@@ -44,7 +44,10 @@ export default function OnboardingScreen() {
     router.push('/welcome/get-started');
   };
 
-  const currentSlide = onboardingData[currentIndex];
+  // Safe array access with bounds checking to prevent object injection
+  const currentSlide = currentIndex >= 0 && currentIndex < onboardingData.length 
+    ? onboardingData[currentIndex] 
+    : onboardingData[0];
 
   return (
     <SafeAreaView style={styles.container}>

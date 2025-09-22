@@ -6,6 +6,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+// Secure string comparison to prevent timing attacks
+const secureCompare = (a: string, b: string): boolean => {
+  if (a.length !== b.length) {
+    return false;
+  }
+  
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  
+  return result === 0;
+};
+
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,7 +31,8 @@ export default function RegisterScreen() {
       return;
     }
     
-    if (password !== confirmPassword) {
+    // Use secure comparison to prevent timing attacks
+    if (!secureCompare(password, confirmPassword)) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
