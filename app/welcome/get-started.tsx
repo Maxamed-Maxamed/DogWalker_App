@@ -1,6 +1,6 @@
 ﻿import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, Animated, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -15,14 +15,14 @@ export default function GetStartedScreen() {
       duration: 800,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   const handleOwner = () => {
-    router.push('/auth/register');
+    router.push('/auth/signup');
   };
 
   const handleWalker = () => {
-    router.push('/auth/register');
+    router.push('/auth/signup');
   };
 
   return (
@@ -31,7 +31,7 @@ export default function GetStartedScreen() {
         <ThemedView style={styles.header}>
           <ThemedText style={styles.title}>Welcome to Dog Walker</ThemedText>
           <ThemedText style={styles.subtitle}>
-            Choose how you'd like to get started
+            Choose how you&apos;d like to get started
           </ThemedText>
         </ThemedView>
 

@@ -9,24 +9,21 @@ import { ThemedView } from '@/components/themed-view';
 const slides = [
   {
     id: 1,
-    title: 'Your dog\'s happiness\nis our priority',
-    subtitle: 'Professional care',
-    description: 'Every walker is thoroughly vetted, background-checked, and trained in dog safety protocols.',
+    title: 'Safe & Trusted Walkers',
+    description: 'We carefully vet all our walkers to ensure your pet is in good hands.',
     illustration: '🐕‍🦺',
     color: '#007AFF',
   },
   {
     id: 2,
-    title: 'Never wonder where\nyour pup is',
-    subtitle: 'Live tracking',
-    description: 'Watch your dog\'s adventure unfold with real-time GPS tracking and instant photo updates.',
+    title: 'Real-Time Tracking',
+    description: 'Watch your dog\'s adventure unfold with live GPS tracking and instant photo updates.',
     illustration: '📱',
     color: '#007AFF',
   },
   {
     id: 3,
-    title: 'Book a walk in\nseconds',
-    subtitle: 'Instant booking',
+    title: 'Instant Booking',
     description: 'Schedule now or later. Your perfect walker is just a tap away, available 24/7.',
     illustration: '⚡',
     color: '#007AFF',
@@ -52,7 +49,7 @@ export default function OnboardingScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [currentIndex]);
+  }, [currentIndex, fadeAnim, slideAnim]);
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
@@ -100,6 +97,9 @@ export default function OnboardingScreen() {
           <ThemedText style={styles.skipText}>Skip</ThemedText>
         </TouchableOpacity>
 
+        {/* Top Half: Large rectangle (placeholder for an illustration of a dog walker and happy dog) */}
+        {/* Below Illustration: Text headline (e.g., "Safe & Trusted Walkers") */}
+        {/* Below Headline: Short paragraph of text (e.g., "We carefully vet all our walkers...") */}
         <Animated.View 
           style={[
             styles.slideContainer,
@@ -113,10 +113,6 @@ export default function OnboardingScreen() {
             <ThemedText style={styles.illustration}>{currentSlide.illustration}</ThemedText>
           </View>
 
-          <ThemedText style={[styles.subtitle, { color: currentSlide.color }]}>
-            {currentSlide.subtitle}
-          </ThemedText>
-
           <ThemedText style={styles.title}>
             {currentSlide.title}
           </ThemedText>
@@ -126,6 +122,8 @@ export default function OnboardingScreen() {
           </ThemedText>
         </Animated.View>
 
+        {/* Bottom Left: Three small circles horizontally aligned (representing the swipeable carousel - only one circle filled) */}
+        {/* Bottom Right: Rectangle button labeled "Next" */}
         <ThemedView style={styles.bottomContainer}>
           <View style={styles.pagination}>
             {slides.map((_, index) => (
@@ -145,7 +143,7 @@ export default function OnboardingScreen() {
             activeOpacity={0.8}
           >
             <ThemedText style={styles.nextButtonText}>
-              {currentIndex === slides.length - 1 ? 'Get Started' : 'Continue'}
+              {currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
             </ThemedText>
           </TouchableOpacity>
         </ThemedView>

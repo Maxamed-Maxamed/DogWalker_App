@@ -11,9 +11,14 @@ export default function WelcomeScreen() {
     router.push('/welcome/onboarding');
   };
 
+  const handleLogin = () => {
+    router.push('/auth/login');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.content}>
+        {/* Top: Large rectangle filling the top third of the screen (placeholder for the logo) */}
         <ThemedView style={styles.logoContainer}>
           <Image 
             source={require('@/assets/images/Logo.jpeg')} 
@@ -22,26 +27,25 @@ export default function WelcomeScreen() {
           />
         </ThemedView>
 
-        <ThemedView style={styles.textContainer}>
-          <ThemedText type="title" style={styles.title}>
-            Welcome to Dog Walker
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>
-            The most trusted and convenient dog walking service. 
-            Connect with vetted, passionate dog lovers in your area.
+        {/* Center: Short text block (placeholder for the tagline) */}
+        <ThemedView style={styles.taglineContainer}>
+          <ThemedText style={styles.tagline}>
+            Your trusted partner in pet care.
           </ThemedText>
         </ThemedView>
 
+        {/* Bottom Middle: Rectangular button labeled "Get Started" (primary CTA) */}
+        {/* Bottom Center: Smaller text link below the button: "Already have an account? Log In" */}
         <ThemedView style={styles.buttonContainer}>
           <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
             <ThemedText style={styles.getStartedButtonText}>Get Started</ThemedText>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.signInButton} 
-            onPress={() => router.push('/auth/login')}
+            style={styles.loginButton} 
+            onPress={handleLogin}
           >
-            <ThemedText style={styles.signInButtonText}>Already have an account? Sign In</ThemedText>
+            <ThemedText style={styles.loginButtonText}>Already have an account? Log In</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
@@ -56,43 +60,40 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 32,
+    paddingHorizontal: 24,
+    justifyContent: 'space-between',
   },
+  // Top: Large rectangle filling the top third of the screen (placeholder for the logo)
   logoContainer: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
+    paddingTop: 60,
   },
   logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
-  textContainer: {
+  // Center: Short text block (placeholder for the tagline)
+  taglineContainer: {
     alignItems: 'center',
-    marginVertical: 32,
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
+    marginBottom: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#000000',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 15,
+  tagline: {
+    fontSize: 18,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 16,
+    lineHeight: 24,
+    fontWeight: '500',
   },
+  // Bottom section with buttons
   buttonContainer: {
     gap: 16,
+    paddingBottom: 32,
   },
+  // Bottom Middle: Rectangular button labeled "Get Started" (primary CTA)
   getStartedButton: {
     backgroundColor: '#007AFF',
     paddingVertical: 16,
@@ -105,11 +106,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  signInButton: {
-    paddingVertical: 16,
+  // Bottom Center: Smaller text link below the button: "Already have an account? Log In"
+  loginButton: {
+    paddingVertical: 12,
     alignItems: 'center',
   },
-  signInButtonText: {
+  loginButtonText: {
     color: '#007AFF',
     fontSize: 14,
     fontWeight: '500',
