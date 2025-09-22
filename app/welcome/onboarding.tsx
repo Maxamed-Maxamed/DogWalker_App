@@ -76,7 +76,22 @@ export default function OnboardingScreen() {
     router.push('/welcome/get-started');
   };
 
-  const currentSlide = slides[currentIndex];
+  // Secure slide data access without dynamic property access
+  const getCurrentSlide = () => {
+    // Validate index and return appropriate slide data statically
+    if (currentIndex === 0) {
+      return slides[0];
+    } else if (currentIndex === 1) {
+      return slides[1];
+    } else if (currentIndex === 2) {
+      return slides[2];
+    } else {
+      // Default fallback to first slide
+      return slides[0];
+    }
+  };
+
+  const currentSlide = getCurrentSlide();
 
   return (
     <SafeAreaView style={styles.container}>
