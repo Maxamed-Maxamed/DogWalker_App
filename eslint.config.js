@@ -1,30 +1,17 @@
- 
 // https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require('eslint/config');
-const expoConfig = require('eslint-config-expo/flat');
+import expoConfig from 'eslint-config-expo/flat';
 
-module.exports = defineConfig([
-  expoConfig,
+export default [
+  // Global ignore patterns
   {
-    ignores: ['dist/*', 'node_modules/*'],
+    ignores: [
+      'scripts/**',
+      'node_modules/**',
+      'dist/**',
+      '.expo/**'
+    ]
   },
-  // Node.js environment for config files and scripts
-  {
-    files: ['scripts/**/*.js', '*.config.js'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'commonjs',
-      globals: {
-        require: 'readonly',
-        module: 'readonly',
-        exports: 'readonly',
-        process: 'readonly',
-        console: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        Buffer: 'readonly',
-        global: 'readonly',
-      },
-    },
-  },
-]);
+  
+  // Apply Expo config
+  ...expoConfig,
+];

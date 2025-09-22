@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 
 export default function ProfileSetupIndex() {
   const handleStart = () => {
-    router.push('/auth/profile-setup/photo');
+    router.push('/profile-setup/photo');
   };
 
   return (

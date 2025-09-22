@@ -28,11 +28,11 @@ export default function PhotoSetupScreen() {
       Alert.alert('Photo Required', 'Please add a profile photo to continue');
       return;
     }
-    router.push('/auth/profile-setup/location');
+    router.push('/profile-setup/location');
   };
 
   const handleSkip = () => {
-    router.push('/auth/profile-setup/location');
+    router.push('/profile-setup/location');
   };
 
   return (

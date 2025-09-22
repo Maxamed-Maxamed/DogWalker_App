@@ -25,7 +25,7 @@ export default function LocationSetupScreen() {
       
       // Auto-advance after a brief delay
       setTimeout(() => {
-        router.push('/auth/profile-setup/phone');
+        router.push('/profile-setup/phone');
       }, 1000);
     } catch (error) {
       Alert.alert('Error', 'Failed to request location permission');
@@ -38,7 +38,7 @@ export default function LocationSetupScreen() {
       'Limited Functionality', 
       'Without location access, you won\'t be able to find nearby walkers or use real-time tracking features.',
       [
-        { text: 'Continue Anyway', onPress: () => router.push('/auth/profile-setup/phone') },
+        { text: 'Continue Anyway', onPress: () => router.push('/profile-setup/phone') },
         { text: 'Grant Access', onPress: handleAllowLocation }
       ]
     );
