@@ -1,117 +1,127 @@
 ﻿import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function GetStartedScreen() {
+  const colorScheme = useColorScheme();
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [slideAnim] = useState(new Animated.Value(50));
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
-  const handleOwner = () => {
+  const handleGetStarted = () => {
     router.push('/auth/signup');
   };
 
-  const handleWalker = () => {
-    router.push('/auth/signup');
+  const handleLogin = () => {
+    router.push('/auth/login');
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <ThemedView style={styles.header}>
-          <ThemedText style={styles.title}>Welcome to Dog Walker</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Choose how you&apos;d like to get started
+    <SafeAreaView style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        {/* Logo and Branding Section */}
+        <ThemedView style={styles.brandSection}>
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('@/assets/images/Logo.jpeg')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          <ThemedText style={styles.appName}>Dog Walker</ThemedText>
+          <ThemedText style={styles.tagline}>
+            The most trusted dog walking service
           </ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.cardsContainer}>
-          <TouchableOpacity
-            style={[styles.roleCard, styles.ownerCard]}
-            onPress={handleOwner}
-            activeOpacity={0.85}
-          >
-            <View style={styles.cardContent}>
-              <View style={styles.iconContainer}>
-                <ThemedText style={styles.cardIcon}>🏠</ThemedText>
-              </View>
-              
-              <ThemedText style={styles.cardTitle}>I need a dog walker</ThemedText>
-              <ThemedText style={styles.cardDescription}>
-                Find trusted walkers for your furry friend
-              </ThemedText>
-              
-              <View style={styles.benefitsList}>
-                <View style={styles.benefitItem}>
-                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
-                  <ThemedText style={styles.benefitText}>Vetted professionals</ThemedText>
-                </View>
-                <View style={styles.benefitItem}>
-                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
-                  <ThemedText style={styles.benefitText}>Real-time tracking</ThemedText>
-                </View>
-                <View style={styles.benefitItem}>
-                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
-                  <ThemedText style={styles.benefitText}>Instant booking</ThemedText>
-                </View>
-              </View>
-            </View>
-            
-            <View style={[styles.cardFooter, styles.ownerFooter]}>
-              <ThemedText style={styles.footerText}>Get Started as Pet Owner</ThemedText>
-            </View>
-          </TouchableOpacity>
+        {/* Main Value Proposition */}
+        <ThemedView style={styles.valueSection}>
+          <ThemedText style={styles.mainHeading}>
+            Peace of mind for you,{'\n'}adventure for your dog
+          </ThemedText>
+          <ThemedText style={styles.description}>
+            Professional, vetted dog walkers ready to give your furry friend the exercise and attention they deserve.
+          </ThemedText>
+        </ThemedView>
 
+        {/* Trust Indicators */}
+        <ThemedView style={styles.trustSection}>
+          <View style={styles.trustIndicators}>
+            <View style={styles.trustItem}>
+              <View style={styles.trustIcon}>
+                <ThemedText style={styles.trustEmoji}>🛡️</ThemedText>
+              </View>
+              <ThemedText style={styles.trustText}>Multi-stage{'\n'}vetting</ThemedText>
+            </View>
+            <View style={styles.trustItem}>
+              <View style={styles.trustIcon}>
+                <ThemedText style={styles.trustEmoji}>📍</ThemedText>
+              </View>
+              <ThemedText style={styles.trustText}>Real-time{'\n'}GPS tracking</ThemedText>
+            </View>
+            <View style={styles.trustItem}>
+              <View style={styles.trustIcon}>
+                <ThemedText style={styles.trustEmoji}>📱</ThemedText>
+              </View>
+              <ThemedText style={styles.trustText}>Photo{'\n'}updates</ThemedText>
+            </View>
+            <View style={styles.trustItem}>
+              <View style={styles.trustIcon}>
+                <ThemedText style={styles.trustEmoji}>�</ThemedText>
+              </View>
+              <ThemedText style={styles.trustText}>Fully{'\n'}insured</ThemedText>
+            </View>
+          </View>
+        </ThemedView>
+
+        {/* CTA Buttons */}
+        <ThemedView style={styles.ctaSection}>
           <TouchableOpacity
-            style={[styles.roleCard, styles.walkerCard]}
-            onPress={handleWalker}
-            activeOpacity={0.85}
+            style={styles.primaryButton}
+            onPress={handleGetStarted}
+            activeOpacity={0.9}
           >
-            <View style={styles.cardContent}>
-              <View style={styles.iconContainer}>
-                <ThemedText style={styles.cardIcon}>🚶‍♂️</ThemedText>
-              </View>
-              
-              <ThemedText style={styles.cardTitle}>I want to walk dogs</ThemedText>
-              <ThemedText style={styles.cardDescription}>
-                Earn money doing what you love
-              </ThemedText>
-              
-              <View style={styles.benefitsList}>
-                <View style={styles.benefitItem}>
-                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
-                  <ThemedText style={styles.benefitText}>Flexible schedule</ThemedText>
-                </View>
-                <View style={styles.benefitItem}>
-                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
-                  <ThemedText style={styles.benefitText}>Great earnings</ThemedText>
-                </View>
-                <View style={styles.benefitItem}>
-                  <ThemedText style={styles.benefitIcon}>✓</ThemedText>
-                  <ThemedText style={styles.benefitText}>Love dogs daily</ThemedText>
-                </View>
-              </View>
-            </View>
-            
-            <View style={[styles.cardFooter, styles.walkerFooter]}>
-              <ThemedText style={styles.footerText}>Get Started as Walker</ThemedText>
-            </View>
+            <ThemedText style={styles.primaryButtonText}>Get Started</ThemedText>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleLogin}
+            activeOpacity={0.8}
+          >
+            <ThemedText style={styles.secondaryButtonText}>Already have an account? Sign in</ThemedText>
           </TouchableOpacity>
         </ThemedView>
 
-        <ThemedView style={styles.bottomInfo}>
-          <ThemedText style={styles.infoText}>
-            🔒 Safe, secure, and trusted by thousands
+        {/* Bottom Trust Badge */}
+        <ThemedView style={styles.bottomSection}>
+          <View style={styles.trustBadge}>
+            <ThemedText style={styles.trustBadgeText}>
+              ⭐ Trusted by thousands of pet owners
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.disclaimerText}>
+            24/7 customer support • Background-checked walkers • Full insurance coverage
           </ThemedText>
         </ThemedView>
       </Animated.View>
@@ -122,126 +132,162 @@ export default function GetStartedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'ios' ? 10 : 20,
+    justifyContent: 'space-between',
   },
-  header: {
+  brandSection: {
     alignItems: 'center',
-    marginBottom: 40,
-    paddingTop: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#000000',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  cardsContainer: {
-    flex: 1,
-    gap: 20,
+    paddingTop: 40,
     paddingBottom: 20,
   },
-  roleCard: {
+  logoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    overflow: 'hidden',
-    flex: 1,
-  },
-  ownerCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  walkerCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
-  },
-  cardContent: {
-    padding: 24,
-    flex: 1,
-  },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  cardIcon: {
-    fontSize: 28,
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
-  cardTitle: {
-    fontSize: 20,
+  appName: {
+    fontSize: 32,
     fontWeight: '700',
     color: '#000000',
+    textAlign: 'center',
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
-  cardDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  benefitsList: {
-    gap: 8,
-  },
-  benefitItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  benefitIcon: {
-    fontSize: 12,
-    color: '#10B981',
-    fontWeight: '600',
-    width: 16,
-  },
-  benefitText: {
-    fontSize: 14,
-    color: '#374151',
-    flex: 1,
-  },
-  cardFooter: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-  },
-  ownerFooter: {
-    backgroundColor: '#007AFF',
-  },
-  walkerFooter: {
-    backgroundColor: '#10B981',
-  },
-  footerText: {
-    color: '#FFFFFF',
+  tagline: {
     fontSize: 16,
-    fontWeight: '600',
-  },
-  bottomInfo: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  infoText: {
-    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    fontWeight: '500',
+  },
+  valueSection: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  mainHeading: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000000',
+    textAlign: 'center',
+    lineHeight: 36,
+    marginBottom: 16,
+    letterSpacing: -0.5,
+  },
+  description: {
+    fontSize: 17,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 8,
+    fontWeight: '400',
+  },
+  trustSection: {
+    paddingVertical: 20,
+  },
+  trustIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  trustItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  trustIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  trustEmoji: {
+    fontSize: 24,
+  },
+  trustText: {
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 16,
+  },
+  ctaSection: {
+    paddingBottom: 16,
+    gap: 12,
+  },
+  primaryButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  secondaryButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#6B7280',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  bottomSection: {
+    alignItems: 'center',
+    paddingBottom: 40,
+    gap: 12,
+  },
+  trustBadge: {
+    backgroundColor: '#F8FAFC',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  trustBadgeText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  disclaimerText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    lineHeight: 16,
+    paddingHorizontal: 20,
   },
 });
