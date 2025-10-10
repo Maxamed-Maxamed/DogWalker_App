@@ -50,7 +50,7 @@ export default function SignUpScreen() {
 
     // TODO: Implement actual sign-up logic
     Alert.alert('Success', 'Account created successfully!');
-    router.push('/profile-setup/index');
+    router.push('./profile-setup/index');
   };
 
   const handleBackToOptions = () => {

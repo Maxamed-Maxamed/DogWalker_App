@@ -39,7 +39,7 @@ export default function RegisterScreen() {
     
     // TODO: Implement actual registration logic
     Alert.alert('Success', 'Registration functionality to be implemented');
-    router.replace('/(tabs)');
+    router.replace('./(tabs)');
   };
 
   return (
