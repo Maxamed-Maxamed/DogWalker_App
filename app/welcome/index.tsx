@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
         {/* Top: Large rectangle filling the top third of the screen (placeholder for the logo) */}
         <ThemedView style={styles.logoContainer}>
           <Image 
-            source={require('@/assets/images/Logo.jpeg')} 
+            source={require('@/assets/images/logo.png')} 
             style={styles.logo}
             resizeMode="contain"
           />

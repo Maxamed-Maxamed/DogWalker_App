@@ -43,7 +43,7 @@ export default function GetStartedScreen() {
         <ThemedView style={styles.brandSection}>
           <View style={styles.logoContainer}>
             <Image 
-              source={require('@/assets/images/Logo.jpeg')} 
+              source={require('@/assets/images/logo.png')} 
               style={styles.logo}
               resizeMode="contain"
             />
