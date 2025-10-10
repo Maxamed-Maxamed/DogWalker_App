@@ -12,7 +12,7 @@ export default function WelcomeScreen() {
   };
 
   const handleLogin = () => {
-    router.push('/auth/login');
+    router.push('/(tabs)/dashboard');
   };
 
   return (

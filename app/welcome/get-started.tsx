@@ -29,11 +29,11 @@ export default function GetStartedScreen() {
   }, [fadeAnim, slideAnim]);
 
   const handleGetStarted = () => {
-    router.push('/auth/signup');
+    router.push('/welcome/onboarding');
   };
 
   const handleLogin = () => {
-    router.push('/auth/login');
+    router.push('/(tabs)/dashboard');
   };
 
   return (
