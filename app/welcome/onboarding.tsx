@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -10,22 +11,29 @@ const slides = [
   {
     id: 1,
     title: 'Safe & Trusted Walkers',
-    description: 'We carefully vet all our walkers to ensure your pet is in good hands.',
-    illustration: '🐕‍🦺',
+    description: 'Background-checked professionals you can rely on.',
+    icon: 'shield-checkmark-outline' as const,
     color: '#007AFF',
   },
   {
     id: 2,
-    title: 'Real-Time Tracking',
-    description: 'Watch your dog\'s adventure unfold with live GPS tracking and instant photo updates.',
-    illustration: '📱',
+    title: 'Real-Time GPS & Photos',
+    description: 'Follow every walk with live tracking and photo updates.',
+    icon: 'navigate-outline' as const,
     color: '#007AFF',
   },
   {
     id: 3,
-    title: 'Instant Booking',
-    description: 'Schedule now or later. Your perfect walker is just a tap away, available 24/7.',
-    illustration: '⚡',
+    title: 'Book in Seconds',
+    description: 'Schedule now or later—your call, 24/7.',
+    icon: 'flash-outline' as const,
+    color: '#007AFF',
+  },
+  {
+    id: 4,
+    title: 'Walk Summaries',
+    description: 'Route, distance, notes, and photos—saved for you.',
+    icon: 'document-text-outline' as const,
     color: '#007AFF',
   },
 ];
@@ -65,12 +73,12 @@ export default function OnboardingScreen() {
         ]).start();
       });
     } else {
-      router.push('/welcome/get-started');
+      router.push('/(tabs)/dashboard');
     }
   };
 
   const handleSkip = () => {
-    router.push('/welcome/get-started');
+    router.push('/(tabs)/dashboard');
   };
 
   // Secure slide data access without dynamic property access
@@ -97,9 +105,7 @@ export default function OnboardingScreen() {
           <ThemedText style={styles.skipText}>Skip</ThemedText>
         </TouchableOpacity>
 
-        {/* Top Half: Large rectangle (placeholder for an illustration of a dog walker and happy dog) */}
-        {/* Below Illustration: Text headline (e.g., "Safe & Trusted Walkers") */}
-        {/* Below Headline: Short paragraph of text (e.g., "We carefully vet all our walkers...") */}
+        {/* Top: Illustration/Icon + Title + Description */}
         <Animated.View 
           style={[
             styles.slideContainer,
@@ -110,7 +116,7 @@ export default function OnboardingScreen() {
           ]}
         >
           <View style={[styles.illustrationContainer, { backgroundColor: currentSlide.color + '15' }]}>
-            <ThemedText style={styles.illustration}>{currentSlide.illustration}</ThemedText>
+            <Ionicons name={currentSlide.icon} size={56} color={currentSlide.color} />
           </View>
 
           <ThemedText style={styles.title}>
@@ -122,8 +128,7 @@ export default function OnboardingScreen() {
           </ThemedText>
         </Animated.View>
 
-        {/* Bottom Left: Three small circles horizontally aligned (representing the swipeable carousel - only one circle filled) */}
-        {/* Bottom Right: Rectangle button labeled "Next" */}
+        {/* Bottom: Pagination Dots + CTA */}
         <ThemedView style={styles.bottomContainer}>
           <View style={styles.pagination}>
             {slides.map((_, index) => (
@@ -185,12 +190,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 32,
-  },
-  illustration: {
-    fontSize: 64,
-    lineHeight: 74,
-    fontWeight: '700',
-    color: '#000000',
   },
   subtitle: {
     fontSize: 14,
