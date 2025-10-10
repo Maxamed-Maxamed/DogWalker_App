@@ -1,6 +1,0 @@
-# Ignore configuration files that don't follow standard JS conventions
-eslint.config.js
-scripts/
-node_modules/
-dist/
-.expo/

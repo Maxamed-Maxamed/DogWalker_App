@@ -9,7 +9,6 @@ export default function WelcomeLayout() {
       }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="onboarding" />
-      <Stack.Screen name="get-started" />
     </Stack>
   );
 }
