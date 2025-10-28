@@ -13,8 +13,8 @@ export default function DashboardScreen() {
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={require('@/assets/images/newlogo.png')}
+          style={styles.headerLogo}
         />
       }>
       <ThemedView style={styles.titleContainer}>
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  reactLogo: {
+  headerLogo: {
     height: 178,
     width: 290,
     bottom: 0,

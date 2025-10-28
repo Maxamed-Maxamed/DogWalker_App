@@ -4,7 +4,7 @@
     "slug": "DogWalker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/newlogo.png",
     "scheme": "dogwalker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -30,7 +30,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/logo.png", // Ensure logo.png exists, is at least 200x200px, and is visually appropriate for splash screens
+          "image": "./assets/images/newlogo.png", // Ensure newlogo.png exists, is at least 200x200px, and is visually appropriate for splash screens
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",

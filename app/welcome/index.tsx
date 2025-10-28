@@ -1,78 +1,100 @@
+﻿import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import React from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const PRIMARY_COLOR = Colors.light.tint;
+const TERMS_URL = 'https://dogwalker.app/legal';
+
+const KEY_FEATURES: { icon: IconName; title: string; color: string }[] = [
+  { icon: 'navigate', title: 'GPS tracking', color: '#3B82F6' },
+  { icon: 'shield-checkmark', title: 'Vetted walkers', color: '#10B981' },
+  { icon: 'camera', title: 'Photo updates', color: '#8B5CF6' },
+];
 
 export default function WelcomeScreen() {
-  const handleGetStarted = () => {
-    router.push('/welcome/onboarding');
-  };
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-  
+  const handleGetStarted = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push('/welcome/onboarding');
+  }, []);
+
+  const handleSignIn = useCallback(() => {
+    Haptics.selectionAsync();
+    router.push('/sign-in');
+  }, []);
+
+  const handleLegal = useCallback(async () => {
+    Haptics.selectionAsync();
+    try {
+      const supported = await Linking.canOpenURL(TERMS_URL);
+      if (supported) {
+        await Linking.openURL(TERMS_URL);
+      }
+    } catch (error) {
+      console.error('Failed to open legal URL:', error);
+    }
+  }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
-        {/* Hero Section with Logo */}
-        <ThemedView style={styles.heroSection}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('@/assets/images/logo.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          
-          {/* Main Headline - Clean & Bold */}
-          <ThemedText style={styles.mainHeadline}>
-            Safe walks for{'\n'}happy dogs
-          </ThemedText>
-          
-          {/* Subtitle - Simple & Clear */}
-          <ThemedText style={styles.subtitle}>
-            Professional, vetted walkers in your neighborhood
-          </ThemedText>
-        </ThemedView>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {/* Hero Section - Top Half */}
+      <View style={styles.heroSection}>
+        <Image
+          source={require('@/assets/images/newlogo.png')}
+          style={styles.heroImage}
+          resizeMode="contain"
+        />
+      </View>
 
-        {/* Trust Indicators - Subtle & Professional */}
-        <ThemedView style={styles.trustSection}>
-          <View style={styles.trustRow}>
-            <View style={styles.trustItem}>
-              <View style={styles.trustIcon}>
-                <ThemedText style={styles.checkmark}>✓</ThemedText>
+      {/* Content Section - Bottom Half */}
+      <ThemedView style={[styles.bottomSection, { backgroundColor: isDark ? '#000000' : '#FFFFFF' }]}>
+          {/* Features Card */}
+          <View style={[styles.featuresCard, { backgroundColor: isDark ? '#1F2937' : '#F8FAFC' }]}>
+            {KEY_FEATURES.map((feature) => (
+              <View key={feature.title} style={styles.featureRow}>
+                <View style={[styles.featureIconWrapper, { backgroundColor: `${feature.color}15` }]}>
+                  <Ionicons name={feature.icon} size={24} color={feature.color} />
+                </View>
+                <ThemedText style={styles.featureText}>{feature.title}</ThemedText>
               </View>
-              <ThemedText style={styles.trustText}>Vetted walkers</ThemedText>
-            </View>
-            <View style={styles.trustItem}>
-              <View style={styles.trustIcon}>
-                <ThemedText style={styles.checkmark}>✓</ThemedText>
-              </View>
-              <ThemedText style={styles.trustText}>GPS tracking</ThemedText>
-            </View>
-            <View style={styles.trustItem}>
-              <View style={styles.trustIcon}>
-                <ThemedText style={styles.checkmark}>✓</ThemedText>
-              </View>
-              <ThemedText style={styles.trustText}>24/7 support</ThemedText>
-            </View>
+            ))}
           </View>
-        </ThemedView>
 
-        {/* Call-to-Action Section */}
-        <ThemedView style={styles.ctaSection}>
-          <TouchableOpacity 
-            style={styles.primaryButton} 
-            onPress={handleGetStarted}
-            activeOpacity={0.9}
-          >
-            <ThemedText style={styles.primaryButtonText}>Get Started as Pet Owner</ThemedText>
-          </TouchableOpacity>
-          
+          {/* Tagline */}
+          <ThemedText style={styles.tagline}>Safe walks, happy pups</ThemedText>
+
+          {/* CTA Buttons */}
+          <View style={styles.ctaContainer}>
+            <TouchableOpacity style={styles.primaryButton} onPress={handleGetStarted} activeOpacity={0.9}>
+              <ThemedText style={styles.primaryButtonText}>Get Started</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.secondaryButton} onPress={handleSignIn} activeOpacity={0.8}>
+              <ThemedText style={[styles.secondaryButtonText, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+                Already have an account? Sign in
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Legal Link */}
+          <Pressable onPress={handleLegal} hitSlop={8} style={styles.legalContainer}>
+            <ThemedText style={[styles.legalText, { color: isDark ? '#6B7280' : '#94A3B8' }]}>
+              By continuing you agree to our Terms & Privacy
+            </ThemedText>
+          </Pressable>
         </ThemedView>
-      </ThemedView>
     </SafeAreaView>
   );
 }
@@ -82,122 +104,98 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'space-between',
-    paddingTop: 60,
-    paddingBottom: 40,
-  },
-  
-  // Hero Section - Clean & Minimalist
   heroSection: {
-    alignItems: 'center',
-    paddingTop: 40,
+    flex: 0.5, // Takes 50% of available space
   },
-  logoContainer: {
-    marginBottom: 48,
-    alignItems: 'center',
+  heroImage: {
+    width: '100%',
+    height: '100%',
   },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  mainHeadline: {
-    fontSize: 42,
-    fontWeight: '700',
-    color: '#000000',
-    textAlign: 'center',
-    lineHeight: 48,
-    letterSpacing: -1,
-    marginBottom: 16,
-  },
-  subtitle: {
-    fontSize: 17,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 24,
-    fontWeight: '400',
-    paddingHorizontal: 8,
-  },
-  
-  // Trust Section - Subtle & Professional
-  trustSection: {
-    paddingVertical: 32,
-  },
-  trustRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  trustItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  trustIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F0F9FF',
-    borderWidth: 1,
-    borderColor: '#E0F2FE',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  checkmark: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#007AFF',
-  },
-  trustText: {
-    fontSize: 13,
-    color: '#374151',
-    textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 16,
-  },
-  
-  // CTA Section - Uber-style Clean Buttons
-  ctaSection: {
-    gap: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 46,
+  bottomSection: {
+    flex: 1, // Takes 50% of available space
+    paddingHorizontal: 24,
     paddingTop: 32,
-    marginTop: 32,
-    paddingHorizontal: 16,
-
+    paddingBottom: 24,
+    justifyContent: 'space-between',
   },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    borderRadius: 12,
+  featuresCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    padding: 20,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  featureRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 6,
-    
+    gap: 16,
   },
-  primaryButtonText: {
-    color: '#FFFFFF',
+  featureIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  featureText: {
     fontSize: 17,
     fontWeight: '600',
     letterSpacing: 0.2,
   },
-  secondaryButton: {
+  tagline: {
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    lineHeight: 34,
+    marginTop: 16,
+  },
+  ctaContainer: {
+    gap: 12,
+    marginTop: 8,
+  },
+  primaryButton: {
+    backgroundColor: PRIMARY_COLOR,
     paddingVertical: 16,
     paddingHorizontal: 32,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  secondaryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secondaryButtonText: {
-    color: '#6B7280',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  legalContainer: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  legalText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });
