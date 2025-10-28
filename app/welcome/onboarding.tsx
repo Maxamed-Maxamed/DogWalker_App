@@ -165,7 +165,7 @@ export default function OnboardingScreen() {
 
   const handleLegalPress = () => {
     Haptics.selectionAsync();
-    
+    // TODO: Navigate to legal page or open legal URL when implemented
   };
 
   const renderWelcome = () => (
