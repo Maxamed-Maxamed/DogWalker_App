@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Animated, Image, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -120,28 +120,24 @@ export default function OnboardingScreen() {
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
       animateOutAnd(() => setCurrentIndex((index) => Math.min(index + 1, slides.length - 1)));
-    } else {
-      handleFinish();
     }
-  };
-
-  const handleFinish = () => {
-    router.push('/(tabs)/dashboard');
   };
 
   const handleSkip = () => {
     Haptics.selectionAsync();
-    handleFinish();
+    // Skip to the final slide to show account creation options
+    animateOutAnd(() => setCurrentIndex(slides.length - 1));
   };
 
   const handleCreateAccount = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    handleFinish();
+    // TODO: Navigate to registration screen when implemented
+    router.push('/sign-in');
   };
 
   const handleSignIn = () => {
     Haptics.selectionAsync();
-    handleFinish();
+    router.push('/sign-in');
   };
 
   const handlePrimaryPress = () => {
@@ -169,12 +165,13 @@ export default function OnboardingScreen() {
 
   const handleLegalPress = () => {
     Haptics.selectionAsync();
+    
   };
 
   const renderWelcome = () => (
     <View style={styles.centerContent}>
       <View style={styles.brandRow}>
-        <Image source={require('@/assets/images/logo.png')} style={styles.brandLogo} resizeMode="contain" />
+        <Image source={require('@/assets/images/newlogo.png')} style={styles.brandLogo} resizeMode="contain" />
         <ThemedText style={styles.brandName}>DogWalker</ThemedText>
       </View>
       <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
@@ -186,18 +183,18 @@ export default function OnboardingScreen() {
     <View style={styles.centerContent}>
       <View style={styles.heroCard}>
         <Image
-          source={require('@/assets/images/Gemini_Generated_Image_qd6nk9qd6nk9qd6n.png')}
+          source={require('@/assets/images/happydog.png')}
           style={styles.heroImage}
           resizeMode="cover"
         />
-        <View style={styles.badgeCluster}>
-          {['Background checks', 'Insurance', '24/7 support'].map((label) => (
-            <View key={label} style={styles.badge}>
-              <Ionicons name="checkmark-circle" size={16} color={primaryColor} />
-              <ThemedText style={styles.badgeText}>{label}</ThemedText>
-            </View>
-          ))}
-        </View>
+      </View>
+      <View style={styles.badgeCluster}>
+        {['Background checks', 'Insurance', '24/7 support'].map((label) => (
+          <View key={label} style={styles.badge}>
+            <Ionicons name="checkmark-circle" size={16} color={primaryColor} />
+            <ThemedText style={styles.badgeText}>{label}</ThemedText>
+          </View>
+        ))}
       </View>
       <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
       <ThemedText style={styles.subtitle}>{currentSlide.description}</ThemedText>
@@ -431,10 +428,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   badgeCluster: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
+    width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
