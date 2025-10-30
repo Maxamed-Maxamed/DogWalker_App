@@ -49,3 +49,4 @@ app-example
 .copilot/config.json
 .copilot
 .cursor
+codacy-fixes.patch

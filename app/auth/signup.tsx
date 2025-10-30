@@ -21,14 +21,13 @@ export default function SignupScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSignup = () => {
-    if (password !== confirmPassword) return Alert.alert('Passwords do not match');
-
+    if (password !== confirmPassword) { Alert.alert('Passwords do not match'); return; }
     void (async () => {
       setLoading(true);
       try {
         await signup(name.trim(), email.trim(), password);
         router.replace('./(tabs)');
-      } catch (err: any) {
+      } catch (err: unknow) {
         Alert.alert('Signup failed', err?.message ?? 'Unknown error');
       } finally {
         setLoading(false);
