@@ -25,7 +25,7 @@ export default function LoginScreen() {
         await login(email.trim(), password);
         // on success navigate to tabs
         router.replace('./(tabs)');
-      } catch (err: any) {
+      } catch (err: unknown) {
         Alert.alert('Login failed', err?.message ?? 'Unknown error');
       } finally {
         setLoading(false);

@@ -16,7 +16,7 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleReset = () => {
-    if (!email) return Alert.alert('Please enter your email');
+    if (!email) { Alert.alert('Please enter your email'); return; }
     
     void (async () => {
       setLoading(true);
