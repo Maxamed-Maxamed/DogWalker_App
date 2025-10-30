@@ -50,3 +50,4 @@ app-example
 .copilot
 .cursor
 codacy-fixes.patch
+.vscode/settings.json
