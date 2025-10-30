@@ -25,26 +25,28 @@ export default function WelcomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const handleGetStarted = useCallback(async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleGetStarted = useCallback(() => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push('/welcome/onboarding');
   }, []);
 
   const handleSignIn = useCallback(() => {
-    Haptics.selectionAsync();
+    void Haptics.selectionAsync();
     router.push('/auth/login');
   }, []);
 
-  const handleLegal = useCallback(async () => {
-    Haptics.selectionAsync();
-    try {
-      const supported = await Linking.canOpenURL(TERMS_URL);
-      if (supported) {
-        await Linking.openURL(TERMS_URL);
+  const handleLegal = useCallback(() => {
+    void Haptics.selectionAsync();
+    void (async () => {
+      try {
+        const supported = await Linking.canOpenURL(TERMS_URL);
+        if (supported) {
+          await Linking.openURL(TERMS_URL);
+        }
+      } catch (error) {
+        console.error('Failed to open legal URL:', error);
       }
-    } catch (error) {
-      console.error('Failed to open legal URL:', error);
-    }
+    })();
   }, []);
 
   return (

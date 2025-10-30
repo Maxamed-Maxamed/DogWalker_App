@@ -20,18 +20,20 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSignup = async () => {
+  const handleSignup = () => {
     if (password !== confirmPassword) return Alert.alert('Passwords do not match');
 
-    setLoading(true);
-    try {
-      await signup(name.trim(), email.trim(), password);
-      router.replace('./(tabs)');
-    } catch (err: any) {
-      Alert.alert('Signup failed', err?.message ?? 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
+    void (async () => {
+      setLoading(true);
+      try {
+        await signup(name.trim(), email.trim(), password);
+        router.replace('./(tabs)');
+      } catch (err: any) {
+        Alert.alert('Signup failed', err?.message ?? 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   return (

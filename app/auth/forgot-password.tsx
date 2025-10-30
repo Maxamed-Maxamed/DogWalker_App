@@ -15,15 +15,18 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleReset = async () => {
+  const handleReset = () => {
     if (!email) return Alert.alert('Please enter your email');
-    setLoading(true);
-    // Mock sending reset link
-    setTimeout(() => {
-      setLoading(false);
-      Alert.alert('Reset link sent', `A password reset link was sent to ${email} (mock)`);
-      router.back();
-    }, 900);
+    
+    void (async () => {
+      setLoading(true);
+      // Mock sending reset link
+      setTimeout(() => {
+        setLoading(false);
+        Alert.alert('Reset link sent', `A password reset link was sent to ${email} (mock)`);
+        router.back();
+      }, 900);
+    })();
   };
 
   return (

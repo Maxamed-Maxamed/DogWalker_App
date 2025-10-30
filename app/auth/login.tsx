@@ -18,17 +18,19 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      await login(email.trim(), password);
-      // on success navigate to tabs
-      router.replace('./(tabs)');
-    } catch (err: any) {
-      Alert.alert('Login failed', err?.message ?? 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
+  const handleLogin = () => {
+    void (async () => {
+      setLoading(true);
+      try {
+        await login(email.trim(), password);
+        // on success navigate to tabs
+        router.replace('./(tabs)');
+      } catch (err: any) {
+        Alert.alert('Login failed', err?.message ?? 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   return (

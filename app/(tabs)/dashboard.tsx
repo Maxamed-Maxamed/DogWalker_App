@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore';
 export default function DashboardScreen() {
   const logout = useAuthStore((s) => s.logout);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -20,13 +20,15 @@ export default function DashboardScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              router.replace('/welcome');
-            } catch {
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
+          onPress: () => {
+            void (async () => {
+              try {
+                await logout();
+                router.replace('/welcome');
+              } catch {
+                Alert.alert('Error', 'Failed to logout. Please try again.');
+              }
+            })();
           },
         },
       ]
