@@ -118,15 +118,14 @@ export default function OnboardingScreen() {
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
-      animateOutAnd(() => setCurrentIndex((index) => Math.min(index + 1, slides.length - 1)));
+      animateOutAnd(() => { setCurrentIndex((index) => Math.min(index + 1, slides.length - 1)); });
     }
   };
 
   const handleSkip = () => {
     Haptics.selectionAsync();
     // Skip to the final slide to show account creation options
-    animateOutAnd(() => setCurrentIndex(slides.length - 1));
-
+    animateOutAnd(() => { setCurrentIndex(slides.length - 1); });
   };
 
   const handleCreateAccount = () => {
