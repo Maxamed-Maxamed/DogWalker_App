@@ -46,3 +46,6 @@ app-example
 # Ignore GitHub configuration and AI instructions (keep local only)
 .github/
 .copilot-instructions.md
+.copilot/config.json
+.copilot
+.cursor

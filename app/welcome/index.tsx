@@ -32,7 +32,7 @@ export default function WelcomeScreen() {
 
   const handleSignIn = useCallback(() => {
     Haptics.selectionAsync();
-    router.push('/sign-in');
+    router.push('/auth/login');
   }, []);
 
   const handleLegal = useCallback(async () => {

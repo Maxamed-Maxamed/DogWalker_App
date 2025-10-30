@@ -1,13 +1,37 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Link, router } from 'expo-router';
+import { Alert, Platform, StyleSheet } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function DashboardScreen() {
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace('/welcome');
+            } catch {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -72,6 +96,15 @@ export default function DashboardScreen() {
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Account</ThemedText>
+        <ThemedText 
+          type="link" 
+          onPress={handleLogout}
+          style={styles.logoutLink}>
+          Logout
+        </ThemedText>
+      </ThemedView>
     </ParallaxScrollView>
   );
 }
@@ -92,5 +125,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  logoutLink: {
+    color: '#DC2626',
   },
 });

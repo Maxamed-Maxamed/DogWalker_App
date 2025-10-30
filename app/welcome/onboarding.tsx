@@ -2,9 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Animated, Image, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, Pressable, StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
@@ -127,17 +126,17 @@ export default function OnboardingScreen() {
     Haptics.selectionAsync();
     // Skip to the final slide to show account creation options
     animateOutAnd(() => setCurrentIndex(slides.length - 1));
+
   };
 
   const handleCreateAccount = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // TODO: Navigate to registration screen when implemented
-    router.push('/sign-in');
+    router.push('/auth/signup');
   };
 
   const handleSignIn = () => {
     Haptics.selectionAsync();
-    router.push('/sign-in');
+    router.push('/auth/login');
   };
 
   const handlePrimaryPress = () => {
@@ -157,6 +156,7 @@ export default function OnboardingScreen() {
 
     if (currentSlide.secondaryAction === 'signIn') {
       handleSignIn();
+
       return;
     }
 
@@ -289,7 +289,9 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    // <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      
       <ThemedView style={styles.content}>
         {currentSlide.showSkip && (
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
@@ -364,6 +366,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   skipButton: {
+    // alignSelf: 'flex-end',
+    // paddingTop: 20,
+    // paddingBottom: 16,
+    // paddingHorizontal: 4,
     alignSelf: 'flex-end',
     paddingTop: 20,
     paddingBottom: 16,
@@ -459,6 +465,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 18,
     backgroundColor: '#F8FAFC',
+    
+    
+    
   },
   infoIconWrap: {
     width: 48,
@@ -562,8 +571,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bottomContainer: {
-    paddingBottom: 40,
-    alignItems: 'center',
+    paddingBottom: Platform.OS === 'ios' ? 16 : 40,
+  alignItems: 'center',
   },
   pagination: {
     flexDirection: 'row',
