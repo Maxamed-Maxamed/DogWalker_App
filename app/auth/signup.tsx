@@ -26,9 +26,13 @@ export default function SignupScreen() {
       setLoading(true);
       try {
         await signup(name.trim(), email.trim(), password);
-        router.replace('./(tabs)');
-      } catch (err: unknow) {
-        Alert.alert('Signup failed', err?.message ?? 'Unknown error');
+        router.replace('/(tabs)/dashboard');
+      } catch (err: unknown) {
+        let message = 'Unknown error';
+        if (typeof err === 'object' && err !== null && 'message' in err && typeof (err as any).message === 'string') {
+          message = (err as any).message;
+        }
+        Alert.alert('Signup failed', message);
       } finally {
         setLoading(false);
       }

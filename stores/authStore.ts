@@ -1,4 +1,4 @@
-import { supabase } from '@/utils/supabase';
+import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 import { create } from 'zustand';
 
 type User = {
@@ -12,6 +12,7 @@ type AuthState = {
   token: string | null;
   isLoading: boolean;
   isInitialized: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -19,11 +20,12 @@ type AuthState = {
   initialize: () => Promise<void>;
 };
 
-export const useAuthStore = create<AuthState>((set: unknown, get: any) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   isLoading: false,
   isInitialized: false,
+  error: null,
 
   initialize: async () => {
     set({ isLoading: true });
@@ -35,78 +37,160 @@ export const useAuthStore = create<AuthState>((set: unknown, get: any) => ({
   },
 
   login: async (email: string, password: string) => {
-    if (!email || !password) throw new Error('Email and password are required');
-
-    try {
-      if (supabase) {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-
-      const session = data.session;
-      const user = data.user ? { id: data.user.id, email: data.user.email ?? undefined } : null;
-      set({ user, token: session?.access_token ?? null });
-      return;
-      }
-    } catch {
-      // Fallthrough to mock fallback
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      set({ error: 'Email and password are required' });
+      throw new Error('Email and password are required');
     }
 
-    // Fallback mock
+    set({ isLoading: true, error: null });
+
+    try {
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.auth.signInWithPassword({ 
+          email: normalizedEmail, 
+          password 
+        });
+        
+        if (error) {
+          set({ error: error.message, isLoading: false });
+          throw error;
+        }
+
+        const session = data.session;
+        const user = data.user ? { 
+          id: data.user.id, 
+          email: data.user.email ?? undefined,
+          name: data.user.user_metadata?.full_name 
+        } : null;
+        
+        set({ user, token: session?.access_token ?? null, isLoading: false, error: null });
+        return;
+      }
+    } catch (error: any) {
+      console.error('Login error:', {
+        name: error?.name,
+        status: error?.status,
+        message: error?.message,
+      });
+      set({ error: error?.message ?? 'Login failed', isLoading: false });
+      throw error;
+    }
+
+    // Fallback mock (only if Supabase not configured)
+    console.warn('Using mock authentication - Supabase not configured');
     const token = 'mock-token';
-    const user = { id: '1', email } as User;
-    set({ user, token });
+    const user = { id: '1', email: normalizedEmail } as User;
+    set({ user, token, isLoading: false });
   },
 
   signup: async (name: string, email: string, password: string) => {
-    if (!name || !email || !password) throw new Error('All fields are required');
-
-    try {
-      if (supabase) {
-        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
-        if (error) throw error;
-
-        const user = data.user ? { id: data.user.id, email: data.user.email ?? undefined, name } : null;
-        set({ user, token: null });
-        return;
-      }
-    } catch {
-      // fallback to mock
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!name || !normalizedEmail || !password) {
+      set({ error: 'All fields are required' });
+      throw new Error('All fields are required');
     }
 
-    // Fallback mock
+    set({ isLoading: true, error: null });
+
+    try {
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.auth.signUp({ 
+          email: normalizedEmail, 
+          password, 
+          options: { 
+            data: { full_name: name } 
+          } 
+        });
+        
+        if (error) {
+          // Provide clearer message for common cases like domain restrictions
+          const friendly =
+            typeof error.message === 'string' && /allowed|domain|invalid email/i.test(error.message)
+              ? 'Signup failed. Please check the email address (domain restrictions may apply).'
+              : error.message;
+          set({ error: friendly, isLoading: false });
+          throw error;
+        }
+
+        const user = data.user ? { 
+          id: data.user.id, 
+          email: data.user.email ?? undefined, 
+          name 
+        } : null;
+        
+        // Note: Session may be null if email confirmation is required
+        const session = data.session;
+        set({ 
+          user, 
+          token: session?.access_token ?? null, 
+          isLoading: false, 
+          error: null 
+        });
+        return;
+      }
+    } catch (error: any) {
+      console.error('Signup error:', {
+        name: error?.name,
+        status: error?.status,
+        message: error?.message,
+      });
+      set({ error: error?.message ?? 'Signup failed', isLoading: false });
+      throw error;
+    }
+
+    // Fallback mock (only if Supabase not configured)
+    console.warn('Using mock authentication - Supabase not configured');
     const token = 'mock-token';
-    const user = { id: '2', name, email } as User;
-    set({ user, token });
+    const user = { id: '2', name, email: normalizedEmail } as User;
+    set({ user, token, isLoading: false });
   },
 
   logout: async () => {
-    try {
-      if (supabase) {
-        await supabase.auth.signOut();
-        set({ user: null, token: null });
-        return;
-      }
-    } catch {
-      // fallback to clearing store
-    }
+    set({ isLoading: true, error: null });
 
-    set({ user: null, token: null });
+    try {
+      if (isSupabaseConfigured()) {
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+          console.error('Logout error:', error);
+          set({ error: error.message, isLoading: false });
+        }
+      }
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      set({ error: error.message });
+    } finally {
+      // Always clear local state
+      set({ user: null, token: null, isLoading: false });
+    }
   },
 
   restore: async () => {
     try {
-      if (supabase) {
+      if (isSupabaseConfigured()) {
         const { data, error } = await supabase.auth.getSession();
-        if (error) return;
+        
+        if (error) {
+          console.error('Session restore error:', error);
+          return;
+        }
+        
         const session = data.session;
         if (session) {
-          const user = session.user ? { id: session.user.id, email: session.user.email ?? undefined } : null;
+          const user = session.user ? { 
+            id: session.user.id, 
+            email: session.user.email ?? undefined,
+            name: session.user.user_metadata?.full_name
+          } : null;
+          
           set({ user, token: session.access_token });
         }
         return;
       }
-    } catch {
-      // no-op fallback
+    } catch (error: any) {
+      console.error('Session restore error:', error);
     }
 
     // fallback: nothing to restore for mock
