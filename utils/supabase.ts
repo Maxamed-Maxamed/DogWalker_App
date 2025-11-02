@@ -9,9 +9,9 @@
  * - EXPO_PUBLIC_SUPABASE_ANON_KEY: Your Supabase anonymous key
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import 'react-native-url-polyfill/auto';
 
@@ -44,7 +44,7 @@ async function secureStoreSetChunked(baseKey: string, value: string) {
 
   // Store chunks individually
   await Promise.all(
-    chunks.map((chunk, idx) => SecureStore.setItemAsync(`${baseKey}:${idx}`, chunk))
+    chunks.map((chunk, idx) => SecureStore.setItemAsync(`${baseKey}__chunk_${idx}`, chunk))
   );
 }
 
@@ -54,9 +54,27 @@ async function secureStoreGetChunked(baseKey: string) {
   if (meta) {
     const count = Number(meta);
     if (Number.isFinite(count) && count > 0) {
-      const parts: (string | null)[] = await Promise.all(
-        Array.from({ length: count }, (_, idx) => SecureStore.getItemAsync(`${baseKey}:${idx}`))
+      // Try new format first
+      let parts: (string | null)[] = await Promise.all(
+        Array.from({ length: count }, (_, idx) => SecureStore.getItemAsync(`${baseKey}__chunk_${idx}`))
       );
+      // If all are null, try old format
+      if (parts.every(part => part === null)) {
+        parts = await Promise.all(
+          Array.from({ length: count }, (_, idx) => SecureStore.getItemAsync(`${baseKey}:${idx}`))
+        );
+        // If found, migrate to new format
+        if (parts.some(part => part !== null)) {
+          await Promise.all(
+            parts.map((chunk, idx) =>
+              chunk !== null
+                ? SecureStore.setItemAsync(`${baseKey}__chunk_${idx}`, chunk)
+                : Promise.resolve()
+            )
+          );
+          // Optionally clean up old chunks here
+        }
+      }
       return parts.join('');
     }
   }
@@ -70,13 +88,18 @@ async function secureStoreRemoveChunked(baseKey: string) {
     const count = Number(meta);
     await SecureStore.deleteItemAsync(`${baseKey}${META_SUFFIX}`);
     if (Number.isFinite(count) && count > 0) {
+      // Remove new format chunks
       await Promise.all(
-        Array.from({ length: count }, (_, idx) => SecureStore.deleteItemAsync(`${baseKey}:${idx}`))
+        Array.from({ length: count }, (_, idx) => SecureStore.deleteItemAsync(`${baseKey}__chunk_${idx}`))
       );
     }
   }
   // Also remove potential single value
-  await SecureStore.deleteItemAsync(baseKey);
+  try {
+    await SecureStore.deleteItemAsync(baseKey);
+  } catch {
+    // Ignore if key doesn't exist
+  }
 }
 
 // Storage interface expected by supabase-js auth

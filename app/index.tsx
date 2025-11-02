@@ -1,37 +1,20 @@
+import { useAppStateStore } from '@/stores/appStateStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Redirect } from 'expo-router';
-import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function Index() {
-  const { user, isLoading, isInitialized, initialize } = useAuthStore();
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  // Show loading screen while checking auth state
-  if (!isInitialized || isLoading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
+  const { user, isInitialized } = useAuthStore();
+  const { initialized: appInitialized, firstLaunch } = useAppStateStore();
 
   // Redirect based on auth state
-  if (user) {
+  if (appInitialized && isInitialized && user) {
     return <Redirect href="/(tabs)/dashboard" />;
   }
 
-  return <Redirect href="/welcome" />;
-}
+  // While splash is up, render nothing
+  if (!appInitialized || !isInitialized) return null;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-});
+  // First-time users go to welcome; otherwise auth/login
+  return <Redirect href={firstLaunch ? '/welcome' : '/auth/login'} />;
+}
+ 
