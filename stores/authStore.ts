@@ -67,18 +67,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ user, token: session?.access_token ?? null, isLoading: false, error: null });
         return;
       }
-    } catch (error: any) {
-      console.error('Login error:', {
-        name: error?.name,
-        status: error?.status,
-        message: error?.message,
-      });
-      set({ error: error?.message ?? 'Login failed', isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Login error:', error);
+      }
+      set({ error: errorMessage, isLoading: false });
       throw error;
     }
 
     // Fallback mock (only if Supabase not configured)
-    console.warn('Using mock authentication - Supabase not configured');
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.warn('Using mock authentication - Supabase not configured');
+    }
     const token = 'mock-token';
     const user = { id: '1', email: normalizedEmail } as User;
     set({ user, token, isLoading: false });
@@ -129,18 +132,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
         return;
       }
-    } catch (error: any) {
-      console.error('Signup error:', {
-        name: error?.name,
-        status: error?.status,
-        message: error?.message,
-      });
-      set({ error: error?.message ?? 'Signup failed', isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Signup error:', error);
+      }
+      set({ error: errorMessage, isLoading: false });
       throw error;
     }
 
     // Fallback mock (only if Supabase not configured)
-    console.warn('Using mock authentication - Supabase not configured');
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.warn('Using mock authentication - Supabase not configured');
+    }
     const token = 'mock-token';
     const user = { id: '2', name, email: normalizedEmail } as User;
     set({ user, token, isLoading: false });
@@ -154,13 +160,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const { error } = await supabase.auth.signOut();
         
         if (error) {
-          console.error('Logout error:', error);
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.error('Logout error:', error);
+          }
           set({ error: error.message, isLoading: false });
         }
       }
-    } catch (error: any) {
-      console.error('Logout error:', error);
-      set({ error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Logout failed';
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Logout error:', error);
+      }
+      set({ error: errorMessage });
     } finally {
       // Always clear local state
       set({ user: null, token: null, isLoading: false });
@@ -173,7 +186,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Session restore error:', error);
+          if (__DEV__) {
+            // eslint-disable-next-line no-console
+            console.error('Session restore error:', error);
+          }
           return;
         }
         
@@ -189,8 +205,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
         return;
       }
-    } catch (error: any) {
-      console.error('Session restore error:', error);
+    } catch (error: unknown) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Session restore error:', error);
+      }
     }
 
     // fallback: nothing to restore for mock

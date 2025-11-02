@@ -97,8 +97,9 @@ async function secureStoreRemoveChunked(baseKey: string) {
   // Also remove potential single value
   try {
     await SecureStore.deleteItemAsync(baseKey);
-  } catch {
-    // Ignore if key doesn't exist
+  } catch (error) {
+    // Intentionally ignore: key may not exist, which is fine during cleanup
+    // No need to log as this is expected behavior
   }
 }
 
@@ -108,7 +109,10 @@ const ChunkedSecureStoreAdapter = {
     try {
       return await secureStoreGetChunked(key);
     } catch (error) {
-      console.error('SecureStore (chunked) getItem error:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('SecureStore (chunked) getItem error:', error);
+      }
       return null;
     }
   },
@@ -116,24 +120,33 @@ const ChunkedSecureStoreAdapter = {
     try {
       await secureStoreSetChunked(key, value);
     } catch (error) {
-      console.error('SecureStore (chunked) setItem error:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('SecureStore (chunked) setItem error:', error);
+      }
     }
   },
   removeItem: async (key: string) => {
     try {
       await secureStoreRemoveChunked(key);
     } catch (error) {
-      console.error('SecureStore (chunked) removeItem error:', error);
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('SecureStore (chunked) removeItem error:', error);
+      }
     }
   },
 };
 
 // Validate environment variables
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.warn(
-    '⚠️ Supabase environment variables missing!\n' +
-    'Please ensure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'
-  );
+  if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '⚠️ Supabase environment variables missing!\n' +
+      'Please ensure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'
+    );
+  }
 }
 
 // Create and export the Supabase client

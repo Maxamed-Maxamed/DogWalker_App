@@ -34,8 +34,10 @@ Dog Walker is a technology-first platform engineered to become the most trusted 
 - **Framework**: React Native with Expo SDK 54
 - **Navigation**: Expo Router v6 with file-based routing (typed routes)
 - **Language**: TypeScript with strict mode enabled
-- **State Management**: Zustand (planned for navigation/auth state)
+- **State Management**: Zustand for auth, app state, and navigation
+- **Backend**: Supabase (PostgreSQL, Auth, Real-time)
 - **Styling**: StyleSheet API with custom theme system
+- **Storage**: Expo SecureStore (native) and AsyncStorage (web)
 - **Package Manager**: pnpm with workspace configuration
 - **Platform Support**: iOS, Android, and Web
 
@@ -59,12 +61,22 @@ Dog Walker is a technology-first platform engineered to become the most trusted 
    pnpm install
    ```
 
-3. **Start the development server**
+3. **Set up environment variables**
+   ```bash
+   # Copy the example env file
+   cp .env.example .env.local
+   
+   # Edit .env.local and add your Supabase credentials:
+   # EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+   # EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. **Start the development server**
    ```bash
    pnpm start
    ```
 
-4. **Run on your preferred platform**
+5. **Run on your preferred platform**
    ```bash
    # iOS Simulator (Mac only)
    pnpm ios
@@ -134,6 +146,15 @@ constants/
 hooks/                     # Custom React hooks
 ├── use-color-scheme.ts
 └── use-theme-color.ts
+
+stores/                    # Zustand state stores
+├── authStore.ts           # Authentication state
+├── appStateStore.ts       # App initialization and settings
+└── navigationStore.ts     # Navigation state
+
+utils/                     # Utility functions
+├── supabase.ts            # Supabase client configuration
+└── supabaseTest.ts        # Connection testing utilities
 ```
 
 ## 🎨 Design System
@@ -158,11 +179,13 @@ Built with Expo Router v6 using file-based routing:
 
 ## 🔐 Security & Privacy
 
-- **Data Protection**: Secure storage with Expo SecureStore
-- **Authentication**: JWT tokens with refresh token rotation
-- **API Security**: Request signing and certificate pinning
+- **Data Protection**: Chunked secure storage with Expo SecureStore (bypasses 2KB limit)
+- **Authentication**: Supabase Auth with JWT tokens and automatic refresh
+- **Session Management**: Persistent sessions with secure token storage
+- **API Security**: Row-level security policies in Supabase
 - **Privacy**: GDPR/CCPA compliant data handling
 - **Vulnerability Scanning**: Automated security checks with Codacy
+- **Environment Security**: Sensitive keys stored in .env.local (not committed)
 
 ## 🧪 Testing Strategy
 

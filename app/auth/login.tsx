@@ -26,7 +26,7 @@ export default function LoginScreen() {
         // on success navigate to dashboard tab
         router.replace('/(tabs)/dashboard');
       } catch (err: unknown) {
-        const message = (err as any)?.message ?? 'Unknown error';
+        const message = err instanceof Error ? err.message : 'Unknown error';
         Alert.alert('Login failed', message);
       } finally {
         setLoading(false);

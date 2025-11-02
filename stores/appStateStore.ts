@@ -28,8 +28,12 @@ export const useAppStateStore = create<AppState>((set, get) => ({
     set({ themePreference: pref });
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.THEME_PREF, pref);
-    } catch {
-      // non-fatal; ignore
+    } catch (error) {
+      // Non-fatal: Theme preference persisting failed, will use system default
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to persist theme preference:', error);
+      }
     }
   },
 
@@ -37,8 +41,12 @@ export const useAppStateStore = create<AppState>((set, get) => ({
     set({ firstLaunch: false });
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.FIRST_LAUNCH, 'false');
-    } catch {
-      // ignore
+    } catch (error) {
+      // Non-fatal: First launch flag persisting failed, user may see onboarding again
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to persist onboarding completion:', error);
+      }
     }
   },
 
