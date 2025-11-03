@@ -29,6 +29,7 @@
       "expo-router",
       [
         "expo-splash-screen",
+        
         {
           "image": "./assets/images/newlogo.png",
           "imageWidth": 200,
@@ -39,10 +40,12 @@
           }
         }
       ],
+      
       "expo-font",
       "expo-web-browser",
       "expo-sqlite",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true,
