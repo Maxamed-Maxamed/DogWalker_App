@@ -190,6 +190,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             // eslint-disable-next-line no-console
             console.error('Session restore error:', error);
           }
+          // Clear invalid session
+          if (error.message?.includes('Refresh Token') || error.message?.includes('Invalid')) {
+            await supabase.auth.signOut();
+            set({ user: null, token: null });
+          }
           return;
         }
         
@@ -202,6 +207,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           } : null;
           
           set({ user, token: session.access_token });
+        } else {
+          // No session found, clear state
+          set({ user: null, token: null });
         }
         return;
       }
@@ -210,6 +218,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // eslint-disable-next-line no-console
         console.error('Session restore error:', error);
       }
+      // Clear state on any error
+      set({ user: null, token: null });
     }
 
     // fallback: nothing to restore for mock
