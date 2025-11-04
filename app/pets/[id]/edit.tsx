@@ -19,7 +19,6 @@ export default function EditPetScreen() {
     if (pets.length === 0) {
       fetchPets();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Memoize pet lookup to avoid recalculation on every render

@@ -23,7 +23,6 @@ export default function DashboardScreen() {
   // Fetch pets on mount only - fetchPets is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -35,15 +34,17 @@ export default function DashboardScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              router.replace('/welcome');
-            } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : 'Failed to logout';
-              console.error('Logout error:', errorMessage);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
+          onPress: () => {
+            void (async () => {
+              try {
+                await logout();
+                router.replace('/welcome');
+              } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to logout';
+                console.error('Logout error:', errorMessage);
+                Alert.alert('Error', 'Failed to logout. Please try again.');
+              }
+            })();
           },
         },
       ]

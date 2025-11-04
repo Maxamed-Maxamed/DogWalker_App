@@ -297,7 +297,7 @@ export async function requestImagePermissions(): Promise<boolean> {
 export async function pickImageFromGallery(): Promise<string | null> {
   try {
     const result = await ImagePicker.launchImageLibraryAsync({
-  mediaTypes: 'images' as any,
+  mediaTypes: 'images' as unknown as ImagePicker.MediaTypeOptions,
   allowsEditing: true,
   aspect: [1, 1],
   quality: 0.8,
