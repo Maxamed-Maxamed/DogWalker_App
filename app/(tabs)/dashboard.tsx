@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HelloWave } from '@/components/hello-wave';
+import { EmptyPetState } from '@/components/pets/EmptyPetState';
 import { PetProfileCard } from '@/components/pets/PetProfileCard';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
@@ -19,13 +20,13 @@ export default function DashboardScreen() {
   const { user } = useAuthStore();
   const { pets, fetchPets } = usePetStore();
 
+  // Fetch pets on mount only - fetchPets is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  }, [
-    fetchPets,
-  ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -34,20 +35,20 @@ export default function DashboardScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              try {
-                await logout();
-                router.replace('/welcome');
-              } catch {
-                Alert.alert('Error', 'Failed to logout. Please try again.');
-              }
-            })();
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace('/welcome');
+            } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : 'Failed to logout';
+              console.error('Logout error:', errorMessage);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           },
         },
       ]
     );
-  };
+  }, [logout]);
 
   const handleBookWalk = () => {
     Alert.alert('Coming Soon', 'Walker booking feature is under development!');
@@ -56,6 +57,8 @@ export default function DashboardScreen() {
   const handleAddPet = () => {
     router.push('/pets/add');
   };
+
+  const displayedPets = useMemo(() => pets.slice(0, 2), [pets]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -96,23 +99,10 @@ export default function DashboardScreen() {
           </View>
 
           {pets.length === 0 ? (
-            <View style={[styles.emptyPets, { backgroundColor: colors.tint + '10' }]}>
-              <Ionicons name="paw-outline" size={48} color={colors.tint} />
-              <ThemedText style={styles.emptyPetsTitle}>No pets yet</ThemedText>
-              <ThemedText style={styles.emptyPetsDescription}>
-                Add your first pet to start booking walks
-              </ThemedText>
-              <TouchableOpacity
-                style={[styles.addPetButton, { backgroundColor: colors.tint }]}
-                onPress={handleAddPet}
-              >
-                <Ionicons name="add" size={20} color="#fff" />
-                <ThemedText style={styles.addPetButtonText}>Add Pet</ThemedText>
-              </TouchableOpacity>
-            </View>
+            <EmptyPetState onAddPet={handleAddPet} />
           ) : (
             <View>
-              {pets.slice(0, 2).map((pet) => (
+              {displayedPets.map((pet) => (
                 <PetProfileCard key={pet.id} pet={pet} />
               ))}
             </View>
@@ -200,36 +190,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '700',
-  },
-  emptyPets: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    gap: 12,
-  },
-  emptyPetsTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  emptyPetsDescription: {
-    fontSize: 14,
-    textAlign: 'center',
-    opacity: 0.7,
-  },
-  addPetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginTop: 8,
-  },
-  addPetButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   placeholder: {
     alignItems: 'center',

@@ -8,10 +8,9 @@ import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 
 interface PetProfileCardProps {
   pet: Pet;
-  onPress?: () => void;
 }
 
-export function PetProfileCard({ pet, onPress }: PetProfileCardProps) {
+export function PetProfileCard({ pet }: PetProfileCardProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { deletePet, loading } = usePetStore();
@@ -43,10 +42,8 @@ export function PetProfileCard({ pet, onPress }: PetProfileCardProps) {
   };
 
   return (
-    <TouchableOpacity
+    <View
       style={[styles.card, { backgroundColor: colors.background }]}
-      onPress={onPress}
-      activeOpacity={0.7}
     >
       {/* Pet Photo */}
       <View style={styles.photoContainer}>
@@ -103,6 +100,11 @@ export function PetProfileCard({ pet, onPress }: PetProfileCardProps) {
           style={[styles.actionButton, { backgroundColor: colors.tint + '15' }]}
           onPress={handleEdit}
           disabled={loading}
+          accessible={true}
+          accessibilityLabel={`Edit ${pet.name}'s profile`}
+          accessibilityHint="Opens edit form for this pet"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: loading }}
         >
           <Ionicons name="create-outline" size={20} color={colors.tint} />
         </TouchableOpacity>
@@ -111,11 +113,16 @@ export function PetProfileCard({ pet, onPress }: PetProfileCardProps) {
           style={[styles.actionButton, { backgroundColor: '#FF3B3020' }]}
           onPress={handleDelete}
           disabled={loading}
+          accessible={true}
+          accessibilityLabel={`Delete ${pet.name}'s profile`}
+          accessibilityHint="Permanently removes this pet profile"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: loading }}
         >
           <Ionicons name="trash-outline" size={20} color="#FF3B30" />
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 

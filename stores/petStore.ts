@@ -1,8 +1,11 @@
 import { supabase } from '@/utils/supabase';
 import * as ImagePicker from "expo-image-picker";
+import { Alert } from 'react-native';
 import { create } from 'zustand';
 
-
+// File upload validation constants
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 // Pet interface
 export interface Pet {
@@ -82,9 +85,10 @@ export const usePetStore = create<PetState>((set, get) => ({
       if (error) throw error;
 
       set({ pets: data || [], loading: false });
-    } catch (error: any) {
-      console.error('Error fetching pets:', error);
-      set({ error: error.message || 'Failed to load pets', loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load pets';
+      console.error('Error fetching pets:', errorMessage);
+      set({ error: errorMessage, loading: false });
     }
   },
 
@@ -128,9 +132,10 @@ export const usePetStore = create<PetState>((set, get) => ({
       }));
 
       return data;
-    } catch (error: any) {
-      console.error('Error creating pet:', error);
-      set({ error: error.message || 'Failed to create pet', loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create pet';
+      console.error('Error creating pet:', errorMessage);
+      set({ error: errorMessage, loading: false });
       return null;
     }
   },
@@ -174,9 +179,10 @@ export const usePetStore = create<PetState>((set, get) => ({
       }));
 
       return true;
-    } catch (error: any) {
-      console.error('Error updating pet:', error);
-      set({ error: error.message || 'Failed to update pet', loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update pet';
+      console.error('Error updating pet:', errorMessage);
+      set({ error: errorMessage, loading: false });
       return false;
     }
   },
@@ -208,9 +214,10 @@ export const usePetStore = create<PetState>((set, get) => ({
       }));
 
       return true;
-    } catch (error: any) {
-      console.error('Error deleting pet:', error);
-      set({ error: error.message || 'Failed to delete pet', loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete pet';
+      console.error('Error deleting pet:', errorMessage);
+      set({ error: errorMessage, loading: false });
       return false;
     }
   },
@@ -229,21 +236,37 @@ export const usePetStore = create<PetState>((set, get) => ({
 // Helper function to upload pet photo
 async function uploadPetPhoto(userId: string, photoUri: string): Promise<string> {
   try {
+    // Fetch the file
+    const response = await fetch(photoUri);
+    const blob = await response.blob();
+    
+    // Validate file size
+    if (blob.size > MAX_FILE_SIZE) {
+      Alert.alert('Error', 'Image size must be less than 5MB');
+      throw new Error('File size exceeds limit');
+    }
+    
+    // Validate MIME type
+    if (!ALLOWED_MIME_TYPES.includes(blob.type)) {
+      Alert.alert('Error', 'Only JPEG, PNG, and WebP images are allowed');
+      throw new Error('Invalid file type');
+    }
+
     // Generate unique filename
     const timestamp = Date.now();
-    const fileName = `${userId}_${timestamp}.jpg`;
+    const fileExt = photoUri.split('.').pop()?.toLowerCase() || 'jpg';
+    const fileName = `${userId}_${timestamp}.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
 
-    // Read file as base64
-    const response = await fetch(photoUri);
-    const arrayBuffer = await response.arrayBuffer();
+    // Convert to array buffer
+    const arrayBuffer = await blob.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
     // Upload to Supabase Storage
     const { error } = await supabase.storage
       .from('pet-photos')
       .upload(filePath, uint8Array, {
-        contentType: 'image/jpeg',
+        contentType: blob.type,
         upsert: false,
       });
 
@@ -256,8 +279,9 @@ async function uploadPetPhoto(userId: string, photoUri: string): Promise<string>
 
     return publicUrl;
   } catch (error) {
-    console.error('Error uploading pet photo:', error);
-    throw new Error('Failed to upload photo');
+    const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
+    console.error('Error uploading pet photo:', errorMessage);
+    throw new Error(errorMessage);
   }
 }
 
@@ -273,7 +297,7 @@ export async function requestImagePermissions(): Promise<boolean> {
 export async function pickImageFromGallery(): Promise<string | null> {
   try {
     const result = await ImagePicker.launchImageLibraryAsync({
-  mediaTypes: [ImagePicker.MediaTypeOptions.Images],
+  mediaTypes: 'images' as any,
   allowsEditing: true,
   aspect: [1, 1],
   quality: 0.8,

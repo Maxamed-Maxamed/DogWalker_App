@@ -4,7 +4,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePetStore } from '@/stores/petStore';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -21,13 +21,15 @@ export default function PetsScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { pets, loading, fetchPets } = usePetStore();
 
+  // Fetch pets on mount only - fetchPets is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  }, [fetchPets]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     fetchPets();
-  };
+  }, [fetchPets]);
 
   const handleAddPet = () => {
     router.push('/pets/add');
@@ -45,6 +47,10 @@ export default function PetsScreen() {
       <TouchableOpacity
         style={[styles.emptyButton, { backgroundColor: colors.tint }]}
         onPress={handleAddPet}
+        accessible={true}
+        accessibilityLabel="Add your first pet"
+        accessibilityHint="Opens form to create your first pet profile"
+        accessibilityRole="button"
       >
         <Ionicons name="add" size={24} color="#fff" />
         <Text style={styles.emptyButtonText}>Add Your First Pet</Text>
@@ -63,6 +69,10 @@ export default function PetsScreen() {
       <TouchableOpacity
         style={[styles.addButton, { backgroundColor: colors.tint }]}
         onPress={handleAddPet}
+        accessible={true}
+        accessibilityLabel="Add new pet"
+        accessibilityHint="Opens form to add a new pet profile"
+        accessibilityRole="button"
       >
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>
@@ -95,6 +105,10 @@ export default function PetsScreen() {
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={handleRefresh} tintColor={colors.tint} />
         }
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={8}
       />
     </SafeAreaView>
   );

@@ -2,7 +2,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Pet, PetFormData, usePetStore } from '@/stores/petStore';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -46,7 +46,7 @@ export function PetForm({ initialData, onSuccess, onCancel }: PetFormProps) {
   const currentPhotoUrl = initialData?.photo_url;
   const displayPhoto = photoUri || currentPhotoUrl;
 
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -63,49 +63,46 @@ export function PetForm({ initialData, onSuccess, onCancel }: PetFormProps) {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const handleSubmit = async () => {
+  const savePet = useCallback(async (): Promise<{ success: boolean; petId?: string }> => {
+    if (initialData) {
+      const success = await updatePet(initialData.id, formData, photoUri || undefined);
+      return { success, petId: initialData.id };
+    } else {
+      const newPet = await createPet(formData, photoUri || undefined);
+      return { success: !!newPet, petId: newPet?.id };
+    }
+  }, [initialData, formData, photoUri, createPet, updatePet]);
+
+  const handleSubmit = useCallback(async () => {
     if (!validateForm()) {
       Alert.alert('Validation Error', 'Please fix the errors in the form');
       return;
     }
 
     try {
-      let success: boolean;
-      let petId: string | undefined;
-
-      if (initialData) {
-        // Update existing pet
-        success = await updatePet(initialData.id, formData, photoUri || undefined);
-        petId = initialData.id;
-      } else {
-        // Create new pet
-        const newPet = await createPet(formData, photoUri || undefined);
-        success = !!newPet;
-        petId = newPet?.id;
-      }
+      const { success, petId } = await savePet();
 
       if (success && petId) {
-        Alert.alert(
-          'Success',
-          initialData ? 'Pet profile updated successfully' : 'Pet profile created successfully',
-          [
-            {
-              text: 'OK',
-              onPress: () => onSuccess?.(petId!),
-            },
-          ]
-        );
+        const message = initialData ? 'Pet profile updated successfully' : 'Pet profile created successfully';
+        Alert.alert('Success', message, [
+          {
+            text: 'OK',
+            onPress: () => onSuccess?.(petId),
+          },
+        ]);
       } else {
         Alert.alert('Error', 'Failed to save pet profile. Please try again.');
       }
-    } catch {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      console.error('Error saving pet:', errorMessage);
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     }
-  };
+  }, [validateForm, savePet, initialData, onSuccess]);
 
-  const handlePickPhoto = () => {
+  const handlePickPhoto = useCallback(() => {
     Alert.alert('Select Photo', 'Choose photo source', [
       {
         text: 'Camera',
@@ -125,7 +122,7 @@ export function PetForm({ initialData, onSuccess, onCancel }: PetFormProps) {
       },
       { text: 'Cancel', style: 'cancel' },
     ]);
-  };
+  }, []);
 
   return (
     <ScrollView
@@ -135,7 +132,15 @@ export function PetForm({ initialData, onSuccess, onCancel }: PetFormProps) {
     >
       {/* Photo Section */}
       <View style={styles.photoSection}>
-        <TouchableOpacity style={styles.photoButton} onPress={handlePickPhoto} disabled={loading}>
+        <TouchableOpacity 
+          style={styles.photoButton} 
+          onPress={handlePickPhoto} 
+          disabled={loading}
+          accessible={true}
+          accessibilityLabel={displayPhoto ? 'Change pet photo' : 'Add pet photo'}
+          accessibilityHint="Opens camera or photo gallery to select a photo"
+          accessibilityRole="button"
+        >
           {displayPhoto ? (
             <Image source={{ uri: displayPhoto }} style={styles.photo} />
           ) : (
@@ -170,6 +175,9 @@ export function PetForm({ initialData, onSuccess, onCancel }: PetFormProps) {
               if (errors.name) setErrors({ ...errors, name: '' });
             }}
             editable={!loading}
+            accessible={true}
+            accessibilityLabel="Pet name (required)"
+            accessibilityHint="Enter your pet's name"
           />
           {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
         </View>
@@ -376,6 +384,11 @@ export function PetForm({ initialData, onSuccess, onCancel }: PetFormProps) {
           style={[styles.submitButton, { backgroundColor: colors.tint }]}
           onPress={handleSubmit}
           disabled={loading}
+          accessible={true}
+          accessibilityLabel={initialData ? 'Update pet profile' : 'Create pet profile'}
+          accessibilityHint="Saves the pet information"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: loading }}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />

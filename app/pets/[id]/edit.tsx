@@ -1,9 +1,9 @@
 import { PetForm } from '@/components/pets/PetForm';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Pet, usePetStore } from '@/stores/petStore';
+import { usePetStore } from '@/stores/petStore';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,22 +12,18 @@ export default function EditPetScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { id } = useLocalSearchParams<{ id: string }>();
   const { pets, fetchPets, loading } = usePetStore();
-  const [pet, setPet] = useState<Pet | null>(null);
 
+  // Fetch pets on mount if not loaded - fetchPets is stable from Zustand store
   useEffect(() => {
     // Fetch pets if not already loaded
     if (pets.length === 0) {
       fetchPets();
     }
-  }, [fetchPets, pets.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  useEffect(() => {
-    // Find the pet by id
-    const foundPet = pets.find((p) => p.id === id);
-    if (foundPet) {
-      setPet(foundPet);
-    }
-  }, [id, pets]);
+  // Memoize pet lookup to avoid recalculation on every render
+  const pet = useMemo(() => pets.find((p) => p.id === id) || null, [pets, id]);
 
   const handleSuccess = () => {
     router.back();
@@ -37,7 +33,7 @@ export default function EditPetScreen() {
     router.back();
   };
 
-  if (loading && !pet) {
+  if (loading && pets.length === 0) {
     return (
       <>
         <Stack.Screen
