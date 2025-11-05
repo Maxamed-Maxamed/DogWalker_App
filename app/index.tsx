@@ -8,7 +8,7 @@ export default function Index() {
 
   // Redirect based on auth state
   if (appInitialized && isInitialized && user) {
-    return <Redirect href="/(tabs)/dashboard" />;
+    return <Redirect href="/(tabs)" />;
   }
 
   // While splash is up, render nothing
