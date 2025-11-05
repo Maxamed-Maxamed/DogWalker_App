@@ -7,6 +7,8 @@ import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuthStore } from '@/stores/authStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme();

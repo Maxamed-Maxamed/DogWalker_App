@@ -4,11 +4,11 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useWalkerStore } from '@/stores/walkerStore';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   FlatList,
   Modal,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,

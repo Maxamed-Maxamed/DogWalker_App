@@ -6,11 +6,12 @@ import { useWalkerStore } from '@/stores/walkerStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
     Alert,
     Image,
     RefreshControl,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Switch,

@@ -3,13 +3,14 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatDistance, getRatingColor, useWalkerStore, WalkerProfile } from '@/stores/walkerStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Dimensions,
     Image,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,

@@ -3,12 +3,13 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Booking, formatBookingDate, formatDuration, getStatusColor, getStatusLabel, useBookingStore } from '@/stores/bookingStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Dimensions,
     Image,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,

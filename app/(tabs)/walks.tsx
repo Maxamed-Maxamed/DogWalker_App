@@ -5,10 +5,11 @@ import { Booking, formatBookingDate, formatDuration, getStatusColor, getStatusLa
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
     Image,
     RefreshControl,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,

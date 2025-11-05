@@ -10,6 +10,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const PRIMARY_COLOR = Colors.light.tint;

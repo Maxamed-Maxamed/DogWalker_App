@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 
+
 type SlideAction = 'next' | 'createAccount' | 'signIn';
 
 type SlideType = 'welcome' | 'why' | 'how' | 'peace' | 'final';

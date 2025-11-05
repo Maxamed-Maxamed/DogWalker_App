@@ -8,10 +8,11 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
     Alert,
     Image,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
