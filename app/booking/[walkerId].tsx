@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { calculateWalkPrice, formatDuration, useBookingStore, WalkDuration } from '@/stores/bookingStore';
+import { calculateWalkPrice, fetchWalkPrice, formatDuration, useBookingStore, WalkDuration } from '@/stores/bookingStore';
 import { usePetStore } from '@/stores/petStore';
 import { useWalkerStore } from '@/stores/walkerStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,14 +11,14 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 type BookingStep = 'pets' | 'duration' | 'datetime' | 'details' | 'payment' | 'confirm';
@@ -29,7 +29,7 @@ export default function BookWalkScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const { getWalkerById } = useWalkerStore();
+  const { getWalkerById, fetchWalkerById } = useWalkerStore();
   const { pets } = usePetStore();
   const {
     currentBooking,
@@ -53,8 +53,41 @@ export default function BookWalkScreen() {
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [selectedEmergencyContact, setSelectedEmergencyContact] = useState('');
+  const [walkerLoadError, setWalkerLoadError] = useState(false);
 
-  const walker = walkerId ? getWalkerById(walkerId) : null;
+  const [walker, setWalker] = useState(walkerId ? getWalkerById(walkerId) : null);
+
+  // Validate and load walker
+  useEffect(() => {
+    const loadWalker = async () => {
+      if (!walkerId || typeof walkerId !== 'string') {
+        setWalkerLoadError(true);
+        return;
+      }
+
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(walkerId)) {
+        setWalkerLoadError(true);
+        return;
+      }
+
+      let foundWalker = getWalkerById(walkerId);
+      
+      // If not found locally, try fetching from Supabase
+      if (!foundWalker) {
+        foundWalker = await fetchWalkerById(walkerId);
+      }
+
+      if (foundWalker) {
+        setWalker(foundWalker);
+      } else {
+        setWalkerLoadError(true);
+      }
+    };
+
+    loadWalker();
+  }, [walkerId, getWalkerById, fetchWalkerById]);
 
   useEffect(() => {
     if (walker) {
@@ -71,9 +104,26 @@ export default function BookWalkScreen() {
 
   const durations: WalkDuration[] = [30, 45, 60, 90, 120];
 
-  const totalPrice = walker ? calculateWalkPrice(selectedDuration, walker.pricePerHour) : 0;
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  // Fetch dynamic pricing when walker or duration changes
+  useEffect(() => {
+    const updatePrice = async () => {
+      if (walker) {
+        const price = await fetchWalkPrice(walker.id, selectedDuration);
+        setTotalPrice(price);
+      }
+    };
+    updatePrice();
+  }, [walker, selectedDuration]);
 
   const handlePetToggle = (petId: string) => {
+    // Validate pet ID
+    if (!petId || typeof petId !== 'string') {
+      console.error('Invalid pet ID');
+      return;
+    }
+
     setSelectedPets((prev) =>
       prev.includes(petId) ? prev.filter((id) => id !== petId) : [...prev, petId]
     );
@@ -154,10 +204,21 @@ export default function BookWalkScreen() {
     }
   };
 
-  if (!walker) {
+  if (walkerLoadError || !walker) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.text }]}>Walker not found</Text>
+        <View style={styles.centerContent}>
+          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+          <Text style={[styles.errorText, { color: colors.text }]}>
+            Walker not found or invalid walker ID
+          </Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={() => router.back()}
+          >
+            <Text style={styles.retryButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -598,6 +659,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -620,7 +687,20 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     textAlign: 'center',
+    marginTop: 16,
+    fontWeight: '500',
+  },
+  retryButton: {
     marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#0a7ea4',
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   stepIndicator: {
     flexDirection: 'row',

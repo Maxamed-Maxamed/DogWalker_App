@@ -431,6 +431,30 @@ export const calculateWalkPrice = (duration: WalkDuration, pricePerHour: number)
   return (duration / 60) * pricePerHour;
 };
 
+// Fetch exact price from walker_pricing table
+export const fetchWalkPrice = async (walkerId: string, duration: WalkDuration): Promise<number> => {
+  try {
+    const { supabase } = await import('@/utils/supabase');
+    
+    const { data, error } = await supabase
+      .from('walker_pricing')
+      .select('price_amount')
+      .eq('walker_id', walkerId)
+      .eq('duration_minutes', duration)
+      .single();
+    
+    if (error || !data) {
+      console.warn(`No pricing found for walker ${walkerId}, duration ${duration}. Using fallback.`);
+      return calculateWalkPrice(duration, 25); // Fallback to $25/hr
+    }
+    
+    return Number(data.price_amount);
+  } catch (error) {
+    console.error('Error fetching walk price:', error);
+    return calculateWalkPrice(duration, 25); // Fallback
+  }
+};
+
 export const formatBookingDate = (date: Date): string => {
   const now = new Date();
   const tomorrow = new Date(now);

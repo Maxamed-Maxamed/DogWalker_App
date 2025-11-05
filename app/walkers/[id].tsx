@@ -7,15 +7,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -27,19 +27,59 @@ export default function WalkerProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
-  const { getWalkerById, toggleFavorite } = useWalkerStore();
+  const { getWalkerById, fetchWalkerById, toggleFavorite } = useWalkerStore();
   const [walker, setWalker] = useState<WalkerProfile | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
-      const foundWalker = getWalkerById(id);
-      setWalker(foundWalker || null);
-    }
-  }, [id]);
+    const loadWalker = async () => {
+      // Validate walker ID format
+      if (!id || typeof id !== 'string') {
+        setError('Invalid walker ID');
+        setIsLoading(false);
+        return;
+      }
 
-  if (!walker) {
+      // Check UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) {
+        setError('Invalid walker ID format');
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Try to get from local store first
+        let foundWalker = getWalkerById(id);
+        
+        // If not found locally, fetch from Supabase
+        if (!foundWalker) {
+          foundWalker = await fetchWalkerById(id);
+        }
+
+        if (foundWalker) {
+          setWalker(foundWalker);
+        } else {
+          setError('Walker not found');
+        }
+      } catch (err) {
+        console.error('Error loading walker:', err);
+        setError('Failed to load walker profile');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadWalker();
+  }, [id, getWalkerById, fetchWalkerById]);
+
+  if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centerContent}>
@@ -47,6 +87,25 @@ export default function WalkerProfileScreen() {
           <Text style={[styles.loadingText, { color: colors.text }]}>
             Loading walker profile...
           </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !walker) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.centerContent}>
+          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+          <Text style={[styles.errorText, { color: colors.text }]}>
+            {error || 'Walker not found'}
+          </Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={() => router.back()}
+          >
+            <Text style={styles.retryButtonText}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -399,6 +458,24 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     fontWeight: '500',
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#0a7ea4',
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     position: 'absolute',

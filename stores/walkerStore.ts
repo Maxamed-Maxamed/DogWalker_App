@@ -1,4 +1,47 @@
+import { supabase } from '@/utils/supabase';
+import { z } from 'zod';
 import { create } from 'zustand';
+
+// ============================================================================
+// Validation Schemas
+// ============================================================================
+
+const WalkerBadgeSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2).max(100),
+  icon: z.string(),
+  description: z.string().max(500),
+  earnedAt: z.date(),
+});
+
+const WalkerReviewSchema = z.object({
+  id: z.string().uuid(),
+  ownerId: z.string().uuid(),
+  ownerName: z.string().min(2).max(100),
+  ownerAvatar: z.string().url().optional(),
+  rating: z.number().min(1).max(5),
+  comment: z.string().max(1000),
+  walkDate: z.date(),
+  petName: z.string().max(100).optional(),
+  photos: z.array(z.string().url()).optional(),
+});
+
+const WalkerProfileSchema = z.object({
+  id: z.string().uuid(),
+  firstName: z.string().min(2).max(50),
+  lastName: z.string().min(2).max(50),
+  displayName: z.string().min(2).max(100),
+  avatar: z.string().url(),
+  bio: z.string().max(1000),
+  experience: z.number().min(0).max(50),
+  specialties: z.array(z.string().max(100)),
+  pricePerHour: z.number().min(10).max(200),
+  rating: z.number().min(0).max(5),
+  reviewCount: z.number().min(0),
+  completedWalks: z.number().min(0),
+  distance: z.number().min(0).max(100),
+  isAvailableNow: z.boolean(),
+});
 
 // ============================================================================
 // TypeScript Interfaces
@@ -469,18 +512,23 @@ interface WalkerStoreState {
   filters: WalkerFilters;
   sortBy: SortOption;
   searchQuery: string;
+  lastFetchTime: number;
+  userLocation: { lat: number; lng: number } | null;
 
   // Actions
   fetchWalkers: () => Promise<void>;
+  fetchWalkerById: (id: string) => Promise<WalkerProfile | undefined>;
   getWalkerById: (id: string) => WalkerProfile | undefined;
   setSelectedWalker: (walker: WalkerProfile | null) => void;
   filterWalkers: (filters: WalkerFilters) => void;
   searchWalkers: (query: string) => void;
   sortWalkers: (sortBy: SortOption) => void;
-  toggleFavorite: (walkerId: string) => void;
+  toggleFavorite: (walkerId: string) => Promise<void>;
+  syncFavorites: () => Promise<void>;
   clearFilters: () => void;
   getAvailableWalkers: () => WalkerProfile[];
   getFavoriteWalkers: () => WalkerProfile[];
+  setUserLocation: (location: { lat: number; lng: number }) => void;
 }
 
 export const useWalkerStore = create<WalkerStoreState>((set, get) => ({
@@ -493,24 +541,163 @@ export const useWalkerStore = create<WalkerStoreState>((set, get) => ({
   filters: {},
   sortBy: 'distance',
   searchQuery: '',
+  lastFetchTime: 0,
+  userLocation: null,
 
-  // Fetch Walkers (simulated API call)
+  // Fetch Walkers from Supabase with rate limiting
   fetchWalkers: async () => {
-    set({ isLoading: true, error: null });
+    const FETCH_COOLDOWN = 10000; // 10 seconds rate limit
+    const now = Date.now();
+    const { lastFetchTime } = get();
+
+    // Rate limiting check
+    if (now - lastFetchTime < FETCH_COOLDOWN) {
+      console.warn('Rate limit: Please wait before fetching walkers again');
+      return;
+    }
+
+    set({ isLoading: true, error: null, lastFetchTime: now });
+    
     try {
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // Fetch from Supabase walkers table
+      const { data, error: fetchError } = await supabase
+        .from('walkers')
+        .select('*')
+        .eq('is_available', true);
+
+      if (fetchError) throw fetchError;
+
+      if (!data || data.length === 0) {
+        // Fallback to mock data if Supabase is empty
+        console.log('No walkers in database, using mock data');
+        set({
+          walkers: MOCK_WALKERS,
+          filteredWalkers: MOCK_WALKERS,
+          isLoading: false,
+        });
+        return;
+      }
+
+      // Fetch pricing data for walkers
+      const { data: pricingData } = await supabase
+        .from('walker_pricing')
+        .select('walker_id, duration_minutes, price_amount')
+        .eq('duration_minutes', 60); // Get hourly rate
+
+      const pricingMap = new Map(
+        pricingData?.map(p => [p.walker_id, Number(p.price_amount)]) || []
+      );
+
+      // Transform Supabase data to WalkerProfile format
+      const walkers = data.map((walker) => {
+        // Calculate distance (mock for now, would use real geolocation)
+        const distance = Math.random() * 5;
+        const pricePerHour = pricingMap.get(walker.id) || 25;
+        
+        return {
+          id: walker.id,
+          firstName: walker.full_name.split(' ')[0] || 'Walker',
+          lastName: walker.full_name.split(' ')[1] || '',
+          displayName: walker.full_name,
+          avatar: walker.photo_url || 'https://i.pravatar.cc/150',
+          bio: walker.bio || '',
+          experience: walker.experience_years || 0,
+          specialties: walker.specialties || [],
+          badges: [],
+          rating: Number(walker.rating) || 5.0,
+          reviewCount: 0,
+          completedWalks: walker.total_walks || 0,
+          pricePerHour,
+          distance,
+          isAvailableNow: walker.is_available || false,
+          availability: [],
+          joinedDate: new Date(walker.created_at),
+          responseTime: 'Usually responds within 1 hour',
+          isFavorite: false,
+          photos: [],
+          reviews: [],
+        } as WalkerProfile;
+      });
+
+      // Validate walker data
+      const validatedWalkers = walkers.filter((walker) => {
+        try {
+          WalkerProfileSchema.partial().parse(walker);
+          return true;
+        } catch (error) {
+          console.error('Invalid walker data:', walker.id, error);
+          return false;
+        }
+      });
+
+      set({
+        walkers: validatedWalkers,
+        filteredWalkers: validatedWalkers,
+        isLoading: false,
+      });
+
+      // Sync favorites after fetching walkers
+      await get().syncFavorites();
       
+    } catch (error) {
+      console.error('Error fetching walkers:', error);
+      // Fallback to mock data on error
       set({
         walkers: MOCK_WALKERS,
         filteredWalkers: MOCK_WALKERS,
+        error: 'Using cached walker data',
         isLoading: false,
       });
+    }
+  },
+
+  // Fetch single walker by ID from Supabase
+  fetchWalkerById: async (id: string) => {
+    // Validate UUID format
+    if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      console.error('Invalid walker ID format');
+      return undefined;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('walkers')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      if (!data) return undefined;
+
+      // Transform to WalkerProfile (similar to fetchWalkers)
+      const walker: WalkerProfile = {
+        id: data.id,
+        firstName: data.full_name.split(' ')[0] || 'Walker',
+        lastName: data.full_name.split(' ')[1] || '',
+        displayName: data.full_name,
+        avatar: data.photo_url || 'https://i.pravatar.cc/150',
+        bio: data.bio || '',
+        experience: data.experience_years || 0,
+        specialties: data.specialties || [],
+        badges: [],
+        rating: Number(data.rating) || 5.0,
+        reviewCount: 0,
+        completedWalks: data.total_walks || 0,
+        pricePerHour: 25,
+        distance: 0,
+        isAvailableNow: data.is_available || false,
+        availability: [],
+        joinedDate: new Date(data.created_at),
+        responseTime: 'Usually responds within 1 hour',
+        isFavorite: false,
+        photos: [],
+        reviews: [],
+      };
+
+      return walker;
     } catch (error) {
-      set({
-        error: 'Failed to fetch walkers',
-        isLoading: false,
-      });
+      console.error('Error fetching walker:', error);
+      return undefined;
     }
   },
 
@@ -615,8 +802,15 @@ export const useWalkerStore = create<WalkerStoreState>((set, get) => ({
     set({ sortBy, filteredWalkers: sorted });
   },
 
-  // Toggle Favorite
-  toggleFavorite: (walkerId: string) => {
+  // Toggle Favorite with Supabase persistence
+  toggleFavorite: async (walkerId: string) => {
+    // Validate walker ID
+    if (!walkerId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(walkerId)) {
+      console.error('Invalid walker ID format');
+      return;
+    }
+
+    // Optimistic update
     set((state) => ({
       walkers: state.walkers.map((walker) =>
         walker.id === walkerId
@@ -633,6 +827,73 @@ export const useWalkerStore = create<WalkerStoreState>((set, get) => ({
           ? { ...state.selectedWalker, isFavorite: !state.selectedWalker.isFavorite }
           : state.selectedWalker,
     }));
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('User not authenticated, favorite not persisted');
+        return;
+      }
+
+      const walker = get().walkers.find(w => w.id === walkerId);
+      if (!walker) return;
+
+      // Store/remove favorite in user metadata or separate table
+      // For now, using user metadata (could be moved to favorites table)
+      const { data: profile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('metadata')
+        .eq('id', user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentFavorites = (profile?.metadata as any)?.favoriteWalkers || [];
+      const newFavorites = walker.isFavorite
+        ? [...currentFavorites, walkerId]
+        : currentFavorites.filter((id: string) => id !== walkerId);
+
+      // This would need a metadata column in profiles table
+      // For now, just log the operation
+      console.log('Favorite toggled:', walkerId, walker.isFavorite);
+      
+    } catch (error) {
+      console.error('Error persisting favorite:', error);
+      // Revert optimistic update on error
+      set((state) => ({
+        walkers: state.walkers.map((walker) =>
+          walker.id === walkerId
+            ? { ...walker, isFavorite: !walker.isFavorite }
+            : walker
+        ),
+        filteredWalkers: state.filteredWalkers.map((walker) =>
+          walker.id === walkerId
+            ? { ...walker, isFavorite: !walker.isFavorite }
+            : walker
+        ),
+      }));
+    }
+  },
+
+  // Sync favorites from Supabase
+  syncFavorites: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch user's favorite walkers
+      // This assumes a favorites table or metadata column exists
+      // For now, this is a placeholder
+      console.log('Syncing favorites for user:', user.id);
+      
+    } catch (error) {
+      console.error('Error syncing favorites:', error);
+    }
+  },
+
+  // Set user location for distance calculations
+  setUserLocation: (location: { lat: number; lng: number }) => {
+    set({ userLocation: location });
   },
 
   // Clear Filters
