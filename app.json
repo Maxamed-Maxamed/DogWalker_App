@@ -45,7 +45,13 @@
       "expo-web-browser",
       "expo-sqlite",
       "expo-secure-store",
-      "expo-image-picker"
+      "expo-image-picker",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.677749677697-2smko8dc3d9c8oa0n8g44r7dm2klfilg"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

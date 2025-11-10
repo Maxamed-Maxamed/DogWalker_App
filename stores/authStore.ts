@@ -1,5 +1,11 @@
 import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 import { create } from 'zustand';
+import { 
+  GoogleSignin, 
+  isSuccessResponse,
+  statusCodes,
+  type User as GoogleUser 
+} from '@react-native-google-signin/google-signin';
 
 type User = {
   id?: string;
@@ -14,6 +20,7 @@ type AuthState = {
   isInitialized: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   restore: () => Promise<void>;
@@ -30,6 +37,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     set({ isLoading: true });
     try {
+      // Configure Google Sign-In
+      try {
+        GoogleSignin.configure({
+          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+          iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+          offlineAccess: true,
+        });
+      } catch (error) {
+        console.warn('Google Sign-In configuration failed:', error);
+      }
+      
       await get().restore();
     } finally {
       set({ isLoading: false, isInitialized: true });
@@ -152,10 +170,98 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user, token, isLoading: false });
   },
 
+  loginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+
+    try {
+      // Check if Google Play Services are available (Android only)
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      
+      // Sign in with Google
+      const response = await GoogleSignin.signIn();
+      
+      if (!isSuccessResponse(response)) {
+        set({ error: 'Google sign-in was cancelled', isLoading: false });
+        throw new Error('Google sign-in was cancelled');
+      }
+
+      const { data: googleUser } = response;
+      
+      if (!googleUser.idToken) {
+        set({ error: 'Failed to get Google ID token', isLoading: false });
+        throw new Error('Failed to get Google ID token');
+      }
+
+      // Sign in to Supabase with Google ID token
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: googleUser.idToken,
+        });
+
+        if (error) {
+          const friendly = error.message || 'Google sign-in failed';
+          set({ error: friendly, isLoading: false });
+          throw error;
+        }
+
+        const user = data.user ? {
+          id: data.user.id,
+          email: data.user.email ?? undefined,
+          name: data.user.user_metadata?.full_name || googleUser.user?.name || undefined,
+        } : null;
+
+        set({
+          user,
+          token: data.session?.access_token ?? null,
+          isLoading: false,
+          error: null,
+        });
+        return;
+      }
+    } catch (error: any) {
+      // Handle specific Google Sign-In errors
+      let errorMessage = 'Google sign-in failed';
+      
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        errorMessage = 'Sign-in was cancelled';
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        errorMessage = 'Sign-in is already in progress';
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        errorMessage = 'Google Play Services not available';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.error('Google sign-in error:', error);
+      }
+      
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+
+    // Fallback mock (only if Supabase not configured)
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.warn('Using mock Google authentication - Supabase not configured');
+    }
+    const token = 'mock-google-token';
+    const mockUser = { id: '3', email: 'google-user@example.com', name: 'Google User' } as User;
+    set({ user: mockUser, token, isLoading: false });
+  },
+
   logout: async () => {
     set({ isLoading: true, error: null });
 
     try {
+      // Sign out from Google if user is signed in
+      const isSignedIn = await GoogleSignin.isSignedIn();
+      if (isSignedIn) {
+        await GoogleSignin.signOut();
+      }
+
       if (isSupabaseConfigured()) {
         const { error } = await supabase.auth.signOut();
         

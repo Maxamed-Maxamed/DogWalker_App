@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,6 +16,7 @@ export default function LoginScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +32,21 @@ export default function LoginScreen() {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         Alert.alert('Login failed', message);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  };
+
+  const handleGoogleSignIn = () => {
+    void (async () => {
+      setLoading(true);
+      try {
+        await loginWithGoogle();
+        router.replace('/(tabs)');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        Alert.alert('Google sign-in failed', message);
       } finally {
         setLoading(false);
       }
@@ -75,6 +92,20 @@ export default function LoginScreen() {
           {loading ? <ActivityIndicator color="#fff" /> : <ThemedText style={styles.buttonText}>Sign in</ThemedText>}
         </TouchableOpacity>
 
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <ThemedText style={styles.dividerText}>OR</ThemedText>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <GoogleSigninButton
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Light}
+          onPress={handleGoogleSignIn}
+          disabled={loading}
+          style={styles.googleButton}
+        />
+
         <View style={styles.row}>
           <ThemedText>Don&apos;t have an account? </ThemedText>
           <TouchableOpacity onPress={() => router.push('/auth/signup')}>
@@ -102,5 +133,25 @@ const styles = StyleSheet.create({
   forgotLink: { textAlign: 'right', marginBottom: 16 },
   button: { height: 48, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   buttonText: { color: '#fff', fontWeight: '600' },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#6B7280',
+    fontSize: 14,
+  },
+  googleButton: {
+    width: '100%',
+    height: 48,
+    marginBottom: 16,
+  },
   row: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
 });
