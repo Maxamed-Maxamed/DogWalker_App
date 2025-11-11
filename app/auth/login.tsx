@@ -87,7 +87,7 @@ export default function LoginScreen() {
           <View style={styles.socialSection}>
             <TouchableOpacity
               style={styles.socialButton}
-              onPress={() => { handleGoogleSignIn(); }}
+              onPress={() => { void handleGoogleSignIn(); }}
               disabled={googleLoading || loading}
               accessible={true}
               accessibilityLabel="Continue with Google"
@@ -195,7 +195,7 @@ export default function LoginScreen() {
             {/* Sign In Button */}
             <TouchableOpacity
               style={[styles.primaryButton, (loading || googleLoading) && styles.buttonDisabled]}
-              onPress={() => { handleLogin(); }}
+              onPress={() => { void handleLogin(); }}
               disabled={loading || googleLoading}
               accessible={true}
               accessibilityLabel="Sign in"
