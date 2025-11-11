@@ -53,8 +53,13 @@ export default function SignupScreen() {
     }
 
     // Timing-safe password comparison
-    const passwordsMatch = password.length === confirmPassword.length &&
-      password.split('').every((char, index) => char === confirmPassword[index]);
+    const passwordsMatch = (() => {
+      if (password.length !== confirmPassword.length) return false;
+      for (let i = 0; i < password.length; i++) {
+        if (password.charCodeAt(i) !== confirmPassword.charCodeAt(i)) return false;
+      }
+      return true;
+    })();
 
     if (!passwordsMatch) {
       Alert.alert('Password Mismatch', 'Passwords do not match');
@@ -125,7 +130,7 @@ export default function SignupScreen() {
             <View style={styles.socialSection}>
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={() => handleGoogleSignIn()}
+                onPress={() => { handleGoogleSignIn(); }}
                 disabled={googleLoading || loading}
                 accessible={true}
                 accessibilityLabel="Continue with Google"
@@ -310,7 +315,7 @@ export default function SignupScreen() {
               {/* Sign Up Button */}
               <TouchableOpacity
                 style={[styles.primaryButton, (loading || googleLoading) && styles.buttonDisabled]}
-                onPress={() => handleSignup()}
+                onPress={() => { handleSignup(); }}
                 disabled={loading || googleLoading}
                 accessible={true}
                 accessibilityLabel="Create account"
