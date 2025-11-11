@@ -52,7 +52,11 @@ export default function SignupScreen() {
       return;
     }
 
-    if (password !== confirmPassword) {
+    // Timing-safe password comparison
+    const passwordsMatch = password.length === confirmPassword.length &&
+      password.split('').every((char, index) => char === confirmPassword[index]);
+
+    if (!passwordsMatch) {
       Alert.alert('Password Mismatch', 'Passwords do not match');
       return;
     }
@@ -121,7 +125,7 @@ export default function SignupScreen() {
             <View style={styles.socialSection}>
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={handleGoogleSignIn}
+                onPress={() => handleGoogleSignIn()}
                 disabled={googleLoading || loading}
                 accessible={true}
                 accessibilityLabel="Continue with Google"
@@ -223,7 +227,7 @@ export default function SignupScreen() {
                     accessibilityHint="Enter your password"
                   />
                   <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
+                    onPress={() => { setShowPassword(!showPassword); }}
                     style={styles.eyeButton}
                     disabled={loading || googleLoading}
                     accessible={true}
@@ -287,7 +291,7 @@ export default function SignupScreen() {
                     accessibilityHint="Re-enter your password to confirm"
                   />
                   <TouchableOpacity
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    onPress={() => { setShowConfirmPassword(!showConfirmPassword); }}
                     style={styles.eyeButton}
                     disabled={loading || googleLoading}
                     accessible={true}
@@ -306,7 +310,7 @@ export default function SignupScreen() {
               {/* Sign Up Button */}
               <TouchableOpacity
                 style={[styles.primaryButton, (loading || googleLoading) && styles.buttonDisabled]}
-                onPress={handleSignup}
+                onPress={() => handleSignup()}
                 disabled={loading || googleLoading}
                 accessible={true}
                 accessibilityLabel="Create account"
