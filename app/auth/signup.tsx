@@ -31,7 +31,6 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Password strength indicator
   const getPasswordStrength = (pass: string): { strength: string; color: string } => {
@@ -83,19 +82,6 @@ export default function SignupScreen() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    try {
-      // TODO: Implement Google Sign-In tomorrow
-      Alert.alert('Coming Soon', 'Google Sign-In will be implemented tomorrow!');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Google sign-in failed';
-      Alert.alert('Sign In Error', message);
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
@@ -107,54 +93,18 @@ export default function SignupScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header with Hero Image */}
+          {/* Header with Logo Only */}
           <View style={styles.header}>
             <Image
-              source={require('@/assets/images/happydog.png')}
-              style={styles.headerImage}
-              resizeMode="cover"
+              source={require('@/assets/images/newlogo.png')}
+              style={styles.logo}
+              resizeMode="contain"
             />
-            <View style={styles.headerOverlay}>
-              <Image
-                source={require('@/assets/images/newlogo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={styles.title}>Join DogWalker</Text>
-              <Text style={styles.subtitle}>Start your journey with trusted walkers</Text>
-            </View>
+            <Text style={styles.title}>Join DogWalker</Text>
+            <Text style={styles.subtitle}>Start your journey with trusted walkers</Text>
           </View>
 
           <View style={styles.contentSection}>
-            {/* Social Sign-Up Section */}
-            <View style={styles.socialSection}>
-              <TouchableOpacity
-                style={styles.socialButton}
-                onPress={() => { void handleGoogleSignIn(); }}
-                disabled={googleLoading || loading}
-                accessible={true}
-                accessibilityLabel="Continue with Google"
-                accessibilityHint="Sign up using your Google account"
-                accessibilityRole="button"
-              >
-                {googleLoading ? (
-                  <ActivityIndicator size="small" color={DesignTokens.colors.primary.gray[700]} />
-                ) : (
-                  <>
-                    <Ionicons name="logo-google" size={20} color={DesignTokens.colors.social.google} />
-                    <Text style={styles.socialButtonText}>Continue with Google</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            {/* Divider */}
-            <View style={styles.dividerContainer}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or sign up with email</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
             {/* Email/Password Form */}
             <View style={styles.formSection}>
               {/* Full Name Input */}
@@ -174,7 +124,7 @@ export default function SignupScreen() {
                     value={fullName}
                     onChangeText={setFullName}
                     autoCapitalize="words"
-                    editable={!loading && !googleLoading}
+                    editable={!loading}
                     accessible={true}
                     accessibilityLabel="Full name"
                     accessibilityHint="Enter your full name"
@@ -201,7 +151,7 @@ export default function SignupScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
-                    editable={!loading && !googleLoading}
+                    editable={!loading}
                     accessible={true}
                     accessibilityLabel="Email address"
                     accessibilityHint="Enter your email address"
@@ -226,7 +176,7 @@ export default function SignupScreen() {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
-                    editable={!loading && !googleLoading}
+                    editable={!loading}
                     accessible={true}
                     accessibilityLabel="Password"
                     accessibilityHint="Enter your password"
@@ -234,7 +184,7 @@ export default function SignupScreen() {
                   <TouchableOpacity
                     onPress={() => { setShowPassword(!showPassword); }}
                     style={styles.eyeButton}
-                    disabled={loading || googleLoading}
+                    disabled={loading}
                     accessible={true}
                     accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
                     accessibilityRole="button"
@@ -290,7 +240,7 @@ export default function SignupScreen() {
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry={!showConfirmPassword}
-                    editable={!loading && !googleLoading}
+                    editable={!loading}
                     accessible={true}
                     accessibilityLabel="Confirm password"
                     accessibilityHint="Re-enter your password to confirm"
@@ -298,7 +248,7 @@ export default function SignupScreen() {
                   <TouchableOpacity
                     onPress={() => { setShowConfirmPassword(!showConfirmPassword); }}
                     style={styles.eyeButton}
-                    disabled={loading || googleLoading}
+                    disabled={loading}
                     accessible={true}
                     accessibilityLabel={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                     accessibilityRole="button"
@@ -314,14 +264,14 @@ export default function SignupScreen() {
 
               {/* Sign Up Button */}
               <TouchableOpacity
-                style={[styles.primaryButton, (loading || googleLoading) && styles.buttonDisabled]}
+                style={[styles.primaryButton, loading && styles.buttonDisabled]}
                 onPress={() => { void handleSignup(); }}
-                disabled={loading || googleLoading}
+                disabled={loading}
                 accessible={true}
                 accessibilityLabel="Create account"
                 accessibilityHint="Create your account and sign up"
                 accessibilityRole="button"
-                accessibilityState={{ disabled: loading || googleLoading }}
+                accessibilityState={{ disabled: loading }}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -338,12 +288,14 @@ export default function SignupScreen() {
               </Text>
             </View>
 
+
+
             {/* Footer */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account? </Text>
               <Pressable
                 onPress={() => router.push('/auth/login')}
-                disabled={loading || googleLoading}
+                disabled={loading}
                 accessible={true}
                 accessibilityLabel="Sign in"
                 accessibilityHint="Navigate to sign in screen"
@@ -371,35 +323,28 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    height: 200,
-    position: 'relative',
-  },
-  headerImage: {
-    width: '100%',
-    height: '100%',
-  },
-  headerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    height: 180,
+    backgroundColor: DesignTokens.colors.primary.white,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: DesignTokens.spacing.lg,
+    paddingVertical: DesignTokens.spacing.xl,
   },
   logo: {
     width: 60,
     height: 60,
-    marginBottom: DesignTokens.spacing.sm,
+    marginBottom: DesignTokens.spacing.md,
   },
   title: {
     fontSize: DesignTokens.typography.sizes['3xl'],
     fontWeight: DesignTokens.typography.weights.bold,
-    color: DesignTokens.colors.primary.white,
+    color: DesignTokens.colors.primary.gray[900],
     marginBottom: DesignTokens.spacing.xs,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: DesignTokens.typography.sizes.base,
-    color: DesignTokens.colors.primary.white,
+    color: DesignTokens.colors.primary.gray[600],
     textAlign: 'center',
   },
   contentSection: {
@@ -407,42 +352,7 @@ const styles = StyleSheet.create({
     paddingTop: DesignTokens.spacing.xl,
     paddingBottom: DesignTokens.spacing.xl,
   },
-  socialSection: {
-    gap: DesignTokens.spacing.sm,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: DesignTokens.dimensions.button.height,
-    borderRadius: DesignTokens.borderRadius.lg,
-    borderWidth: 1.5,
-    borderColor: DesignTokens.colors.primary.gray[300],
-    backgroundColor: DesignTokens.colors.primary.white,
-    gap: DesignTokens.spacing.sm,
-    ...DesignTokens.shadows.sm,
-  },
-  socialButtonText: {
-    fontSize: DesignTokens.typography.sizes.base,
-    fontWeight: DesignTokens.typography.weights.semibold,
-    color: DesignTokens.colors.primary.gray[700],
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: DesignTokens.spacing.lg,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: DesignTokens.colors.primary.gray[200],
-  },
-  dividerText: {
-    fontSize: DesignTokens.typography.sizes.sm,
-    color: DesignTokens.colors.primary.gray[500],
-    marginHorizontal: DesignTokens.spacing.md,
-    fontWeight: DesignTokens.typography.weights.medium,
-  },
+
   formSection: {
     gap: DesignTokens.spacing.md,
   },
