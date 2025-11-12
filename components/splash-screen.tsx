@@ -89,7 +89,7 @@ export function CustomSplashScreen() {
 
     return () => {
       clearTimeout(timer);
-      animation?.stop?.();
+    animation?.stop();
     };
   }, [isSplashVisible, ready, fadeAnim, hideSplash]);
 
