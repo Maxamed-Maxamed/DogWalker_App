@@ -20,6 +20,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/theme';
 import { useAuthStore } from '@/stores/authStore';
 
+// Constant-time string comparison to prevent timing attacks
+const constantTimeEqual = (a: string, b: string): boolean => {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+};
+
 // Password strength calculator
 const calculatePasswordStrength = (password: string): { level: number; label: string; color: string } => {
   let strength = 0;
@@ -73,8 +83,8 @@ export default function SignupScreen() {
       placeholder: string;
       value: string;
       onChangeText: (text: string) => void;
-      icon: any;
-      keyboardType?: any;
+      icon: keyof typeof Ionicons.glyphMap;
+      keyboardType?: 'default' | 'email-address' | 'numeric' | 'decimal-pad' | 'phone-pad';
       isPassword?: boolean;
       showEye?: boolean;
       onShowToggle?: () => void;
@@ -110,8 +120,12 @@ export default function SignupScreen() {
             autoCorrect={false}
             secureTextEntry={isPassword && !showEye}
             editable={!loading}
-            onFocus={() => setFocusedField(fieldName)}
-            onBlur={() => setFocusedField(null)}
+            onFocus={() => {
+              setFocusedField(fieldName);
+            }}
+            onBlur={() => {
+              setFocusedField(null);
+            }}
             accessible={true}
             accessibilityLabel={label}
             accessibilityHint={placeholder}
@@ -150,7 +164,7 @@ export default function SignupScreen() {
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (!constantTimeEqual(password, confirmPassword)) {
       Alert.alert('Password Mismatch', 'Passwords do not match');
       return;
     }
@@ -167,11 +181,11 @@ export default function SignupScreen() {
     }
   };
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignUp = (): void => {
     Alert.alert('Coming Soon', 'Google Sign-Up is coming in the next release. Thanks for your patience!');
   };
 
-  const handleAppleSignUp = async () => {
+  const handleAppleSignUp = (): void => {
     Alert.alert('Coming Soon', 'Apple Sign-Up is coming in the next release. Thanks for your patience!');
   };
 
@@ -295,7 +309,9 @@ export default function SignupScreen() {
             <View style={styles.socialSection}>
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={handleGoogleSignUp}
+                onPress={() => {
+                  handleGoogleSignUp();
+                }}
                 disabled={loading}
                 accessible={true}
                 accessibilityLabel="Continue with Google"
@@ -307,7 +323,9 @@ export default function SignupScreen() {
 
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={handleAppleSignUp}
+                onPress={() => {
+                  handleAppleSignUp();
+                }}
                 disabled={loading}
                 accessible={true}
                 accessibilityLabel="Continue with Apple"
@@ -321,8 +339,10 @@ export default function SignupScreen() {
             {/* Create Account Button */}
             <TouchableOpacity
               style={[styles.primaryButton, loading && styles.buttonDisabled]}
-              onPress={() => {
-                void handleSignup();
+              onPress={(): void => {
+                handleSignup().catch((): void => {
+                  // Error already handled in handleSignup
+                });
               }}
               disabled={loading}
               accessible={true}
@@ -357,7 +377,9 @@ export default function SignupScreen() {
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account? </Text>
               <Pressable
-                onPress={() => router.push('/auth/login')}
+                onPress={(): void => {
+                  router.push('/auth/login');
+                }}
                 disabled={loading}
                 accessible={true}
                 accessibilityLabel="Sign in"
