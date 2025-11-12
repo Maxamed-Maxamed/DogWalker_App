@@ -4,6 +4,23 @@
 [![Expo SDK](https://img.shields.io/badge/Expo%20SDK-54-000000.svg)](https://expo.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/d43aca97a4bd4671ac58c657eda50c7e)]
+![JSON](https://img.shields.io/badge/JSON-000000.svg)
+![Markdown](https://img.shields.io/badge/Markdown-000000.svg?logo=markdown)
+![npm](https://img.shields.io/badge/npm-CB3837.svg?logo=npm&logoColor=white)
+![Prettier](https://img.shields.io/badge/Prettier-F7B93E.svg?logo=prettier&logoColor=black)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E.svg?logo=javascript&logoColor=black)
+![Bash](https://img.shields.io/badge/Bash-4EAA25.svg?logo=gnu-bash&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB.svg?logo=react&logoColor=black)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF.svg?logo=githubactions&logoColor=white)
+![Expo](https://img.shields.io/badge/Expo-000020.svg?logo=expo&logoColor=white)
+![ESLint](https://img.shields.io/badge/ESLint-4B32C3.svg?logo=eslint&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-412991.svg?logo=openai&logoColor=white)
+![YAML](https://img.shields.io/badge/YAML-CB171E.svg?logo=yaml&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933.svg?logo=node.js&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB.svg?logo=python&logoColor=white)
+[![Supabase](https://img.shields.io/badge/Supabase-000000.svg?logo=supabase&logoColor=white)](https://supabase.com/docs)
+
 
 **Safe, trusted dog walking at your fingertips** 🎯
 
