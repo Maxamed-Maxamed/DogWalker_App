@@ -65,3 +65,9 @@ client_secret_677749677697-aov5te9g82117paf1in0d53t31vqa7ai.apps.googleuserconte
 .venv/
 venv/
 env/
+.vscode/settings.json
+.vscode/settings.json
+.vscode
+.codacy/codacy.yaml
+.codacy/codacy.yaml
+.codacy/codacy.yaml
