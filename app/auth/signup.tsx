@@ -252,7 +252,9 @@ export default function SignupScreen() {
                 icon="lock-closed-outline"
                 isPassword
                 showEye={showPassword}
-                onShowToggle={() => setShowPassword(!showPassword)}
+                onShowToggle={() => {
+                  setShowPassword(!showPassword);
+                }}
                 fieldName="password"
               />
 
@@ -285,7 +287,9 @@ export default function SignupScreen() {
                 icon="lock-closed-outline"
                 isPassword
                 showEye={showConfirmPassword}
-                onShowToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                onShowToggle={() => {
+                  setShowConfirmPassword(!showConfirmPassword);
+                }}
                 fieldName="confirmPassword"
               />
 
