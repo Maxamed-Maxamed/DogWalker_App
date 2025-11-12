@@ -204,7 +204,7 @@ export default function SignupScreen() {
           {/* Hero Section */}
           <View style={styles.heroSection}>
             <Image
-              source={require('@/assets/images/happydog.png')}
+              source={require('@/assets/images/newlogo.png')}
               style={styles.heroLogo}
               resizeMode="cover"
             />
@@ -415,10 +415,11 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     paddingHorizontal: 24,
     backgroundColor: '#FFFFFF',
+    
   },
   heroLogo: {
-    width: 180,
-    height: 180,
+    width: 110,
+    height: 110,
     marginBottom: 0,
   },
   heroTitle: {
