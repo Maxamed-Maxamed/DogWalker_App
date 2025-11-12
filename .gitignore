@@ -57,3 +57,11 @@ client_secret_677749677697-aov5te9g82117paf1in0d53t31vqa7ai.apps.googleuserconte
 .cursor/mcp.json
 .vscode/
 .cursor/mcp.json
+.env
+.copilot-instructions.md
+.copilot/config.json
+
+# Virtual Environment
+.venv/
+venv/
+env/
