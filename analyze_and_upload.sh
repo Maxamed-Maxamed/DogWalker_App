@@ -4,10 +4,14 @@ echo "🔧 Loading environment variables..."
 
 # Prefer .env.local, fallback to .env
 if [ -f ".env.local" ]; then
-    export $(grep -v '^#' .env.local | xargs)
+    set -a
+    source .env.local
+    set +a
     echo "✓ Loaded .env.local"
 elif [ -f ".env" ]; then
-    export $(grep -v '^#' .env | xargs)
+    set -a
+    source .env
+    set +a
     echo "✓ Loaded .env"
 else
     echo "❌ No .env.local or .env file found. Cannot load CODACY_API_TOKEN."

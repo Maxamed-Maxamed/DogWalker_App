@@ -68,20 +68,24 @@ export function CustomSplashScreen() {
   useEffect(() => {
     if (!isSplashVisible) return;
 
+    let animation: Animated.CompositeAnimation | undefined;
     // Show splash for 2 seconds, then fade out
     const timer = setTimeout(() => {
-      Animated.timing(fadeAnim, {
+      animation = Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 600,
         useNativeDriver: true,
-      }).start(() => {
+      });
+      animation.start(() => {
         hideSplash();
       });
     }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      animation?.stop?.();
+    };
   }, [isSplashVisible, fadeAnim, hideSplash]);
-
   if (!isSplashVisible) return null;
 
   return (
