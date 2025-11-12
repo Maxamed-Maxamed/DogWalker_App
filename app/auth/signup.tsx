@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/theme';
 import { useAuthStore } from '@/stores/authStore';
 
+// Password strength calculator
+const calculatePasswordStrength = (password: string): { level: number; label: string; color: string } => {
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (password.length >= 12) strength++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+  if (/\d/.test(password)) strength++;
+  if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+  const levels = [
+    { level: 0, label: 'Too Weak', color: '#DC2626' },
+    { level: 1, label: 'Weak', color: '#EA580C' },
+    { level: 2, label: 'Fair', color: '#F59E0B' },
+    { level: 3, label: 'Good', color: '#10B981' },
+    { level: 4, label: 'Strong', color: '#059669' },
+    { level: 5, label: 'Very Strong', color: '#047857' },
+  ];
+
+  return levels[Math.min(strength, levels.length - 1)];
+};
+
 export default function SignupScreen() {
   const router = useRouter();
   const { signup } = useAuthStore();
@@ -27,9 +48,13 @@ export default function SignupScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const passwordStrength = useMemo(() => calculatePasswordStrength(password), [password]);
 
   const InputField = useCallback(
     ({
@@ -125,6 +150,11 @@ export default function SignupScreen() {
       return;
     }
 
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
       await signup(fullName.trim(), email.trim(), password);
@@ -138,11 +168,11 @@ export default function SignupScreen() {
   };
 
   const handleGoogleSignUp = async () => {
-    Alert.alert('Coming Soon', 'Google Sign-Up will be implemented soon!');
+    Alert.alert('Coming Soon', 'Google Sign-Up is coming in the next release. Thanks for your patience!');
   };
 
   const handleAppleSignUp = async () => {
-    Alert.alert('Coming Soon', 'Apple Sign-UP will be implemented soon!');
+    Alert.alert('Coming Soon', 'Apple Sign-Up is coming in the next release. Thanks for your patience!');
   };
 
   return (
@@ -160,7 +190,7 @@ export default function SignupScreen() {
           {/* Hero Section */}
           <View style={styles.heroSection}>
             <Image
-              source={require('@/assets/images/doglogo.png')}
+              source={require('@/assets/images/happydog.png')}
               style={styles.heroLogo}
               resizeMode="cover"
             />
@@ -211,6 +241,47 @@ export default function SignupScreen() {
                 onShowToggle={() => setShowPassword(!showPassword)}
                 fieldName="password"
               />
+
+              {/* Password Strength Indicator */}
+              {password.length > 0 && (
+                <View style={styles.strengthContainer}>
+                  <View style={styles.strengthBar}>
+                    <View
+                      style={[
+                        styles.strengthFill,
+                        {
+                          width: `${((passwordStrength.level + 1) / 6) * 100}%`,
+                          backgroundColor: passwordStrength.color,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text style={[styles.strengthLabel, { color: passwordStrength.color }]}>
+                    {passwordStrength.label}
+                  </Text>
+                </View>
+              )}
+
+              {/* Confirm Password Input */}
+              <InputField
+                label="Confirm Password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                icon="lock-closed-outline"
+                isPassword
+                showEye={showConfirmPassword}
+                onShowToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                fieldName="confirmPassword"
+              />
+
+              {/* Password Match Indicator */}
+              {confirmPassword.length > 0 && password !== confirmPassword && (
+                <View style={styles.mismatchContainer}>
+                  <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                  <Text style={styles.mismatchText}>Passwords do not match</Text>
+                </View>
+              )}
             </View>
 
             {/* Divider */}
@@ -326,7 +397,7 @@ const styles = StyleSheet.create({
   heroLogo: {
     width: 180,
     height: 180,
-    marginBottom: -25,
+    marginBottom: 0,
   },
   heroTitle: {
     fontSize: 30,
@@ -344,7 +415,7 @@ const styles = StyleSheet.create({
   /* Content Section */
   contentSection: {
     paddingHorizontal: 24,
-    paddingVertical: 0,
+    paddingVertical: 12,
     paddingBottom: 48,
   },
 
@@ -412,6 +483,43 @@ const styles = StyleSheet.create({
   },
   eyeButton: {
     padding: 4,
+  },
+
+  /* Password Strength Indicator */
+  strengthContainer: {
+    gap: 6,
+    marginTop: -16,
+  },
+  strengthBar: {
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  strengthLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  /* Password Mismatch Indicator */
+  mismatchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    marginTop: -16,
+  },
+  mismatchText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#DC2626',
   },
 
   /* Social Auth Section */
