@@ -38,7 +38,7 @@ codacy-cli upload \
   --owner Maxamed-Maxamed \
   --provider gh \
   --repository DogWalker_App \
-  --commit-uuid $(git rev-parse HEAD) \
+  --commit-uuid "$(git rev-parse HEAD)" \
   --sarif-path results.json
 
 

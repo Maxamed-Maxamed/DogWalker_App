@@ -4,8 +4,9 @@
  * Displays an animated splash screen during app initialization.
  * Shows DogWalker logo, app name, tagline, and loading animation.
  * 
- * The component automatically fades out and hides when the splash
- * context indicates it's time to transition to the main app.
+ * The component waits for both auth and app state initialization before
+ * fading out. It automatically hides when all stores are initialized and
+ * ready for the main app experience.
  */
 
 import { Image } from 'expo-image';
@@ -13,6 +14,8 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useAppStateStore } from '@/stores/appStateStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useSplashScreen } from '@/stores/splashScreenStore';
 
 /**
@@ -59,14 +62,17 @@ function LoadingDots() {
 
 /**
  * Main CustomSplashScreen component
- * Shows splash for ~2 seconds, then fades out
+ * Waits for app initialization before fading out
  */
 export function CustomSplashScreen() {
   const { isSplashVisible, hideSplash } = useSplashScreen();
+  const { initialized: appInitialized, initializing: appInitializing } = useAppStateStore();
+  const { isInitialized, isLoading } = useAuthStore();
+  const ready = appInitialized && isInitialized && !appInitializing && !isLoading;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (!isSplashVisible) return;
+    if (!isSplashVisible || !ready) return;
 
     let animation: Animated.CompositeAnimation | undefined;
     // Show splash for 2 seconds, then fade out
@@ -85,7 +91,8 @@ export function CustomSplashScreen() {
       clearTimeout(timer);
       animation?.stop?.();
     };
-  }, [isSplashVisible, fadeAnim, hideSplash]);
+  }, [isSplashVisible, ready, fadeAnim, hideSplash]);
+
   if (!isSplashVisible) return null;
 
   return (
