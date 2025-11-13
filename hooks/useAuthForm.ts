@@ -49,16 +49,16 @@ export const useAuthForm = (
    */
   const setFieldError = useCallback(
     (fieldName: AllowedFieldName, errorMessage: string, currentErrors: AuthFormErrors) => {
-      if (fieldName === 'email') {
-        return { ...currentErrors, email: errorMessage };
-      } else if (fieldName === 'password') {
-        return { ...currentErrors, password: errorMessage };
-      } else if (fieldName === 'fullName') {
-        return { ...currentErrors, fullName: errorMessage };
-      } else if (fieldName === 'confirmPassword') {
-        return { ...currentErrors, confirmPassword: errorMessage };
+      switch (fieldName) {
+        case 'email':
+          return { ...currentErrors, email: errorMessage };
+        case 'password':
+          return { ...currentErrors, password: errorMessage };
+        case 'fullName':
+          return { ...currentErrors, fullName: errorMessage };
+        case 'confirmPassword':
+          return { ...currentErrors, confirmPassword: errorMessage };
       }
-      return currentErrors;
     },
     []
   );
