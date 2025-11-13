@@ -45,6 +45,25 @@ export const useAuthForm = (
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   /**
+   * Helper function to set error for a specific field
+   */
+  const setFieldError = useCallback(
+    (fieldName: AllowedFieldName, errorMessage: string, currentErrors: AuthFormErrors) => {
+      if (fieldName === 'email') {
+        return { ...currentErrors, email: errorMessage };
+      } else if (fieldName === 'password') {
+        return { ...currentErrors, password: errorMessage };
+      } else if (fieldName === 'fullName') {
+        return { ...currentErrors, fullName: errorMessage };
+      } else if (fieldName === 'confirmPassword') {
+        return { ...currentErrors, confirmPassword: errorMessage };
+      }
+      return currentErrors;
+    },
+    []
+  );
+
+  /**
    * Validate login form fields
    */
   const validateLoginFields = useCallback(() => {
@@ -131,11 +150,7 @@ export const useAuthForm = (
       }
 
       if (hasError) {
-        setErrors((prev) => {
-          const newErrors: AuthFormErrors = { ...prev };
-          newErrors[typedFieldName] = errorMessage;
-          return newErrors;
-        });
+        setErrors((prev) => setFieldError(typedFieldName, errorMessage, prev));
       } else {
         // Remove error for this field using explicit typed approach
         setErrors((prev) => {
@@ -148,7 +163,7 @@ export const useAuthForm = (
         });
       }
     },
-    [password]
+    [password, setFieldError]
   );
 
   /**
