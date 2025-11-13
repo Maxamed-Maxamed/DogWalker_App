@@ -80,7 +80,7 @@ export const useAuthForm = (
         return;
       }
 
-      const newErrors: AuthFormErrors = { ...errors };
+      const typedFieldName = fieldName as AllowedFieldName;
       let hasError = false;
       let errorMessage = '';
 
@@ -131,21 +131,24 @@ export const useAuthForm = (
       }
 
       if (hasError) {
-        const typedFieldName = fieldName as AllowedFieldName;
-        newErrors[typedFieldName] = errorMessage;
-        setErrors(newErrors);
+        setErrors((prev) => {
+          const newErrors: AuthFormErrors = { ...prev };
+          newErrors[typedFieldName] = errorMessage;
+          return newErrors;
+        });
       } else {
         // Remove error for this field using explicit typed approach
-        const updatedErrors: AuthFormErrors = {};
-        ALLOWED_FIELD_NAMES.forEach((field) => {
-          if (field !== fieldName && errors[field]) {
-            updatedErrors[field] = errors[field];
-          }
+        setErrors((prev) => {
+          const updatedErrors: AuthFormErrors = {};
+          if (typedFieldName !== 'email' && prev.email) updatedErrors.email = prev.email;
+          if (typedFieldName !== 'password' && prev.password) updatedErrors.password = prev.password;
+          if (typedFieldName !== 'fullName' && prev.fullName) updatedErrors.fullName = prev.fullName;
+          if (typedFieldName !== 'confirmPassword' && prev.confirmPassword) updatedErrors.confirmPassword = prev.confirmPassword;
+          return updatedErrors;
         });
-        setErrors(updatedErrors);
       }
     },
-    [errors, password]
+    [password]
   );
 
   /**
@@ -158,6 +161,8 @@ export const useAuthForm = (
         return;
       }
 
+      const typedFieldName = fieldName as AllowedFieldName;
+
       // Update field value based on field name
       if (fieldName === 'email') {
         setEmail(value);
@@ -169,18 +174,27 @@ export const useAuthForm = (
         setConfirmPassword(value);
       }
 
-      // Mark field as touched on first interaction
-      if (!touched[fieldName]) {
+      // Mark field as touched on first interaction using explicit checks
+      const isTouched = 
+        (typedFieldName === 'email' && touched.email) ||
+        (typedFieldName === 'password' && touched.password) ||
+        (typedFieldName === 'fullName' && touched.fullName) ||
+        (typedFieldName === 'confirmPassword' && touched.confirmPassword);
+
+      if (!isTouched) {
         setTouched((prev) => {
-          const updated: Record<string, boolean> = { ...prev };
-          const typedFieldName = fieldName as AllowedFieldName;
-          updated[typedFieldName] = true;
+          const updated: Record<AllowedFieldName, boolean> = {
+            email: typedFieldName === 'email' ? true : prev.email || false,
+            password: typedFieldName === 'password' ? true : prev.password || false,
+            fullName: typedFieldName === 'fullName' ? true : prev.fullName || false,
+            confirmPassword: typedFieldName === 'confirmPassword' ? true : prev.confirmPassword || false,
+          };
           return updated;
         });
       }
 
       // Validate in real-time for touched fields to trigger required errors on clear
-      if (touched[fieldName]) {
+      if (isTouched) {
         validateField(fieldName, value);
       }
     },
@@ -223,11 +237,16 @@ export const useAuthForm = (
       return;
     }
 
+    const typedFieldName = fieldName as AllowedFieldName;
+
     setTouched((prev) => {
-      const updated: Record<string, boolean> = { ...prev };
-      const typedFieldName = fieldName as AllowedFieldName;
-      updated[typedFieldName] = true;
-      return updated;
+      // Use explicit field updates to avoid dynamic property access
+      return {
+        email: typedFieldName === 'email' ? true : prev.email || false,
+        password: typedFieldName === 'password' ? true : prev.password || false,
+        fullName: typedFieldName === 'fullName' ? true : prev.fullName || false,
+        confirmPassword: typedFieldName === 'confirmPassword' ? true : prev.confirmPassword || false,
+      };
     });
   }, []);
 
@@ -255,15 +274,16 @@ export const useAuthForm = (
       return;
     }
 
+    const typedFieldName = fieldName as AllowedFieldName;
+
     setErrors((prev) => {
-      // Remove error for this field using explicit typed approach
-      const updated: AuthFormErrors = {};
-      ALLOWED_FIELD_NAMES.forEach((field) => {
-        if (field !== fieldName && prev[field]) {
-          updated[field] = prev[field];
-        }
-      });
-      return updated;
+      // Remove error for this field using explicit field checks
+      return {
+        email: typedFieldName !== 'email' ? prev.email : undefined,
+        password: typedFieldName !== 'password' ? prev.password : undefined,
+        fullName: typedFieldName !== 'fullName' ? prev.fullName : undefined,
+        confirmPassword: typedFieldName !== 'confirmPassword' ? prev.confirmPassword : undefined,
+      };
     });
   }, []);
 
