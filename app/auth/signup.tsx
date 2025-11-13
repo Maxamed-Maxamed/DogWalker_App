@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -17,7 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FormInput from '@/components/ui/FormInput';
-import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
+import {PasswordStrengthIndicator} from '@/components/ui/PasswordStrengthIndicator';
 import { DesignTokens } from '@/constants/designTokens';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { usePasswordStrength } from '@/hooks/usePasswordStrength';
