@@ -7,10 +7,12 @@ import {
   ScrollView,
   Alert,
   Linking,
+  Clipboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { DesignTokens } from '@/constants/designTokens';
+import { AppConfig } from '@/constants/appConfig';
 import { useErrorStore } from '@/stores/errorStore';
 
 interface Props {
@@ -114,6 +116,118 @@ export class ErrorBoundary extends React.Component<Props, State> {
     });
   };
 
+  /**
+   * Handle contact support action with intelligent error reporting
+   * Attempts to send full error details via mailto, with fallback to clipboard
+   */
+  handleContactSupport = async () => {
+    try {
+      const errorMessage = this.state.error?.message || 'Unknown error';
+      const componentStack = this.state.errorInfo?.componentStack || 'N/A';
+      const timestamp = new Date().toISOString();
+
+      // Build full error details string
+      const fullErrorDetails = `Error: ${errorMessage}\n\nComponent Stack:\n${componentStack}\n\nTimestamp: ${timestamp}`;
+
+      // Build mailto body and check length
+      const baseMailtoBody = `Error Report\n\n${fullErrorDetails}`;
+      const encodedBody = encodeURIComponent(baseMailtoBody);
+
+      // If body exceeds safe length, truncate component stack
+      let finalMailtoBody = baseMailtoBody;
+      let wasComponentStackTruncated = false;
+
+      if (encodedBody.length > AppConfig.MAX_MAILTO_BODY_LENGTH) {
+        wasComponentStackTruncated = true;
+        // Calculate available space for component stack
+        const baseMessage = `Error: ${errorMessage}\n\nComponent Stack:\n`;
+        const footerMessage = `\n\n... (truncated)\n\nTimestamp: ${timestamp}`;
+        const availableSpace =
+          AppConfig.MAX_MAILTO_BODY_LENGTH - encodeURIComponent(baseMessage + footerMessage).length;
+
+        if (availableSpace > 0) {
+          const truncatedStack = componentStack.substring(0, availableSpace);
+          finalMailtoBody = `${baseMessage}${truncatedStack}${footerMessage}`;
+        } else {
+          // Fallback to minimal body if still too long
+          finalMailtoBody = `Error Report - see clipboard for details`;
+        }
+      }
+
+      const mailtoLink = `mailto:${AppConfig.SUPPORT_EMAIL}?subject=App%20Error%20Report`;
+      const mailtoLinkWithBody = `${mailtoLink}&body=${encodeURIComponent(finalMailtoBody)}`;
+
+      // Try to open mailto with body
+      try {
+        await Linking.openURL(mailtoLinkWithBody);
+
+        // If component stack was truncated, notify user and copy to clipboard
+        if (wasComponentStackTruncated) {
+          try {
+            await Clipboard.setString(fullErrorDetails);
+            Alert.alert(
+              'Error Details Copied',
+              `The full error details have been copied to your clipboard because the details were too long for email. You can paste them into the email you're composing.`,
+              [{ text: 'OK' }]
+            );
+          } catch (clipboardError) {
+            console.error('Failed to copy error details to clipboard:', clipboardError);
+            Alert.alert(
+              'Error Details Truncated',
+              `The error details were too long to include in the email. Please describe the issue in detail.`,
+              [{ text: 'OK' }]
+            );
+          }
+        }
+      } catch (linkingError) {
+        console.error('Failed to open mailto link:', linkingError);
+
+        // Fallback: Copy full error details to clipboard and show instructions
+        try {
+          await Clipboard.setString(fullErrorDetails);
+          Alert.alert(
+            'Error Details Copied to Clipboard',
+            `We couldn't open your email client, but the full error details have been copied to your clipboard. Please:\n\n1. Open your email app\n2. Send an email to ${AppConfig.SUPPORT_EMAIL}\n3. Paste the error details into the email\n4. Describe what you were doing when the error occurred`,
+            [
+              {
+                text: 'Try Opening Email',
+                onPress: async () => {
+                  try {
+                    // Try to open plain mailto without body
+                    await Linking.openURL(`mailto:${AppConfig.SUPPORT_EMAIL}`);
+                  } catch (plainMailtoError) {
+                    console.error('Failed to open plain mailto link:', plainMailtoError);
+                    Alert.alert(
+                      'Unable to Open Email',
+                      `Please manually email ${AppConfig.SUPPORT_EMAIL} with the error details from your clipboard.`,
+                      [{ text: 'OK' }]
+                    );
+                  }
+                },
+              },
+              { text: 'OK', style: 'cancel' },
+            ]
+          );
+        } catch (clipboardError) {
+          console.error('Failed to copy error details to clipboard:', clipboardError);
+          // Last resort: Show contact info and ask user to manually report
+          Alert.alert(
+            'Error Reporting Issue',
+            `We encountered an issue while trying to report this error. Please contact support directly at ${AppConfig.SUPPORT_EMAIL} and describe the problem you experienced.`,
+            [{ text: 'OK' }]
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Unexpected error in handleContactSupport:', error);
+      Alert.alert(
+        'Contact Support',
+        `Please email ${AppConfig.SUPPORT_EMAIL} with details of this error.`,
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   render() {
     if (this.state.hasError) {
       // Use provided fallback or render default error UI
@@ -174,18 +288,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
               <TouchableOpacity
                 style={[styles.button, styles.secondaryButton]}
-                onPress={() => {
-                  const errorMessage = this.state.error?.message || 'Unknown error';
-                  const errorBody = `Error: ${errorMessage}\n\nComponent Stack:\n${this.state.errorInfo?.componentStack || 'N/A'}\n\nTimestamp: ${new Date().toISOString()}`;
-                  const mailtoLink = `mailto:support@dogwalker.app?subject=App%20Error&body=${encodeURIComponent(errorBody)}`;
-                  
-                  Linking.openURL(mailtoLink).catch(() => {
-                    Alert.alert(
-                      'Contact Support',
-                      'Please email support@dogwalker.app with details of this error.',
-                      [{ text: 'OK' }]
-                    );
-                  });
+                onPress={async () => {
+                  await this.handleContactSupport();
                 }}
               >
                 <Ionicons
