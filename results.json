@@ -1,0 +1,26 @@
+                  
+                  
+┌────────────────┐
+│ 1 Code Finding │
+└────────────────┘
+                                       
+  [36m[22m[24m  stores/errorStore.ts[0m
+    ❯❱ codacy.tools-configs.rules_lgpl_javascript_crypto_rule-node-insecure-random-generator
+          This rule identifies use of cryptographically weak random number generators. Using cryptographically
+          weak random number generators like `crypto.pseudoRandomBytes()`  and `Math.random()` for security-  
+          critical tasks can expose systems to significant  vulnerabilities. Attackers might predict the      
+          generated random numbers, compromising  the integrity and confidentiality of cryptographic          
+          operations. This could lead to  breaches where sensitive data is accessed or manipulated,           
+          authentication mechanisms  are bypassed, or secure communications are intercepted, ultimately       
+          undermining the  security of the entire system or application.                                      
+                                                                                                              
+          Mitigation strategy: Replace the use of these cryptographically weak random number generators with  
+          `crypto.randomBytes()`, a method provided by Node.js's `crypto` module that  generates              
+          cryptographically secure random numbers. This method should be used  for all operations requiring   
+          secure randomness, such as generating keys, tokens,  or any cryptographic material.                 
+                                                                                                              
+          Secure Code Example: ``` const crypto = require('crypto'); const secureBytes =                      
+          crypto.randomBytes(256); console.log(`Secure random bytes: ${secureBytes.toString('hex')}`); ```    
+                                                                                                              
+           48┆ const id = Math.random().toString(36).substring(2, 11);
+

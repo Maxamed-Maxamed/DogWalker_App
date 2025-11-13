@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import crypto from 'crypto';
 
 export type ErrorLevel = 'warning' | 'error' | 'critical';
 
@@ -45,7 +46,8 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
   errors: [],
 
   addError: (error) => {
-    const id = Math.random().toString(36).substring(2, 11);
+    // Generate cryptographically secure random ID instead of Math.random()
+    const id = crypto.randomBytes(6).toString('hex');
     const newError: AppError = {
       ...error,
       id,

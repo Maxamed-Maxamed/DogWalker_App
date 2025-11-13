@@ -107,12 +107,15 @@ private errorStore: unknown;
     }
   }
 
-  resetErrorBoundary = () => {
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-    });
+  resetErrorBoundary = (): void => {
+    this.setState(
+      {
+        hasError: false as const,
+        error: null,
+        errorInfo: null,
+      },
+      undefined
+    );
   };
 
   /**
@@ -219,18 +222,8 @@ private errorStore: unknown;
             [
               {
                 text: 'Try Opening Email',
-                onPress: async () => {
-                  try {
-                    // Try to open plain mailto without body
-                    await Linking.openURL(`mailto:${AppConfig.SUPPORT_EMAIL}`);
-                  } catch (plainMailtoError) {
-                    console.error('Failed to open plain mailto link:', plainMailtoError);
-                    Alert.alert(
-                      'Unable to Open Email',
-                      `Please manually email ${AppConfig.SUPPORT_EMAIL} with the error details from your clipboard.`,
-                      [{ text: 'OK' }]
-                    );
-                  }
+                onPress: () => {
+                  this.handleEmailFallback();
                 },
               },
               { text: 'OK', style: 'cancel' },
@@ -254,6 +247,22 @@ private errorStore: unknown;
         [{ text: 'OK' }]
       );
     }
+  };
+
+  /**
+   * Helper method to attempt opening email client as fallback
+   * Called from Alert button handler (which expects void, not Promise)
+   */
+  private handleEmailFallback = (): void => {
+    // Fire async operation without awaiting (void return for Alert compatibility)
+    Linking.openURL(`mailto:${AppConfig.SUPPORT_EMAIL}`).catch((plainMailtoError) => {
+      console.error('Failed to open plain mailto link:', plainMailtoError);
+      Alert.alert(
+        'Unable to Open Email',
+        `Please manually email ${AppConfig.SUPPORT_EMAIL} with the error details from your clipboard.`,
+        [{ text: 'OK' }]
+      );
+    });
   };
 
   render() {
@@ -316,8 +325,8 @@ private errorStore: unknown;
 
               <TouchableOpacity
                 style={[styles.button, styles.secondaryButton]}
-                onPress={async () => {
-                  await this.handleContactSupport();
+                onPress={() => {
+                  this.handleContactSupport();
                 }}
               >
                 <Ionicons
