@@ -23,7 +23,8 @@ import { useSplashScreen } from '@/stores/splashScreenStore';
  * Creates a pulsing dots animation with staggered timing
  * @param dotStyle - Dynamic styles to apply to each dot (e.g., backgroundColor)
  */
-function LoadingDots({ dotStyle }: { dotStyle: any }) {
+function LoadingDots({ dotStyle }: { dotStyle: Record<string, any> }) {
+  
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
