@@ -19,5 +19,6 @@
       "type": "http",
       "url": "http://localhost:6969/mcp"
     }
-  }
+  },
+  "chat.todoListTool.writeOnly": false
 }
