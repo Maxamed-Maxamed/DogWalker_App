@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Login error:', error);
       }
       set({ error: errorMessage, isLoading: false });
@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Fallback mock (only if Supabase not configured)
     if (__DEV__) {
-      // eslint-disable-next-line no-console
+       
       console.warn('Using mock authentication - Supabase not configured');
     }
     const token = 'mock-token';
@@ -135,7 +135,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Signup failed';
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Signup error:', error);
       }
       set({ error: errorMessage, isLoading: false });
@@ -144,7 +144,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Fallback mock (only if Supabase not configured)
     if (__DEV__) {
-      // eslint-disable-next-line no-console
+       
       console.warn('Using mock authentication - Supabase not configured');
     }
     const token = 'mock-token';
@@ -161,7 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         if (error) {
           if (__DEV__) {
-            // eslint-disable-next-line no-console
+             
             console.error('Logout error:', error);
           }
           set({ error: error.message, isLoading: false });
@@ -170,7 +170,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Logout failed';
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Logout error:', error);
       }
       set({ error: errorMessage });
@@ -187,7 +187,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         if (error) {
           if (__DEV__) {
-            // eslint-disable-next-line no-console
+             
             console.error('Session restore error:', error);
           }
           // Clear invalid session
@@ -215,7 +215,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch (error: unknown) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+         
         console.error('Session restore error:', error);
       }
       // Clear state on any error
