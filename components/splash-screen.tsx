@@ -21,8 +21,9 @@ import { useSplashScreen } from '@/stores/splashScreenStore';
 /**
  * Animated loading dots component
  * Creates a pulsing dots animation with staggered timing
+ * @param dotStyle - Dynamic styles to apply to each dot (e.g., backgroundColor)
  */
-function LoadingDots({ colors }: { colors: typeof Colors.light }) {
+function LoadingDots({ dotStyle }: { dotStyle: any }) {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
@@ -63,9 +64,9 @@ function LoadingDots({ colors }: { colors: typeof Colors.light }) {
 
   return (
     <View style={styles.dotsContainer}>
-      <Animated.View style={[styles.dot, { transform: [{ translateY: dot1 }], backgroundColor: colors.tint }]} />
-      <Animated.View style={[styles.dot, { transform: [{ translateY: dot2 }], backgroundColor: colors.tint }]} />
-      <Animated.View style={[styles.dot, { transform: [{ translateY: dot3 }], backgroundColor: colors.tint }]} />
+      <Animated.View style={[styles.dot, { transform: [{ translateY: dot1 }] }, dotStyle]} />
+      <Animated.View style={[styles.dot, { transform: [{ translateY: dot2 }] }, dotStyle]} />
+      <Animated.View style={[styles.dot, { transform: [{ translateY: dot3 }] }, dotStyle]} />
     </View>
   );
 }
@@ -146,7 +147,7 @@ export function CustomSplashScreen() {
 
         {/* Loading Indicator */}
         <View style={dynamicStyles.loaderContainer}>
-          <LoadingDots colors={colors} />
+          <LoadingDots dotStyle={{ backgroundColor: colors.tint }} />
         </View>
       </View>
     </Animated.View>
@@ -192,17 +193,6 @@ function createStyles(colors: typeof Colors.light) {
     },
     loaderContainer: {
       marginTop: 20,
-    },
-    dotsContainer: {
-      flexDirection: 'row',
-      gap: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    dot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
     },
   });
 }
