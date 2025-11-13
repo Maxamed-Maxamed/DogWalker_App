@@ -6,8 +6,15 @@
 import { useCallback, useState } from 'react';
 import { validateEmail, validateLoginForm, validateName, validateSignupForm } from '@/utils/validation';
 
+// Define allowed field names as a const
+export const ALLOWED_FIELD_NAMES = ['email', 'password', 'fullName', 'confirmPassword'] as const;
+export type AllowedFieldName = (typeof ALLOWED_FIELD_NAMES)[number];
+
 export interface AuthFormErrors {
-  [key: string]: string;
+  email?: string;
+  password?: string;
+  fullName?: string;
+  confirmPassword?: string;
 }
 
 export interface FormFields {
@@ -68,7 +75,12 @@ export const useAuthForm = (
    */
   const validateField = useCallback(
     (fieldName: string, value: string) => {
-      const newErrors = { ...errors };
+      // Validate that fieldName is one of allowed fields
+      if (!ALLOWED_FIELD_NAMES.includes(fieldName as AllowedFieldName)) {
+        return;
+      }
+
+      const newErrors: AuthFormErrors = { ...errors };
       let hasError = false;
       let errorMessage = '';
 
@@ -114,24 +126,24 @@ export const useAuthForm = (
           break;
 
         default:
+          // Exhaustive check - should never reach here
           break;
       }
 
       if (hasError) {
-        newErrors[fieldName as keyof AuthFormErrors] = errorMessage;
+        const typedFieldName = fieldName as AllowedFieldName;
+        newErrors[typedFieldName] = errorMessage;
+        setErrors(newErrors);
       } else {
-        // Use Object.keys to safely remove property without delete operator
-        const updatedErrors = Object.keys(newErrors).reduce((acc, key) => {
-          if (key !== fieldName) {
-            acc[key] = newErrors[key];
+        // Remove error for this field using explicit typed approach
+        const updatedErrors: AuthFormErrors = {};
+        ALLOWED_FIELD_NAMES.forEach((field) => {
+          if (field !== fieldName && errors[field]) {
+            updatedErrors[field] = errors[field];
           }
-          return acc;
-        }, {} as AuthFormErrors);
+        });
         setErrors(updatedErrors);
-        return;
       }
-
-      setErrors(newErrors);
     },
     [errors, password]
   );
@@ -141,6 +153,11 @@ export const useAuthForm = (
    */
   const handleFieldChange = useCallback(
     (fieldName: string, value: string) => {
+      // Validate that fieldName is one of allowed fields
+      if (!ALLOWED_FIELD_NAMES.includes(fieldName as AllowedFieldName)) {
+        return;
+      }
+
       // Update field value based on field name
       if (fieldName === 'email') {
         setEmail(value);
@@ -155,8 +172,9 @@ export const useAuthForm = (
       // Mark field as touched on first interaction
       if (!touched[fieldName]) {
         setTouched((prev) => {
-          const updated = { ...prev };
-          updated[fieldName] = true;
+          const updated: Record<string, boolean> = { ...prev };
+          const typedFieldName = fieldName as AllowedFieldName;
+          updated[typedFieldName] = true;
           return updated;
         });
       }
@@ -200,9 +218,15 @@ export const useAuthForm = (
    * Mark a field as touched to enable real-time validation
    */
   const markFieldTouched = useCallback((fieldName: string) => {
+    // Validate that fieldName is one of allowed fields
+    if (!ALLOWED_FIELD_NAMES.includes(fieldName as AllowedFieldName)) {
+      return;
+    }
+
     setTouched((prev) => {
-      const updated = { ...prev };
-      updated[fieldName] = true;
+      const updated: Record<string, boolean> = { ...prev };
+      const typedFieldName = fieldName as AllowedFieldName;
+      updated[typedFieldName] = true;
       return updated;
     });
   }, []);
@@ -226,14 +250,20 @@ export const useAuthForm = (
    * Clear specific field error
    */
   const clearFieldError = useCallback((fieldName: string) => {
+    // Validate that fieldName is one of allowed fields
+    if (!ALLOWED_FIELD_NAMES.includes(fieldName as AllowedFieldName)) {
+      return;
+    }
+
     setErrors((prev) => {
-      // Use Object.keys to safely remove property without delete operator
-      return Object.keys(prev).reduce((acc, key) => {
-        if (key !== fieldName) {
-          acc[key] = prev[key];
+      // Remove error for this field using explicit typed approach
+      const updated: AuthFormErrors = {};
+      ALLOWED_FIELD_NAMES.forEach((field) => {
+        if (field !== fieldName && prev[field]) {
+          updated[field] = prev[field];
         }
-        return acc;
-      }, {} as AuthFormErrors);
+      });
+      return updated;
     });
   }, []);
 
