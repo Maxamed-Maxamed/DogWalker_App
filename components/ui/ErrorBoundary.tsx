@@ -7,8 +7,8 @@ import {
   ScrollView,
   Alert,
   Linking,
-  Clipboard,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { Ionicons } from '@expo/vector-icons';
 
 import { DesignTokens } from '@/constants/designTokens';
@@ -142,12 +142,41 @@ export class ErrorBoundary extends React.Component<Props, State> {
         // Calculate available space for component stack
         const baseMessage = `Error: ${errorMessage}\n\nComponent Stack:\n`;
         const footerMessage = `\n\n... (truncated)\n\nTimestamp: ${timestamp}`;
-        const availableSpace =
+        const remainingEncoded =
           AppConfig.MAX_MAILTO_BODY_LENGTH - encodeURIComponent(baseMessage + footerMessage).length;
 
-        if (availableSpace > 0) {
-          const truncatedStack = componentStack.substring(0, availableSpace);
-          finalMailtoBody = `${baseMessage}${truncatedStack}${footerMessage}`;
+        if (remainingEncoded > 0) {
+          // Use binary search to find maximum raw character count that fits within encoded limit
+          // This accounts for URL-encoding expansion (e.g., spaces → %20, non-ASCII → multi-byte)
+          const findMaxSubstringLength = (str: string, maxEncodedLen: number): number => {
+            let left = 0;
+            let right = str.length;
+            let maxN = 0;
+
+            while (left <= right) {
+              const mid = Math.floor((left + right) / 2);
+              const encoded = encodeURIComponent(str.substring(0, mid));
+
+              if (encoded.length <= maxEncodedLen) {
+                maxN = mid;
+                left = mid + 1;
+              } else {
+                right = mid - 1;
+              }
+            }
+
+            return maxN;
+          };
+
+          const maxStackLength = findMaxSubstringLength(componentStack, remainingEncoded);
+
+          if (maxStackLength > 0) {
+            const truncatedStack = componentStack.substring(0, maxStackLength);
+            finalMailtoBody = `${baseMessage}${truncatedStack}${footerMessage}`;
+          } else {
+            // Fallback to minimal body if still too long
+            finalMailtoBody = `Error Report - see clipboard for details`;
+          }
         } else {
           // Fallback to minimal body if still too long
           finalMailtoBody = `Error Report - see clipboard for details`;
