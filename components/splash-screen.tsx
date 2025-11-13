@@ -10,8 +10,8 @@
  */
 
 import { Image } from 'expo-image';
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Animated, StyleSheet, View, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { useAppStateStore } from '@/stores/appStateStore';
@@ -22,14 +22,14 @@ import { useSplashScreen } from '@/stores/splashScreenStore';
  * Animated loading dots component
  * Creates a pulsing dots animation with staggered timing
  */
-function LoadingDots() {
+function LoadingDots({ colors }: { colors: typeof Colors.light }) {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const animateDot = (dot: Animated.Value, delay: number) => {
-      Animated.loop(
+      return Animated.loop(
         Animated.sequence([
           Animated.delay(delay),
           Animated.timing(dot, {
@@ -43,19 +43,29 @@ function LoadingDots() {
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
     };
 
-    animateDot(dot1, 0);
-    animateDot(dot2, 150);
-    animateDot(dot3, 300);
+    const anim1 = animateDot(dot1, 0);
+    const anim2 = animateDot(dot2, 150);
+    const anim3 = animateDot(dot3, 300);
+
+    anim1.start();
+    anim2.start();
+    anim3.start();
+
+    return () => {
+      anim1.stop();
+      anim2.stop();
+      anim3.stop();
+    };
   }, [dot1, dot2, dot3]);
 
   return (
     <View style={styles.dotsContainer}>
-      <Animated.View style={[styles.dot, { transform: [{ translateY: dot1 }] }]} />
-      <Animated.View style={[styles.dot, { transform: [{ translateY: dot2 }] }]} />
-      <Animated.View style={[styles.dot, { transform: [{ translateY: dot3 }] }]} />
+      <Animated.View style={[styles.dot, { transform: [{ translateY: dot1 }], backgroundColor: colors.tint }]} />
+      <Animated.View style={[styles.dot, { transform: [{ translateY: dot2 }], backgroundColor: colors.tint }]} />
+      <Animated.View style={[styles.dot, { transform: [{ translateY: dot3 }], backgroundColor: colors.tint }]} />
     </View>
   );
 }
@@ -65,11 +75,15 @@ function LoadingDots() {
  * Waits for app initialization before fading out
  */
 export function CustomSplashScreen() {
+  const colorScheme = useColorScheme();
+  const colors = colorScheme === 'dark' ? Colors.dark : Colors.light;
   const { isSplashVisible, hideSplash } = useSplashScreen();
   const { initialized: appInitialized, initializing: appInitializing } = useAppStateStore();
   const { isInitialized, isLoading } = useAuthStore();
   const ready = appInitialized && isInitialized && !appInitializing && !isLoading;
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  
+  const dynamicStyles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     if (!isSplashVisible || !ready) return;
@@ -96,21 +110,21 @@ export function CustomSplashScreen() {
   if (!isSplashVisible) return null;
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <View style={styles.content}>
+    <Animated.View style={[dynamicStyles.container, { opacity: fadeAnim }]}>
+      <View style={dynamicStyles.content}>
         {/* Logo */}
         <Image
           source={require('@/assets/images/newlogo.png')}
-          style={styles.logo}
+          style={dynamicStyles.logo}
           contentFit="contain"
           transition={300}
         />
 
         {/* App Name and Tagline */}
-        <View style={styles.textContainer}>
+        <View style={dynamicStyles.textContainer}>
           <Animated.Text
             style={[
-              styles.appName,
+              dynamicStyles.appName,
               {
                 opacity: fadeAnim,
               },
@@ -120,7 +134,7 @@ export function CustomSplashScreen() {
           </Animated.Text>
           <Animated.Text
             style={[
-              styles.tagline,
+              dynamicStyles.tagline,
               {
                 opacity: fadeAnim,
               },
@@ -131,60 +145,73 @@ export function CustomSplashScreen() {
         </View>
 
         {/* Loading Indicator */}
-        <View style={styles.loaderContainer}>
-          <LoadingDots />
+        <View style={dynamicStyles.loaderContainer}>
+          <LoadingDots colors={colors} />
         </View>
       </View>
     </Animated.View>
   );
 }
 
+/**
+ * Create dynamic styles based on the current color scheme
+ */
+function createStyles(colors: typeof Colors.light) {
+  return StyleSheet.create({
+    container: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+    },
+    content: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logo: {
+      width: 120,
+      height: 120,
+      marginBottom: 24,
+    },
+    textContainer: {
+      alignItems: 'center',
+      marginBottom: 48,
+    },
+    appName: {
+      fontSize: 32,
+      fontWeight: '800',
+      color: colors.text,
+      marginBottom: 8,
+      letterSpacing: 0.5,
+    },
+    tagline: {
+      fontSize: 14,
+      color: `${colors.text}80`, // Add transparency
+      letterSpacing: 0.3,
+    },
+    loaderContainer: {
+      marginTop: 20,
+    },
+    dotsContainer: {
+      flexDirection: 'row',
+      gap: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+  });
+}
+
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.light.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
-  },
-  content: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 24,
-  },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: Colors.light.text,
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  tagline: {
-    fontSize: 14,
-    color: `${Colors.light.text}80`, // Add transparency
-    letterSpacing: 0.3,
-  },
-  loaderContainer: {
-    marginTop: 20,
-  },
   dotsContainer: {
     flexDirection: 'row',
     gap: 8,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.light.tint,
   },
 });
