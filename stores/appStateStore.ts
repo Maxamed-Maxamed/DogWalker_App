@@ -1,16 +1,24 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
+import { useErrorStore } from './errorStore';
+
 type ThemePref = 'light' | 'dark' | 'system';
 
+/**
+ * App state type
+ * Manages app-wide settings like theme, onboarding status, and initialization
+ */
 type AppState = {
   initializing: boolean;
   initialized: boolean;
   firstLaunch: boolean; // persisted
   themePreference: ThemePref; // placeholder for future switching
+  error: string | null;
   setThemePreference: (pref: ThemePref) => Promise<void>;
   completeOnboarding: () => Promise<void>;
   init: () => Promise<void>;
+  clearError: () => void;
 };
 
 const STORAGE_KEYS = {
@@ -23,6 +31,7 @@ export const useAppStateStore = create<AppState>((set, get) => ({
   initialized: false,
   firstLaunch: true,
   themePreference: 'system',
+  error: null,
 
   setThemePreference: async (pref: ThemePref) => {
     set({ themePreference: pref });
@@ -52,7 +61,7 @@ export const useAppStateStore = create<AppState>((set, get) => ({
 
   init: async () => {
     if (get().initialized) return; // idempotent
-    set({ initializing: true });
+    set({ initializing: true, error: null });
     try {
       const [firstLaunchStr, themePref] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.FIRST_LAUNCH),
@@ -63,10 +72,31 @@ export const useAppStateStore = create<AppState>((set, get) => ({
       set({
         firstLaunch,
         themePreference: (themePref as ThemePref) || 'system',
+        initializing: false,
+        initialized: true,
       });
-    } finally {
-      set({ initializing: false, initialized: true });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize app state';
+      
+      // Log to error store
+      const errorStore = useErrorStore.getState();
+      errorStore.addError({
+        level: 'error',
+        message: errorMessage,
+        context: { error: errorMessage, action: 'init_app_state' },
+      });
+
+      // Still mark as initialized even on error
+      set({
+        initializing: false,
+        initialized: true,
+        error: errorMessage,
+      });
     }
+  },
+
+  clearError: () => {
+    set({ error: null });
   },
 }));
 
