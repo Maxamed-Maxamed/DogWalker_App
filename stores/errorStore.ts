@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
-type ErrorLevel = 'warning' | 'error' | 'critical';
+export type ErrorLevel = 'warning' | 'error' | 'critical';
 
 /**
  * Represents an application error with context and metadata
  */
-type AppError = {
+export type AppError = {
   /** Unique identifier for the error */
   id: string;
   /** Severity level of the error */

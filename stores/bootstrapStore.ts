@@ -84,7 +84,7 @@ export const useBootstrapStore = create<BootstrapState>((set, get) => ({
       phase: 'initializing',
       error: null,
       errorMessage: null,
-      isBootstrapping: false,
+      isBootstrapping: true,
     });
   },
 }));

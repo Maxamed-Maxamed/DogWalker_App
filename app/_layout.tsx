@@ -42,11 +42,11 @@ export default function RootLayout() {
     bootstrap();
   }, [bootstrap]);
 
-  // Hide Expo splash once bootstrap is ready
+  // Hide Expo splash once bootstrap is ready or on error
   useEffect(() => {
-    if (phase === 'ready') {
+    if (phase === 'ready' || phase === 'error') {
       SplashScreen.hideAsync().catch(() => {
-        // Silently ignore if already hidden
+        /* ignore */
       });
     }
   }, [phase]);
