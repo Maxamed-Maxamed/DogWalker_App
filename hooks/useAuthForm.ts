@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { validateEmail, validateLoginForm, validateName, validatePassword } from '@/utils/validation';
+import { validateEmail, validateLoginForm, validateName, validateSignupForm } from '@/utils/validation';
 
 export interface AuthFormErrors {
   [key: string]: string;
@@ -35,6 +35,7 @@ export const useAuthForm = (
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<AuthFormErrors>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   /**
    * Validate login form fields
@@ -53,8 +54,6 @@ export const useAuthForm = (
    * Validate signup form fields
    */
   const validateSignupFields = useCallback(() => {
-    // Import here to avoid circular dependency
-    const { validateSignupForm } = require('@/utils/validation');
     const validation = validateSignupForm(fullName, email, password, confirmPassword);
     if (!validation.isValid) {
       setErrors(validation.errors);
@@ -143,12 +142,17 @@ export const useAuthForm = (
           break;
       }
 
-      // Validate in real-time after user starts typing
-      if (value.length > 0) {
+      // Mark field as touched on first interaction
+      if (!touched[fieldName]) {
+        setTouched((prev) => ({ ...prev, [fieldName]: true }));
+      }
+
+      // Validate in real-time for touched fields to trigger required errors on clear
+      if (touched[fieldName]) {
         validateField(fieldName, value);
       }
     },
-    [validateField]
+    [validateField, touched]
   );
 
   /**
@@ -179,6 +183,13 @@ export const useAuthForm = (
   }, [email, password, fullName, confirmPassword, mode, validateLoginFields, validateSignupFields, onSubmit]);
 
   /**
+   * Mark a field as touched to enable real-time validation
+   */
+  const markFieldTouched = useCallback((fieldName: string) => {
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
+  }, []);
+
+  /**
    * Reset form to initial state
    */
   const reset = useCallback(() => {
@@ -190,6 +201,7 @@ export const useAuthForm = (
     setShowConfirmPassword(false);
     setErrors({});
     setFocusedField(null);
+    setTouched({});
   }, []);
 
   /**
@@ -215,6 +227,7 @@ export const useAuthForm = (
     loading,
     focusedField,
     errors,
+    touched,
     // Setters
     setEmail,
     setPassword,
@@ -228,6 +241,7 @@ export const useAuthForm = (
     handleSubmit,
     validateField,
     clearFieldError,
+    markFieldTouched,
     reset,
     validateLoginFields,
     validateSignupFields,

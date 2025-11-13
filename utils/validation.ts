@@ -41,13 +41,16 @@ export const validatePassword = (password: string) => {
 
 /**
  * Name validation
- * Allows letters, spaces, hyphens, and apostrophes
+ * Allows Unicode letters, spaces, hyphens, and apostrophes
+ * Supports international names (e.g., José, Мария)
  * @param name - Name string to validate
  * @returns True if valid name format
  */
 export const validateName = (name: string): boolean => {
-  const nameRegex = /^[a-zA-Z\s'-]{2,50}$/;
-  return nameRegex.test(name.trim());
+  const trimmed = name.trim();
+  // Unicode-aware regex: \p{L} matches any Unicode letter
+  const nameRegex = /^[\p{L}\s'-]{2,50}$/u;
+  return nameRegex.test(trimmed);
 };
 
 /**
@@ -68,10 +71,12 @@ export const validatePhone = (phone: string): boolean => {
  * @returns True if strings are equal
  */
 export const constantTimeEqual = (a: string, b: string): boolean => {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const maxLen = Math.max(a.length, b.length);
+  let result = a.length ^ b.length; // Include length difference in result
+  for (let i = 0; i < maxLen; i++) {
+    const charA = i < a.length ? a.charCodeAt(i) : 0;
+    const charB = i < b.length ? b.charCodeAt(i) : 0;
+    result |= charA ^ charB;
   }
   return result === 0;
 };
@@ -133,8 +138,11 @@ export const validateSignupForm = (
 
   if (!password) {
     errors.password = 'Password is required';
-  } else if (password.length < 8) {
-    errors.password = 'Password must be at least 8 characters';
+  } else {
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      errors.password = 'Password must include uppercase, lowercase, and a number';
+    }
   }
 
   if (!confirmPassword) {

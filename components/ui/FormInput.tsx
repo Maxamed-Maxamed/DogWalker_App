@@ -4,7 +4,7 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -52,7 +52,7 @@ interface FormInputProps extends Omit<RNTextInputProps, 'style'> {
  * FormInput Component
  * Reusable text input with validation, icons, password toggle, and error display
  */
-export const FormInput = React.memo(
+const FormInput = React.memo(
   ({
     label,
     placeholder,
@@ -74,20 +74,6 @@ export const FormInput = React.memo(
     const isFocused = focusedField === fieldName;
     const hasError = !!error;
     const hasValue = !!value;
-
-    const handleFocus = useCallback(() => {
-      // Focus callback can be passed in textInputProps
-      if (textInputProps.onFocus) {
-        textInputProps.onFocus({} as any);
-      }
-    }, [textInputProps]);
-
-    const handleBlur = useCallback(() => {
-      // Blur callback can be passed in textInputProps
-      if (textInputProps.onBlur) {
-        textInputProps.onBlur({} as any);
-      }
-    }, [textInputProps]);
 
     return (
       <View style={[styles.container, containerStyle]}>
@@ -132,12 +118,9 @@ export const FormInput = React.memo(
             autoCorrect={false}
             secureTextEntry={isPassword && !showPassword}
             editable={!disabled}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
             accessible={true}
             accessibilityLabel={label}
             accessibilityHint={placeholder}
-            accessibilityRole="search"
             {...textInputProps}
           />
 

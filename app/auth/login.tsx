@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import FormInput from '@/components/ui/FormInput';
+import FormInput from '@/components/ui/FormInput'; // eslint-disable-line import/no-named-as-default
 import { DesignTokens } from '@/constants/designTokens';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useAuthStore } from '@/stores/authStore';
