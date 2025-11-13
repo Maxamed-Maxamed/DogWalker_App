@@ -5,6 +5,7 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -44,7 +45,7 @@ export default function SignupScreen() {
   } = useAuthForm(
     async (fields) => {
       try {
-        await signup(fields.email, fields.password, fields.fullName);
+        await signup(fields.fullName, fields.email, fields.password);
         router.replace('/(tabs)/dashboard');
       } catch (error: any) {
         Alert.alert('Signup Error', error.message || 'Failed to create account');
@@ -153,8 +154,31 @@ export default function SignupScreen() {
             {/* Terms Agreement */}
             <Text style={styles.termsText}>
               By creating an account, you agree to our{' '}
-              <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-              <Text style={styles.termsLink}>Privacy Policy</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Linking.openURL('https://dogwalker.app/terms').catch(() => {
+                    Alert.alert('Error', 'Unable to open Terms of Service');
+                  });
+                }}
+                accessible
+                accessibilityRole="link"
+                accessibilityLabel="Terms of Service"
+              >
+                <Text style={styles.termsLink}>Terms of Service</Text>
+              </TouchableOpacity>
+              {' and '}
+              <TouchableOpacity
+                onPress={() => {
+                  Linking.openURL('https://dogwalker.app/privacy').catch(() => {
+                    Alert.alert('Error', 'Unable to open Privacy Policy');
+                  });
+                }}
+                accessible
+                accessibilityRole="link"
+                accessibilityLabel="Privacy Policy"
+              >
+                <Text style={styles.termsLink}>Privacy Policy</Text>
+              </TouchableOpacity>
             </Text>
 
             {/* Signup Button */}

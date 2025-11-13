@@ -5,6 +5,8 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  Alert,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -47,7 +49,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
     };
 
     // Get error store instance for logging
-    this.errorStore = useErrorStore.getState?.();
+    this.errorStore = useErrorStore.getState();
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -71,7 +73,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           componentStack: errorInfo.componentStack,
           timestamp: new Date().toISOString(),
         },
-        severity: 'error',
+        level: 'error',
       });
     }
 
@@ -89,10 +91,14 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     // Reset error boundary when resetKeys change
-    if (this.state.hasError && this.props.resetKeys) {
-      const hasResetKeyChanged = prevProps.resetKeys?.some(
-        (key, index) => key !== this.props.resetKeys?.[index]
-      );
+    if (this.state.hasError) {
+      const prevKeys = prevProps.resetKeys ?? [];
+      const currKeys = this.props.resetKeys ?? [];
+
+      // Check if lengths differ or any element at same index differs
+      const hasResetKeyChanged =
+        prevKeys.length !== currKeys.length ||
+        prevKeys.some((key, index) => key !== currKeys[index]);
 
       if (hasResetKeyChanged) {
         this.resetErrorBoundary();
@@ -166,7 +172,22 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 <Text style={styles.primaryButtonText}>Try Again</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.secondaryButton]}>
+              <TouchableOpacity
+                style={[styles.button, styles.secondaryButton]}
+                onPress={() => {
+                  const errorMessage = this.state.error?.message || 'Unknown error';
+                  const errorBody = `Error: ${errorMessage}\n\nComponent Stack:\n${this.state.errorInfo?.componentStack || 'N/A'}\n\nTimestamp: ${new Date().toISOString()}`;
+                  const mailtoLink = `mailto:support@dogwalker.app?subject=App%20Error&body=${encodeURIComponent(errorBody)}`;
+                  
+                  Linking.openURL(mailtoLink).catch(() => {
+                    Alert.alert(
+                      'Contact Support',
+                      'Please email support@dogwalker.app with details of this error.',
+                      [{ text: 'OK' }]
+                    );
+                  });
+                }}
+              >
                 <Ionicons
                   name="help-circle-outline"
                   size={18}
