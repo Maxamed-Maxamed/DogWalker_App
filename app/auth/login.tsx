@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -11,141 +11,51 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import FormInput from '@/components/ui/FormInput';
 import { DesignTokens } from '@/constants/designTokens';
+import { useAuthForm } from '@/hooks/useAuthForm';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuthStore();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  // Reusable InputField component
-  const InputField = useCallback(
-    ({
-      label,
-      placeholder,
-      value,
-      onChangeText,
-      icon,
-      keyboardType = 'default',
-      isPassword = false,
-      showEye = false,
-      onShowToggle,
-      fieldName,
-    }: {
-      label: string;
-      placeholder: string;
-      value: string;
-      onChangeText: (text: string) => void;
-      icon: keyof typeof Ionicons.glyphMap;
-      keyboardType?: 'default' | 'email-address' | 'numeric' | 'decimal-pad' | 'phone-pad';
-      isPassword?: boolean;
-      showEye?: boolean;
-      onShowToggle?: () => void;
-      fieldName: string;
-    }) => (
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>{label}</Text>
-        <View
-          style={[
-            styles.inputContainer,
-            focusedField === fieldName && styles.inputContainerFocused,
-            value && styles.inputContainerFilled,
-          ]}
-        >
-          <Ionicons
-            name={icon}
-            size={20}
-            color={
-              focusedField === fieldName
-                ? DesignTokens.colors.primary.blue
-                : DesignTokens.colors.primary.gray[400]
-            }
-            style={styles.inputIcon}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder={placeholder}
-            placeholderTextColor={DesignTokens.colors.primary.gray[400]}
-            value={value}
-            onChangeText={onChangeText}
-            keyboardType={keyboardType}
-            autoCapitalize={isPassword ? 'none' : 'none'}
-            autoCorrect={false}
-            secureTextEntry={isPassword && !showEye}
-            editable={!loading && !googleLoading}
-            onFocus={() => {
-              setFocusedField(fieldName);
-            }}
-            onBlur={() => {
-              setFocusedField(null);
-            }}
-            accessible={true}
-            accessibilityLabel={label}
-            accessibilityHint={placeholder}
-          />
-          {isPassword && (
-            <TouchableOpacity
-              onPress={onShowToggle}
-              style={styles.eyeButton}
-              disabled={loading || googleLoading}
-              accessible={true}
-              accessibilityLabel={showEye ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
-              accessibilityRole="button"
-            >
-              <Ionicons
-                name={showEye ? 'eye-off-outline' : 'eye-outline'}
-                size={20}
-                color={DesignTokens.colors.primary.gray[400]}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    ),
-    [focusedField, loading, googleLoading]
+  const {
+    email,
+    password,
+    showPassword,
+    loading,
+    focusedField,
+    errors,
+    handleFieldChange,
+    handleSubmit,
+    setShowPassword,
+    setFocusedField,
+  } = useAuthForm(
+    async (fields) => {
+      try {
+        await login(fields.email, fields.password);
+        router.replace('/(tabs)/dashboard');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Login failed';
+        Alert.alert('Login Error', message);
+      }
+    },
+    'login'
   );
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password) {
-      Alert.alert('Missing Information', 'Please enter both email and password');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await login(email.trim(), password);
-      router.replace('/(tabs)/dashboard');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed';
-      Alert.alert('Login Error', message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
     try {
-      // TODO: Implement Google Sign-In tomorrow
+      // TODO: Implement Google Sign-In
       Alert.alert('Coming Soon', 'Google Sign-In will be implemented tomorrow!');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Google sign-in failed';
       Alert.alert('Sign In Error', message);
-    } finally {
-      setGoogleLoading(false);
     }
   };
 
@@ -182,21 +92,17 @@ export default function LoginScreen() {
             <View style={styles.socialSection}>
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={() => { void handleGoogleSignIn(); }}
-                disabled={googleLoading || loading}
+                onPress={() => {
+                  void handleGoogleSignIn();
+                }}
+                disabled={loading}
                 accessible={true}
                 accessibilityLabel="Continue with Google"
                 accessibilityHint="Sign in using your Google account"
                 accessibilityRole="button"
               >
-                {googleLoading ? (
-                  <ActivityIndicator size="small" color={DesignTokens.colors.primary.gray[700]} />
-                ) : (
-                  <>
-                    <Ionicons name="logo-google" size={20} color="#4285F4" />
-                    <Text style={styles.socialButtonText}>Continue with Google</Text>
-                  </>
-                )}
+                <Ionicons name="logo-google" size={20} color="#4285F4" />
+                <Text style={styles.socialButtonText}>Continue with Google</Text>
               </TouchableOpacity>
             </View>
 
@@ -210,33 +116,45 @@ export default function LoginScreen() {
             {/* Email/Password Form */}
             <View style={styles.formSection}>
               {/* Email Input */}
-              <InputField
+              <FormInput
                 label="Email"
                 placeholder="you@example.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => handleFieldChange('email', text)}
                 icon="mail-outline"
                 keyboardType="email-address"
                 fieldName="email"
+                focusedField={focusedField}
+                error={errors.email}
+                disabled={loading}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
               />
 
               {/* Password Input */}
-              <InputField
+              <FormInput
                 label="Password"
                 placeholder="Enter your password"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => handleFieldChange('password', text)}
                 icon="lock-closed-outline"
                 isPassword
-                showEye={showPassword}
-                onShowToggle={() => { setShowPassword(!showPassword); }}
+                showPassword={showPassword}
+                onShowToggle={() => {
+                  setShowPassword(!showPassword);
+                }}
                 fieldName="password"
+                focusedField={focusedField}
+                error={errors.password}
+                disabled={loading}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
               />
 
               {/* Forgot Password Link */}
               <TouchableOpacity
                 onPress={() => router.push('/auth/forgot-password')}
-                disabled={loading || googleLoading}
+                disabled={loading}
                 accessible={true}
                 accessibilityLabel="Forgot password"
                 accessibilityHint="Navigate to password recovery"
@@ -247,14 +165,16 @@ export default function LoginScreen() {
 
               {/* Sign In Button */}
               <TouchableOpacity
-                style={[styles.primaryButton, (loading || googleLoading) && styles.buttonDisabled]}
-                onPress={() => { void handleLogin(); }}
-                disabled={loading || googleLoading}
+                style={[styles.primaryButton, loading && styles.buttonDisabled]}
+                onPress={() => {
+                  void handleSubmit();
+                }}
+                disabled={loading}
                 accessible={true}
                 accessibilityLabel="Sign in"
                 accessibilityHint="Sign in with your email and password"
                 accessibilityRole="button"
-                accessibilityState={{ disabled: loading || googleLoading }}
+                accessibilityState={{ disabled: loading }}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -269,7 +189,7 @@ export default function LoginScreen() {
               <Text style={styles.footerText}>Don&apos;t have an account? </Text>
               <Pressable
                 onPress={() => router.push('/auth/signup')}
-                disabled={loading || googleLoading}
+                disabled={loading}
                 accessible={true}
                 accessibilityLabel="Sign up"
                 accessibilityHint="Navigate to sign up screen"
@@ -383,49 +303,6 @@ const styles = StyleSheet.create({
   formSection: {
     gap: DesignTokens.spacing.lg,
     marginBottom: DesignTokens.spacing.xl,
-  },
-  inputGroup: {
-    gap: DesignTokens.spacing.sm,
-  },
-  label: {
-    fontSize: DesignTokens.typography.sizes.sm,
-    fontWeight: DesignTokens.typography.weights.semibold,
-    color: DesignTokens.colors.primary.gray[700],
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: DesignTokens.dimensions.input.height,
-    borderRadius: DesignTokens.borderRadius.lg,
-    borderWidth: 1.5,
-    borderColor: DesignTokens.colors.primary.gray[300],
-    backgroundColor: DesignTokens.colors.primary.white,
-    paddingHorizontal: DesignTokens.spacing.md,
-  },
-  inputContainerFocused: {
-    borderColor: DesignTokens.colors.primary.blue,
-    backgroundColor: DesignTokens.colors.primary.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  inputContainerFilled: {
-    borderColor: DesignTokens.colors.primary.gray[300],
-    backgroundColor: DesignTokens.colors.primary.white,
-  },
-  inputIcon: {
-    marginRight: DesignTokens.spacing.sm,
-  },
-  input: {
-    flex: 1,
-    fontSize: DesignTokens.typography.sizes.base,
-    color: DesignTokens.colors.primary.gray[900],
-    paddingVertical: 0,
-  },
-  eyeButton: {
-    padding: DesignTokens.spacing.xs,
   },
   forgotLink: {
     fontSize: DesignTokens.typography.sizes.sm,
