@@ -57,7 +57,7 @@ export const PasswordStrengthIndicator = React.memo(
                 <Text
                   style={[
                     styles.requirementCheck,
-                    { color: req.met ? DesignTokens.colors.primary.semantic.success : DesignTokens.colors.primary.gray[400] },
+                    { color: req.met ? DesignTokens.colors.semantic.success : DesignTokens.colors.primary.gray[400] },
                   ]}
                 >
                   {req.met ? '✓' : '○'}

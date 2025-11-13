@@ -101,7 +101,7 @@ const FormInput = React.memo(
               isFocused
                 ? DesignTokens.colors.primary.blue
                 : hasError
-                  ? DesignTokens.colors.primary.semantic.error
+                  ? DesignTokens.colors.semantic.error
                   : DesignTokens.colors.primary.gray[400]
             }
             style={styles.inputIcon}
@@ -147,7 +147,7 @@ const FormInput = React.memo(
         {/* Error Message */}
         {error && (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={14} color={DesignTokens.colors.primary.semantic.error} />
+            <Ionicons name="alert-circle" size={14} color={DesignTokens.colors.semantic.error} />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   requiredBadge: {
     fontSize: DesignTokens.typography.sizes.sm,
     fontWeight: DesignTokens.typography.weights.bold,
-    color: DesignTokens.colors.primary.semantic.error,
+    color: DesignTokens.colors.semantic.error,
   },
 
   /* Input Container */
@@ -215,8 +215,8 @@ const styles = StyleSheet.create({
     backgroundColor: DesignTokens.colors.primary.white,
   },
   inputContainerError: {
-    borderColor: DesignTokens.colors.primary.semantic.error,
-    backgroundColor: DesignTokens.colors.primary.semantic.error + '05',
+    borderColor: DesignTokens.colors.semantic.error,
+    backgroundColor: DesignTokens.colors.semantic.error + '05',
   },
 
   /* Icon */
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: DesignTokens.typography.sizes.xs,
     fontWeight: DesignTokens.typography.weights.medium,
-    color: DesignTokens.colors.primary.semantic.error,
+    color: DesignTokens.colors.semantic.error,
   },
 });
 
