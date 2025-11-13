@@ -214,4 +214,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
 });
