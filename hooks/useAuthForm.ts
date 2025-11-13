@@ -69,50 +69,66 @@ export const useAuthForm = (
   const validateField = useCallback(
     (fieldName: string, value: string) => {
       const newErrors = { ...errors };
+      let hasError = false;
+      let errorMessage = '';
 
       switch (fieldName) {
         case 'email':
           if (!value.trim()) {
-            newErrors.email = 'Email is required';
+            errorMessage = 'Email is required';
+            hasError = true;
           } else if (!validateEmail(value)) {
-            newErrors.email = 'Please enter a valid email address';
-          } else {
-            delete newErrors.email;
+            errorMessage = 'Please enter a valid email address';
+            hasError = true;
           }
           break;
 
         case 'password':
           if (!value) {
-            newErrors.password = 'Password is required';
+            errorMessage = 'Password is required';
+            hasError = true;
           } else if (value.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters';
-          } else {
-            delete newErrors.password;
+            errorMessage = 'Password must be at least 8 characters';
+            hasError = true;
           }
           break;
 
         case 'fullName':
           if (!value.trim()) {
-            newErrors.fullName = 'Full name is required';
+            errorMessage = 'Full name is required';
+            hasError = true;
           } else if (!validateName(value)) {
-            newErrors.fullName = 'Please enter a valid name';
-          } else {
-            delete newErrors.fullName;
+            errorMessage = 'Please enter a valid name';
+            hasError = true;
           }
           break;
 
         case 'confirmPassword':
           if (!value) {
-            newErrors.confirmPassword = 'Please confirm your password';
+            errorMessage = 'Please confirm your password';
+            hasError = true;
           } else if (password && value !== password) {
-            newErrors.confirmPassword = 'Passwords do not match';
-          } else {
-            delete newErrors.confirmPassword;
+            errorMessage = 'Passwords do not match';
+            hasError = true;
           }
           break;
 
         default:
           break;
+      }
+
+      if (hasError) {
+        newErrors[fieldName as keyof AuthFormErrors] = errorMessage;
+      } else {
+        // Use Object.keys to safely remove property without delete operator
+        const updatedErrors = Object.keys(newErrors).reduce((acc, key) => {
+          if (key !== fieldName) {
+            acc[key] = newErrors[key];
+          }
+          return acc;
+        }, {} as AuthFormErrors);
+        setErrors(updatedErrors);
+        return;
       }
 
       setErrors(newErrors);
@@ -125,26 +141,24 @@ export const useAuthForm = (
    */
   const handleFieldChange = useCallback(
     (fieldName: string, value: string) => {
-      switch (fieldName) {
-        case 'email':
-          setEmail(value);
-          break;
-        case 'password':
-          setPassword(value);
-          break;
-        case 'fullName':
-          setFullName(value);
-          break;
-        case 'confirmPassword':
-          setConfirmPassword(value);
-          break;
-        default:
-          break;
+      // Update field value based on field name
+      if (fieldName === 'email') {
+        setEmail(value);
+      } else if (fieldName === 'password') {
+        setPassword(value);
+      } else if (fieldName === 'fullName') {
+        setFullName(value);
+      } else if (fieldName === 'confirmPassword') {
+        setConfirmPassword(value);
       }
 
       // Mark field as touched on first interaction
       if (!touched[fieldName]) {
-        setTouched((prev) => ({ ...prev, [fieldName]: true }));
+        setTouched((prev) => {
+          const updated = { ...prev };
+          updated[fieldName] = true;
+          return updated;
+        });
       }
 
       // Validate in real-time for touched fields to trigger required errors on clear
@@ -186,7 +200,11 @@ export const useAuthForm = (
    * Mark a field as touched to enable real-time validation
    */
   const markFieldTouched = useCallback((fieldName: string) => {
-    setTouched((prev) => ({ ...prev, [fieldName]: true }));
+    setTouched((prev) => {
+      const updated = { ...prev };
+      updated[fieldName] = true;
+      return updated;
+    });
   }, []);
 
   /**
@@ -209,9 +227,13 @@ export const useAuthForm = (
    */
   const clearFieldError = useCallback((fieldName: string) => {
     setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[fieldName];
-      return newErrors;
+      // Use Object.keys to safely remove property without delete operator
+      return Object.keys(prev).reduce((acc, key) => {
+        if (key !== fieldName) {
+          acc[key] = prev[key];
+        }
+        return acc;
+      }, {} as AuthFormErrors);
     });
   }, []);
 

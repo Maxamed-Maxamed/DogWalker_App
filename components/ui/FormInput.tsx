@@ -12,6 +12,7 @@ import {
   TextInputProps as RNTextInputProps,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
 import { DesignTokens } from '@/constants/designTokens';
 
@@ -45,7 +46,7 @@ interface FormInputProps extends Omit<RNTextInputProps, 'style'> {
   /** Custom keyboard type */
   keyboardType?: RNTextInputProps['keyboardType'];
   /** Input container style override */
-  containerStyle?: any;
+  containerStyle?: ViewStyle;
 }
 
 /**
