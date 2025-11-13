@@ -40,8 +40,7 @@ interface State {
  * </ErrorBoundary>
  */
 export class ErrorBoundary extends React.Component<Props, State> {
-  private errorStore: any;
-
+private errorStore: unknown;
   constructor(props: Props) {
     super(props);
     this.state = {
