@@ -19,7 +19,7 @@ export default function EditPetScreen() {
     if (pets.length === 0) {
       fetchPets();
     }
-  }, []);
+  }, [fetchPets, pets.length]);
 
   // Memoize pet lookup to avoid recalculation on every render
   const pet = useMemo(() => pets.find((p) => p.id === id) || null, [pets, id]);

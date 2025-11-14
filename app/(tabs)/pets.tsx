@@ -6,13 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,7 +24,7 @@ export default function PetsScreen() {
   // Fetch pets on mount only - fetchPets is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  }, []);
+  }, [fetchPets]);
 
   const handleRefresh = useCallback(() => {
     fetchPets();

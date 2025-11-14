@@ -23,7 +23,7 @@ export default function DashboardScreen() {
   // Fetch pets on mount only - fetchPets is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  }, []);
+  }, [fetchPets]);
 
   const handleLogout = useCallback(() => {
     Alert.alert(

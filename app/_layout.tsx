@@ -13,7 +13,7 @@
  */
 
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useNavigationContainerRef } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -23,6 +23,7 @@ import { CustomSplashScreen } from '@/components/splash-screen';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useBootstrapStore } from '@/stores/bootstrapStore';
 import { SplashScreenProvider } from '@/stores/splashScreenStore';
+import { Sentry, routingInstrumentation } from '@/utils/monitoring/sentry';
 
 // Prevent Expo splash from auto-hiding during initialization
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -33,14 +34,19 @@ SplashScreen.preventAutoHideAsync().catch(() => {
  * Main RootLayout component
  * Wraps the entire app with necessary providers and coordinates bootstrap
  */
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   const colorScheme = useColorScheme();
   const { phase, bootstrap } = useBootstrapStore();
+  const navigationRef = useNavigationContainerRef();
 
   // Trigger bootstrap on mount
   useEffect(() => {
     bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    routingInstrumentation.registerNavigationContainer(navigationRef);
+  }, [navigationRef]);
 
   // Hide Expo splash once bootstrap is ready or on error
   useEffect(() => {
@@ -58,7 +64,7 @@ export default function RootLayout() {
         <CustomSplashScreen />
 
         {/* Navigation stack */}
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack ref={navigationRef} screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -70,4 +76,4 @@ export default function RootLayout() {
       </ThemeProvider>
     </SplashScreenProvider>
   );
-}
+});

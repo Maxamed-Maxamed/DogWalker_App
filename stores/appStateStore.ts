@@ -40,7 +40,6 @@ export const useAppStateStore = create<AppState>((set, get) => ({
     } catch (error) {
       // Non-fatal: Theme preference persisting failed, will use system default
       if (__DEV__) {
-        // eslint-disable-next-line no-console
         console.warn('Failed to persist theme preference:', error);
       }
     }
@@ -53,7 +52,6 @@ export const useAppStateStore = create<AppState>((set, get) => ({
     } catch (error) {
       // Non-fatal: First launch flag persisting failed, user may see onboarding again
       if (__DEV__) {
-        // eslint-disable-next-line no-console
         console.warn('Failed to persist onboarding completion:', error);
       }
     }
