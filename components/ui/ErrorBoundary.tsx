@@ -92,32 +92,29 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    // Reset error boundary when resetKeys change
-    if (this.state.hasError) {
-      const prevKeys = prevProps.resetKeys ?? [];
-      const currKeys = this.props.resetKeys ?? [];
+  // Reset error boundary when resetKeys change
+  if (this.state.hasError) {
+    const prevKeys = prevProps.resetKeys ?? [];
+    const currKeys = this.props.resetKeys ?? [];
 
-      // FIXED: Secure key comparison to prevent object injection vulnerabilities
-      // Check if lengths differ or any element at same index differs
-      const hasResetKeyChanged =
-        prevKeys.length !== currKeys.length ||
-        prevKeys.some((key, index) => {
-          // Securely access array elements with bounds checking
-          // This prevents potential object injection sink vulnerabilities
-          if (index < 0 || index >= prevKeys.length || index >= currKeys.length) {
-            return false;
-          }
-          
-          // Use direct comparison with validated indices
-          // Both arrays are already type-checked as (string | number)[]
-          return key !== currKeys[index];
-        });
+    // Check if lengths differ or any element at same index differs
+    const hasResetKeyChanged =
+      prevKeys.length !== currKeys.length ||
+      !prevKeys.every((prevKey, index) => {
+        // Securely access array elements with bounds checking
+        // This prevents potential object injection sink vulnerabilities
+        if (index < 0 || index >= prevKeys.length || index >= currKeys.length) {
+          return false;
+        }
+        
+        return prevKey === currKeys[index];
+      });
 
-      if (hasResetKeyChanged) {
-        this.resetErrorBoundary();
-      }
+    if (hasResetKeyChanged) {
+      this.resetErrorBoundary();
     }
   }
+}
 
   resetErrorBoundary = (): void => {
     this.setState({
