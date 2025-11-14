@@ -1,13 +1,24 @@
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
 
-const DEFAULT_SENTRY_DSN =
-  'https://f648bd35e92e9f14d404ad2387b5a54d@o4510297697353728.ingest.de.sentry.io/4510364394651728';
-
 const routingInstrumentation = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: true,
   routeChangeTimeoutMs: 1200,
 });
+
+const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
+const isExpoGo = Constants.appOwnership === 'expo';
+const enableNativeSdk = !isExpoGo;
+
+if (__DEV__ && isExpoGo) {
+  console.info(
+    '[Sentry] Running inside Expo Go - disabling native SDK features. Use a dev build/EAS build to test native crash reporting.'
+  );
+}
+
+if (__DEV__ && !sentryDsn) {
+  console.warn('[Sentry] No EXPO_PUBLIC_SENTRY_DSN provided. Telemetry is disabled for this environment.');
+}
 
 const parseRate = (value: string | undefined, fallback: number) => {
   const parsed = Number(value);
@@ -31,13 +42,13 @@ const resolveRelease = () => {
 };
 
 Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? DEFAULT_SENTRY_DSN,
+  dsn: sentryDsn,
   environment: process.env.EXPO_PUBLIC_APP_ENV ?? (__DEV__ ? 'development' : 'production'),
   release: resolveRelease(),
   sendDefaultPii: false,
-  enableNative: true,
-  enableNativeCrashHandling: true,
-  enableWatchdogTerminationTracking: true,
+  enableNative: enableNativeSdk,
+  enableNativeCrashHandling: enableNativeSdk,
+  enableWatchdogTerminationTracking: enableNativeSdk,
   debug: __DEV__,
   enableAutoPerformanceTracing: true,
   enableAppStartTracking: true,
@@ -47,22 +58,26 @@ Sentry.init({
   replaysOnErrorSampleRate: parseRate(process.env.EXPO_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
   integrations: [
     routingInstrumentation,
-    Sentry.reactNativeTracingIntegration({
-      traceFetch: true,
-      traceXHR: true,
-      enableHTTPTimings: true,
-    }),
-    Sentry.mobileReplayIntegration({
-      maskAllText: true,
-      maskAllImages: true,
-      maskAllVectors: true,
-    }),
-    Sentry.feedbackIntegration({
-      colorScheme: 'system',
-    }),
-    Sentry.hermesProfilingIntegration({
-      platformProfilers: true,
-    }),
+    ...(enableNativeSdk
+      ? [
+          Sentry.reactNativeTracingIntegration({
+            traceFetch: true,
+            traceXHR: true,
+            enableHTTPTimings: true,
+          }),
+          Sentry.mobileReplayIntegration({
+            maskAllText: true,
+            maskAllImages: true,
+            maskAllVectors: true,
+          }),
+          Sentry.feedbackIntegration({
+            colorScheme: 'system',
+          }),
+          Sentry.hermesProfilingIntegration({
+            platformProfilers: true,
+          }),
+        ]
+      : []),
   ],
 });
 
