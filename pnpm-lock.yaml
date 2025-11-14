@@ -41,6 +41,9 @@ importers:
       expo-constants:
         specifier: ~18.0.10
         version: 18.0.10(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.1.0))
+      expo-crypto:
+        specifier: ~15.0.7
+        version: 15.0.7(expo@54.0.23)
       expo-font:
         specifier: ~14.0.9
         version: 14.0.9(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.1.0))(react@19.1.0)
@@ -129,6 +132,9 @@ importers:
       '@types/react':
         specifier: ~19.1.0
         version: 19.1.13
+      baseline-browser-mapping:
+        specifier: ^2.8.28
+        version: 2.8.28
       codacy-cli:
         specifier: ^0.2.0
         version: 0.2.0
@@ -1942,8 +1948,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  baseline-browser-mapping@2.8.4:
-    resolution: {integrity: sha512-L+YvJwGAgwJBV1p6ffpSTa2KRc69EeeYGYjRVWKs0GKrK+LON0GC0gV+rKSNtALEDvMDqkvCFq9r1r94/Gjwxw==}
+  baseline-browser-mapping@2.8.28:
+    resolution: {integrity: sha512-gYjt7OIqdM0PcttNYP2aVrr2G0bMALkBaoehD4BuRGjAOtipg0b6wHg1yNL+s5zSnLZZrGHOw4IrND8CD+3oIQ==}
     hasBin: true
 
   better-opn@3.0.2:
@@ -2567,6 +2573,11 @@ packages:
     peerDependencies:
       expo: '*'
       react-native: '*'
+
+  expo-crypto@15.0.7:
+    resolution: {integrity: sha512-FUo41TwwGT2e5rA45PsjezI868Ch3M6wbCZsmqTWdF/hr+HyPcrp1L//dsh/hsrsyrQdpY/U96Lu71/wXePJeg==}
+    peerDependencies:
+      expo: '*'
 
   expo-file-system@19.0.17:
     resolution: {integrity: sha512-WwaS01SUFrxBnExn87pg0sCTJjZpf2KAOzfImG0o8yhkU7fbYpihpl/oocXBEsNbj58a8hVt1Y4CVV5c1tzu/g==}
@@ -7481,7 +7492,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  baseline-browser-mapping@2.8.4: {}
+  baseline-browser-mapping@2.8.28: {}
 
   better-opn@3.0.2:
     dependencies:
@@ -7516,7 +7527,7 @@ snapshots:
 
   browserslist@4.26.2:
     dependencies:
-      baseline-browser-mapping: 2.8.4
+      baseline-browser-mapping: 2.8.28
       caniuse-lite: 1.0.30001743
       electron-to-chromium: 1.5.220
       node-releases: 2.0.21
@@ -8247,6 +8258,11 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.1.0)
     transitivePeerDependencies:
       - supports-color
+
+  expo-crypto@15.0.7(expo@54.0.23):
+    dependencies:
+      base64-js: 1.5.1
+      expo: 54.0.23(@babel/core@7.28.4)(@expo/metro-runtime@6.1.2)(expo-router@6.0.14)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.1.0))(react@19.1.0)
 
   expo-file-system@19.0.17(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.13)(react@19.1.0)):
     dependencies:
