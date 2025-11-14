@@ -16,7 +16,7 @@ export default function TabLayout() {
   const setCurrentTab = useNavigationStore((state) => state.setCurrentTab);
 
   const createTabListeners = useCallback(
-    (route: TabRoute) => () => ({
+    (route: TabRoute) => ({
       tabPress: () => setCurrentTab(route),
     }),
     [setCurrentTab]
