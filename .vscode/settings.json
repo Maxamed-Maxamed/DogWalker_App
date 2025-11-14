@@ -1,23 +1,8 @@
-// {
-//   "editor.codeActionsOnSave": {
-//     "source.fixAll": "explicit",
-//     "source.organizeImports": "explicit",
-//     "source.sortMembers": "explicit"
-//   },
-//   "codeQL.createQuery.qlPackLocation": "c:\\Users\\slluser\\Desktop\\Dog-Walker\\dogwalker\\DogWalker"
-// }
-
 {
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "codeQL.createQuery.qlPackLocation": "c:\\Users\\slluser\\Desktop\\Dog-Walker\\dogwalker\\DogWalker",
-  "github.copilot.mcp.servers": {
-    "clear-thought": {
-      "type": "http",
-      "url": "http://localhost:6969/mcp"
-    }
-  }
+  "chat.todoListTool.writeOnly": false
 }

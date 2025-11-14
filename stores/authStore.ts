@@ -1,12 +1,18 @@
 import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 import { create } from 'zustand';
 
+import { useErrorStore } from './errorStore';
+
 type User = {
   id?: string;
   name?: string;
   email?: string;
 };
 
+/**
+ * Authentication state type
+ * Manages user authentication, session persistence, and auth-related errors
+ */
 type AuthState = {
   user: User | null;
   token: string | null;
@@ -18,6 +24,7 @@ type AuthState = {
   logout: () => Promise<void>;
   restore: () => Promise<void>;
   initialize: () => Promise<void>;
+  clearError: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -28,11 +35,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   initialize: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
       await get().restore();
-    } finally {
-      set({ isLoading: false, isInitialized: true });
+      set({ isInitialized: true, isLoading: false });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to restore session';
+      
+      // Log to error store
+      const errorStore = useErrorStore.getState();
+      errorStore.addError({
+        level: 'error',
+        message: errorMessage,
+        context: { error: errorMessage, action: 'restore_session' },
+      });
+
+      // Still mark as initialized even on error
+      set({ 
+        isInitialized: true, 
+        isLoading: false, 
+        error: errorMessage 
+      });
     }
   },
 
@@ -224,6 +247,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // fallback: nothing to restore for mock
     return;
+  },
+
+  clearError: () => {
+    set({ error: null });
   },
 }));
 
