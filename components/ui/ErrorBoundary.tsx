@@ -42,6 +42,23 @@ interface State {
 export class ErrorBoundary extends React.Component<Props, State> {
   private errorStore: ReturnType<typeof useErrorStore.getState>;
 
+  private static sanitizeResetKeys(keys?: (string | number)[]): (string | number)[] {
+    if (!Array.isArray(keys)) {
+      return [];
+    }
+
+    return keys.filter((key): key is string | number => {
+      const keyType = typeof key;
+      return keyType === 'string' || keyType === 'number';
+    });
+  }
+
+  private static createResetKeySignature(keys: (string | number)[]): string {
+    return keys
+      .map((key) => `${typeof key}:${String(key)}`)
+      .join('|');
+  }
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -94,20 +111,18 @@ export class ErrorBoundary extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     // Reset error boundary when resetKeys change
     if (this.state.hasError) {
-      const prevKeys = prevProps.resetKeys ?? [];
-      const currKeys = this.props.resetKeys ?? [];
+      const prevKeys = ErrorBoundary.sanitizeResetKeys(prevProps.resetKeys);
+      const currKeys = ErrorBoundary.sanitizeResetKeys(this.props.resetKeys);
 
       let hasResetKeyChanged = false;
       if (prevKeys.length !== currKeys.length) {
         hasResetKeyChanged = true;
       } else {
-        for (let i = 0; i < prevKeys.length; i++) {
-          // The index `i` is guaranteed to be a number and within bounds for prevKeys.
-          // We also check against currKeys length inside the loop.
-          if (i >= currKeys.length || prevKeys[i] !== currKeys[i]) {
-            hasResetKeyChanged = true;
-            break;
-          }
+        const prevSignature = ErrorBoundary.createResetKeySignature(prevKeys);
+        const currSignature = ErrorBoundary.createResetKeySignature(currKeys);
+
+        if (prevSignature !== currSignature) {
+          hasResetKeyChanged = true;
         }
       }
 
