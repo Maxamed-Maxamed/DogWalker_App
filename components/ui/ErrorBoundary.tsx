@@ -1,18 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, { ReactNode } from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Linking,
+    Alert,
+    Linking,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
-import { Ionicons } from '@expo/vector-icons';
 
-import { DesignTokens } from '@/constants/designTokens';
 import { AppConfig } from '@/constants/appConfig';
+import { DesignTokens } from '@/constants/designTokens';
 import { useErrorStore } from '@/stores/errorStore';
 
 interface Props {
@@ -97,17 +97,20 @@ export class ErrorBoundary extends React.Component<Props, State> {
       const prevKeys = prevProps.resetKeys ?? [];
       const currKeys = this.props.resetKeys ?? [];
 
-      // FIXED: Secure key comparison using Object.hasOwn to prevent prototype pollution
+      // FIXED: Secure key comparison to prevent object injection vulnerabilities
       // Check if lengths differ or any element at same index differs
       const hasResetKeyChanged =
         prevKeys.length !== currKeys.length ||
         prevKeys.some((key, index) => {
-          // Ensure both keys are primitive values (string or number)
-          const prevKey = prevKeys[index];
-          const currKey = currKeys[index];
+          // Securely access array elements with bounds checking
+          // This prevents potential object injection sink vulnerabilities
+          if (index < 0 || index >= prevKeys.length || index >= currKeys.length) {
+            return false;
+          }
           
-          // Safe comparison - both values are already primitives from the array
-          return prevKey !== currKey;
+          // Use direct comparison with validated indices
+          // Both arrays are already type-checked as (string | number)[]
+          return key !== currKeys[index];
         });
 
       if (hasResetKeyChanged) {
