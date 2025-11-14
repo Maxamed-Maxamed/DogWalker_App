@@ -103,7 +103,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
       !prevKeys.every((prevKey, index) => {
         // Securely access array elements with bounds checking
         // This prevents potential object injection sink vulnerabilities
-        if (index < 0 || index >= prevKeys.length || index >= currKeys.length) {
+        if (
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index >= prevKeys.length ||
+          index >= currKeys.length
+        ) {
           return false;
         }
         
