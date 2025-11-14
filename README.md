@@ -1,5 +1,6 @@
 # 🐕 Dog Walker App
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a69dfc1ea5b149acac335716eb533249)](https://app.codacy.com/gh/Maxamed-Maxamed/DogWalker_App?utm_source=github.com&utm_medium=referral&utm_content=Maxamed-Maxamed/DogWalker_App&utm_campaign=Badge_Grade)
 [![React Native](https://img.shields.io/badge/React%20Native-0.74-blue.svg)](https://reactnative.dev/)
 [![Expo SDK](https://img.shields.io/badge/Expo%20SDK-54-000000.svg)](https://expo.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6.svg)](https://www.typescriptlang.org/)
