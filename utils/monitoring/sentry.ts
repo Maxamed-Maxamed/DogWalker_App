@@ -6,7 +6,6 @@ const DEFAULT_SENTRY_DSN =
 
 const routingInstrumentation = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: true,
-  enableTimeToFullDisplay: true,
   routeChangeTimeoutMs: 1200,
 });
 
@@ -31,20 +30,6 @@ const resolveRelease = () => {
   return version ? `${identifier}@${version}` : undefined;
 };
 
-const traceTargets: (string | RegExp)[] = [
-  /https:\/\/.*supabase\.co/, // capture Supabase traffic for tracing
-  /localhost(:\d+)?/,
-  /10\.0\.2\.2(?::\d+)?/,
-];
-
-if (process.env.EXPO_PUBLIC_SUPABASE_URL) {
-  traceTargets.push(process.env.EXPO_PUBLIC_SUPABASE_URL);
-}
-
-if (process.env.EXPO_PUBLIC_API_URL) {
-  traceTargets.push(process.env.EXPO_PUBLIC_API_URL);
-}
-
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? DEFAULT_SENTRY_DSN,
   environment: process.env.EXPO_PUBLIC_APP_ENV ?? (__DEV__ ? 'development' : 'production'),
@@ -61,15 +46,11 @@ Sentry.init({
   replaysSessionSampleRate: parseRate(process.env.EXPO_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE, 0.05),
   replaysOnErrorSampleRate: parseRate(process.env.EXPO_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE, 1),
   integrations: [
+    routingInstrumentation,
     Sentry.reactNativeTracingIntegration({
-      routingInstrumentation,
-      enableTimeToInitialDisplay: true,
-      enableTimeToFullDisplay: true,
       traceFetch: true,
       traceXHR: true,
       enableHTTPTimings: true,
-      enableStallTracking: true,
-      tracePropagationTargets: traceTargets,
     }),
     Sentry.mobileReplayIntegration({
       maskAllText: true,
@@ -85,4 +66,5 @@ Sentry.init({
   ],
 });
 
-export { Sentry, routingInstrumentation };
+export { routingInstrumentation, Sentry };
+

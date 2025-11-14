@@ -19,7 +19,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "@rneui/themed": "4.0.0-rc.8",
-    "@sentry/react-native": "^7.6.0",
+    "@sentry/react-native": "^7.2.0",
     "@supabase/supabase-js": "^2.77.0",
     "expo": "~54.0.23",
     "expo-clipboard": "~8.0.7",
