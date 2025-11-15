@@ -21,14 +21,13 @@ import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useAuthStore } from '@/stores/authStore';
 import { useBootstrapStore } from '@/stores/bootstrapStore';
 import { SplashScreenProvider } from '@/stores/splashScreenStore';
 import { Sentry, routingInstrumentation } from '@/utils/monitoring/sentry';
 
 export const unstable_settings = {
   initialRouteName: 'index',
-  anchor: 'index',
+  anchor: 'DogOfOwner',
 };
 
 // Prevent Expo splash from auto-hiding during initialization
@@ -43,9 +42,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 export default Sentry.wrap(function RootLayout() {
   const colorScheme = useColorScheme();
   const { phase, bootstrap } = useBootstrapStore();
-  const user = useAuthStore((state) => state.user);
   const navigationRef = useNavigationContainerRef();
-  const isLoggedIn = Boolean(user);
 
   // Trigger bootstrap on mount
   useEffect(() => {
@@ -74,15 +71,8 @@ export default Sentry.wrap(function RootLayout() {
         {/* Navigation stack */}
         <Stack ref={navigationRef} screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
-
-          <Stack.Protected guard={!isLoggedIn}>
-            <Stack.Screen name="welcome" options={{ headerShown: false }} />
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-          </Stack.Protected>
-
-          <Stack.Protected guard={isLoggedIn}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack.Protected>
+          <Stack.Screen name="DogOfOwner" options={{ headerShown: false }} />
+          <Stack.Screen name="DogWalker" options={{ headerShown: false }} />
         </Stack>
 
         {/* Status bar */}

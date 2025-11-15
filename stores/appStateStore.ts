@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { useErrorStore } from './errorStore';
 
 type ThemePref = 'light' | 'dark' | 'system';
+type Persona = 'owner' | 'walker';
 
 /**
  * App state type
@@ -14,9 +15,11 @@ type AppState = {
   initialized: boolean;
   firstLaunch: boolean; // persisted
   themePreference: ThemePref; // placeholder for future switching
+  activePersona: Persona;
   error: string | null;
   setThemePreference: (pref: ThemePref) => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  setActivePersona: (persona: Persona) => Promise<void>;
   init: () => Promise<void>;
   clearError: () => void;
 };
@@ -24,6 +27,7 @@ type AppState = {
 const STORAGE_KEYS = {
   FIRST_LAUNCH: 'app:firstLaunch',
   THEME_PREF: 'app:themePreference',
+  PERSONA: 'app:persona',
 };
 
 export const useAppStateStore = create<AppState>((set, get) => ({
@@ -31,6 +35,7 @@ export const useAppStateStore = create<AppState>((set, get) => ({
   initialized: false,
   firstLaunch: true,
   themePreference: 'system',
+  activePersona: 'owner',
   error: null,
 
   setThemePreference: async (pref: ThemePref) => {
@@ -57,19 +62,33 @@ export const useAppStateStore = create<AppState>((set, get) => ({
     }
   },
 
+  setActivePersona: async (persona: Persona) => {
+    set({ activePersona: persona });
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.PERSONA, persona);
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('Failed to persist persona selection:', error);
+      }
+    }
+  },
+
   init: async () => {
     if (get().initialized) return; // idempotent
     set({ initializing: true, error: null });
     try {
-      const [firstLaunchStr, themePref] = await Promise.all([
+      const [firstLaunchStr, themePref, personaPref] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.FIRST_LAUNCH),
         AsyncStorage.getItem(STORAGE_KEYS.THEME_PREF),
+        AsyncStorage.getItem(STORAGE_KEYS.PERSONA),
       ]);
 
       const firstLaunch = firstLaunchStr == null ? true : firstLaunchStr !== 'false';
+      const activePersona = personaPref === 'walker' ? 'walker' : 'owner';
       set({
         firstLaunch,
         themePreference: (themePref as ThemePref) || 'system',
+        activePersona,
         initializing: false,
         initialized: true,
       });
