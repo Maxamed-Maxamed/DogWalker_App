@@ -89,6 +89,34 @@ Dog Walker is YOUR local dog walking business where:
 
 ---
 
+## 🧱 **Architecture Inventory – November 14, 2025**
+
+| Layer | Current Implementation | Notes |
+| --- | --- | --- |
+| Root layout | `app/_layout.tsx` hosts the global `Stack`, theme provider, splash overlay, and bootstrap wiring. Routing instrumentation registers with Sentry but no guards or initial route hints are configured. | Expo Router docs (Context7 `/expo/expo`, Common Navigation Patterns) recommend declaring `initialRouteName` / anchors to keep deep links behind auth gates. |
+| Entry orchestration | `app/index.tsx` routes users after `useBootstrapStore` completes. Redirect logic prioritizes authenticated tabs, then onboarding, then auth screens. Failure surfaces a static error message. | Bootstrap phases (`initializing`, `ready`, `error`) are coarse and lack per-system diagnostics for AppState vs Auth. |
+| Auth & welcome flows | `app/auth/_layout.tsx` and `app/welcome/_layout.tsx` mount simple stacks with hidden headers. Screens rely on router redirects rather than guarded stacks. | No modal presentation or anchoring; welcome stack manually enumerates `index` and `onboarding`. |
+| Tab surface | `app/(tabs)/_layout.tsx` defines Dashboard, Pets, Explore tabs with shared Haptic tab button and themed colors. There is no linkage to `useNavigationStore`, so tab state is entirely local to React Navigation. | `unstable_settings` is not exported for the group, so deep links may skip essential entry steps. |
+| State stores | `stores/bootstrapStore.ts`, `appStateStore.ts`, `authStore.ts`, `navigationStore.ts`, `splashScreenStore.tsx`, `petStore.ts` provide initialization, onboarding persistence, session restore, navigation tab tracking, splash visibility, and pet CRUD. | Stores follow ad-hoc contracts (e.g., `{phase,error}` vs `{isLoading,isInitialized}`), and only `bootstrapStore` coordinates sequencing. No selectors or shared `{loading,error,data}` shape yet. |
+| Splash + monitoring | `CustomSplashScreen` plus `SplashScreenProvider` overlay while Expo splash is held. Sentry wrapper decorates `RootLayout`, but bootstrap timings/spans are not recorded. | Day 2 plan calls for declarative bootstrap phases with instrumentation. |
+
+---
+
+## ⚠️ **Architecture Gap Backlog – November 14, 2025**
+
+1. **GW-001 – Navigation store drift (`stores/navigationStore.ts` vs `app/(tabs)/_layout.tsx`)**  
+	Store only tracks `dashboard`/`explore`, so any tab state derived from it will ignore the new Pets tab. No observer ties store updates to `Tabs`, leaving future cross-tab actions without a source of truth.
+2. **GW-002 – Missing guarded route groups (`app/_layout.tsx`)**  
+	Current stack exposes `(tabs)` and `auth` peers without `Stack.Protected` or an anchor. Deep links can bypass `app/index.tsx` redirects, contradicting Expo Router guidance (Context7 `/expo/expo`, Protected Routes) and trust/safety requirements.
+3. **GW-003 – Bootstrap diagnostics gap (`stores/bootstrapStore.ts`)**  
+	Bootstrap is a single try/catch around AppState + Auth. There are no per-phase timestamps, retries, or Sentry spans, making it hard to identify whether onboarding persistence, Supabase restore, or secure storage is failing. Acceptance criterion: capture phase-level duration + error context before Day 2 refactor.
+4. **GW-004 – Theme/onboarding persistence not validated (`stores/appStateStore.ts`, `app/index.tsx`)**  
+	`firstLaunch` relies on AsyncStorage but there is no verification hook ensuring `completeOnboarding()` runs (no call site in onboarding flow today). Risk: returning users may be trapped in welcome loop until manual storage clear.
+5. **GW-005 – Walker flows missing placeholder issues**  
+	Dashboard references booking CTA and future walker tracking, yet there is no service or route group for booking (`app/booking/*`). Need backlog item to introduce route guard + stub screens before integrating live data.
+
+---
+
 ## 🎯 **MVP Feature Scope**
 
 ### **Phase 1: Core Pet Owner Experience**

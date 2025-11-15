@@ -1,5 +1,5 @@
+import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
-import crypto from 'crypto';
 
 export type ErrorLevel = 'warning' | 'error' | 'critical';
 
@@ -47,7 +47,7 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
 
   addError: (error) => {
     // Generate cryptographically secure random ID instead of Math.random()
-    const id = crypto.randomBytes(6).toString('hex');
+    const id = Crypto.randomUUID();
     const newError: AppError = {
       ...error,
       id,
