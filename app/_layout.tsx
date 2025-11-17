@@ -52,8 +52,10 @@ export default Sentry.wrap(function RootLayout() {
   useEffect(() => {
     // Only register when the navigation ref becomes available/ready
     try {
-      if (navigationRef && (navigationRef as any).current) {
-        routingInstrumentation.registerNavigationContainer(navigationRef);
+      if (navigationRef && navigationRef.current) {
+        // routingInstrumentation expects the actual NavigationContainerRef instance.
+        // Pass the `.current` value (non-null checked above) to avoid unsafe casts.
+        routingInstrumentation.registerNavigationContainer(navigationRef.current);
       }
     } catch (e) {
       // Avoid crashing the app if registration fails

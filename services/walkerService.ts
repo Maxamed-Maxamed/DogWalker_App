@@ -1,7 +1,8 @@
 import { Booking, Walk, WalkPhoto } from '@/types/walker';
 import { supabase } from '@/utils/supabase';
 
-const ALLOWED_BOOKING_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'] as const;
+// Sync ALLOWED_BOOKING_STATUSES with type
+const ALLOWED_BOOKING_STATUSES = ['requested', 'accepted', 'cancelled', 'completed', 'in_progress'] as const;
 
 function validateWalkerId(walkerId: string) {
   if (!walkerId || typeof walkerId !== 'string' || !walkerId.trim()) {
@@ -217,6 +218,34 @@ export async function getActiveWalkForWalker(walkerId: string) {
   return data as Walk | null;
 }
 
+// Add booking status validation
+export function validateBookingStatus(status: any) {
+  if (status && !ALLOWED_BOOKING_STATUSES.includes(status)) {
+    throw new Error(`Invalid booking status: ${status}`);
+  }
+}
+
+// Make booking status update blocking/retry
+async function updateBookingStatus(bookingId: string, status: string) {
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status })
+    .eq('id', bookingId);
+
+  if (error) {
+    // Retry once more on failure
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const { error: retryError } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId);
+
+    if (retryError) {
+      throw retryError;
+    }
+  }
+}
+
 export default {
   createBooking,
   getBookingsForWalker,
@@ -224,4 +253,6 @@ export default {
   endWalk,
   uploadWalkPhoto,
   getActiveWalkForWalker,
+  validateBookingStatus,
+  updateBookingStatus,
 };

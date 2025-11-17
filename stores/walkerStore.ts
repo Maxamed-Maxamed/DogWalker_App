@@ -1,7 +1,6 @@
 import { createBooking, endWalk, getBookingsForWalker, startWalk, uploadWalkPhoto } from '@/services/walkerService';
 import { Booking, Walk, WalkPhoto } from '@/types/walker';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert } from 'react-native';
 import { create } from 'zustand';
 
 interface WalkerState {
@@ -88,7 +87,6 @@ export const useWalkerStore = create<WalkerState>((set, get) => ({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to upload photo';
       console.error('uploadWalkPhoto error:', message);
-      Alert.alert('Upload failed', message);
       set({ error: message, loading: false });
       return null;
     }

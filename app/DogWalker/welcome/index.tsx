@@ -46,8 +46,12 @@ export default function WelcomeScreen() {
         await setActivePersona('owner');
         router.replace('/DogOfOwner/welcome');
       } catch (error) {
-        // Show user-friendly message in both dev and production
-        Alert.alert('Could not switch to owner persona', 'Could not switch to owner persona. Please try again.');
+        // Show actionable error if persona switch fails
+        Alert.alert(
+          'Switch Failed',
+          'Could not switch to Pet Owner. Please try again or change your persona from Settings.',
+          [{ text: 'OK', style: 'cancel' }],
+        );
         console.error('Failed to switch persona:', error);
         return;
       }

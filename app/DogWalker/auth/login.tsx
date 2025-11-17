@@ -51,8 +51,8 @@ export default function LoginScreen() {
 
   const handleGoogleSignIn = async () => {
     try {
-      // TODO: Implement Google Sign-In
-      Alert.alert('Coming Soon', 'Google Sign-In will be implemented tomorrow!');
+      // Update stale Google Sign-In alert
+      Alert.alert('Google Sign-In', 'This feature is coming soon. Please use email/password login in the meantime.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Google sign-in failed';
       Alert.alert('Sign In Error', message);

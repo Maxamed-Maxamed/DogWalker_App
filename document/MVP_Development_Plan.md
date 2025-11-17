@@ -541,7 +541,7 @@ sequenceDiagram
     App->>Supabase: 14. Insert payment record
 ``` 
 # 20. State Management (Zustand)
-# 20. State Management (Zustand)
+
 
 Global state is managed using Zustand, with separate stores for each domain. This keeps the state atomic, manageable, and easy to test.
 
@@ -629,7 +629,6 @@ Guards are implemented in the `_layout.tsx` files of the route groups to protect
     * If `role === 'walker'`, it redirects to the `(walker)` layout (e.g., `/dashboard`).
     * This ensures an owner can never access a walker-specific screen and vice-versa.
 
-# 22. DevOps, CI/CD, QA
 # 22. DevOps, CI/CD, QA
 
 ### Tools

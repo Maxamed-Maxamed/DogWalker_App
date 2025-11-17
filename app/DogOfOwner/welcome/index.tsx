@@ -13,7 +13,6 @@ import { useAppStateStore } from '@/stores/appStateStore';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-const PRIMARY_COLOR = Colors.light.tint;
 const TERMS_URL = 'https://dogwalker.app/legal';
 
 const KEY_FEATURES: { icon: IconName; title: string; color: string }[] = [
@@ -27,6 +26,7 @@ export default function WelcomeScreen() {
   const isDark = colorScheme === 'dark';
   const tintColor = Colors[colorScheme ?? 'light'].tint;
   const setActivePersona = useAppStateStore((state) => state.setActivePersona);
+  // tintColor is used inline; no top-level runtime color variables required
 
   const handleGetStarted = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -136,10 +136,9 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   heroSection: {
-    flex: 0.5, // Takes 50% of available space
+    flex: 0.5, // Fix misleading comment for heroSection flex ratio
   },
   heroImage: {
     width: '100%',
@@ -193,13 +192,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   primaryButton: {
-    backgroundColor: PRIMARY_COLOR,
+    backgroundColor: Colors.light.tint,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: PRIMARY_COLOR,
+    shadowColor: Colors.light.tint,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,

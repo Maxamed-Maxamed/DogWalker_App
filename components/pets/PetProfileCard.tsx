@@ -38,8 +38,8 @@ export function PetProfileCard({ pet }: PetProfileCardProps) {
   };
 
   const handleEdit = () => {
-    // router typing is narrow for file-based routes; cast to any to avoid template literal union mismatch
-    router.push((`/pets/${pet.id}/edit`) as unknown as any);
+    // Use the full, typed pathname from the app routes so the router's union matches
+    router.push({ pathname: '/DogOfOwner/pets/[id]/edit', params: { id: pet.id } });
   };
 
   return (

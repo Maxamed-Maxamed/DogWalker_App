@@ -290,9 +290,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    // <SafeAreaView style={styles.container}>
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      
       <ThemedView style={styles.content}>
         {currentSlide.showSkip && (
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
@@ -367,10 +365,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   skipButton: {
-    // alignSelf: 'flex-end',
-    // paddingTop: 20,
-    // paddingBottom: 16,
-    // paddingHorizontal: 4,
     alignSelf: 'flex-end',
     paddingTop: 20,
     paddingBottom: 16,

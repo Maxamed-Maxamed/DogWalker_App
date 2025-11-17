@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
@@ -23,8 +24,6 @@ type Slide = {
   secondaryAction?: SlideAction;
   showSkip?: boolean;
 };
-
-const primaryColor = Colors.light.tint;
 
 const slides: Slide[] = [
   {
@@ -82,6 +81,7 @@ export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(1));
   const [slideAnim] = useState(new Animated.Value(0));
+  const primaryColor = useThemeColor({}, 'tint');
 
   const currentSlide = slides[currentIndex];
   const isFinalSlide = currentSlide.type === 'final';
@@ -266,16 +266,16 @@ export default function OnboardingScreen() {
         <View style={styles.ratingBody}>
           <View style={styles.avatarRow}>
             {[0, 1, 2].map((i) => (
-              <View
-                key={i}
-                style={[styles.avatar, { zIndex: 3 - i, marginLeft: i === 0 ? 0 : -12 }]}
-                accessible
-                accessibilityRole="image"
-                accessibilityLabel={`Walker avatar ${i + 1}`}
-              >
-                <Ionicons name="paw" size={16} color="#fff" />
-              </View>
-            ))}
+                <View
+                  key={i}
+                  style={[styles.avatar, { backgroundColor: primaryColor, zIndex: 3 - i, marginLeft: i === 0 ? 0 : -12 }]}
+                  accessible
+                  accessibilityRole="image"
+                  accessibilityLabel={`Walker avatar ${i + 1}`}
+                >
+                  <Ionicons name="paw" size={16} color="#fff" />
+                </View>
+              ))}
           </View>
           <ThemedText style={styles.ratingQuote}>“Always on time, always caring.”</ThemedText>
           <ThemedText style={styles.ratingAuthor}>— Maria & Max</ThemedText>
@@ -363,7 +363,7 @@ export default function OnboardingScreen() {
           {!isFinalSlide ? (
             <View style={styles.actionsStack}>
               <TouchableOpacity
-                style={styles.primaryButton}
+                style={[styles.primaryButton, { backgroundColor: primaryColor, shadowColor: primaryColor }]}
                 onPress={handlePrimaryPress}
                 activeOpacity={0.9}
                 accessibilityRole="button"
@@ -388,7 +388,7 @@ export default function OnboardingScreen() {
           ) : (
             <View style={styles.actionsStack}>
               <TouchableOpacity
-                style={styles.finalPrimaryButton}
+                style={[styles.finalPrimaryButton, { backgroundColor: primaryColor, shadowColor: primaryColor }]}
                 onPress={handlePrimaryPress}
                 activeOpacity={0.9}
                 accessibilityRole="button"
@@ -581,7 +581,8 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: primaryColor,
+    // theme-aware color is applied inline at render time; use default tint as fallback
+    backgroundColor: Colors.light.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -652,9 +653,10 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: primaryColor,
+    // backgroundColor and shadow are applied inline using the runtime theme color
+    backgroundColor: Colors.light.tint,
     alignItems: 'center',
-    shadowColor: primaryColor,
+    shadowColor: Colors.light.tint,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
@@ -677,9 +679,9 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: primaryColor,
+    backgroundColor: Colors.light.tint,
     alignItems: 'center',
-    shadowColor: primaryColor,
+    shadowColor: Colors.light.tint,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
