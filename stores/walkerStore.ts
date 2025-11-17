@@ -68,8 +68,8 @@ export const useWalkerStore = create<WalkerState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const data = await endWalk(walkId, updates);
-      // Clear activeWalk if it matches
-      set((state) => ({ activeWalk: state.activeWalk?.id === data.id ? data : state.activeWalk, loading: false }));
+      // Clear activeWalk if it matches the ended walk
+      set((state) => ({ activeWalk: state.activeWalk?.id === data.id ? null : state.activeWalk, loading: false }));
       return data;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to end walk';

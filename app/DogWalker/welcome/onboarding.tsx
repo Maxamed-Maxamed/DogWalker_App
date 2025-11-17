@@ -170,7 +170,15 @@ export default function OnboardingScreen() {
   const renderWelcome = () => (
     <View style={styles.centerContent}>
       <View style={styles.brandRow}>
-        <Image source={require('@/assets/images/newlogo.png')} style={styles.brandLogo} resizeMode="contain" />
+        <Image
+          source={require('@/assets/images/newlogo.png')}
+          style={styles.brandLogo}
+          resizeMode="contain"
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel="DogWalker logo"
+          accessibilityHint="App brand logo"
+        />
         <ThemedText style={styles.brandName}>DogWalker</ThemedText>
       </View>
       <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
@@ -185,11 +193,22 @@ export default function OnboardingScreen() {
           source={require('@/assets/images/happydog.png')}
           style={styles.heroImage}
           resizeMode="cover"
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel="Happy dog"
+          accessibilityHint="Decorative hero image showing a happy dog"
         />
       </View>
       <View style={styles.badgeCluster}>
         {['Background checks', 'Insurance', '24/7 support'].map((label) => (
-          <View key={label} style={styles.badge}>
+          <View
+            key={label}
+            style={styles.badge}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`Feature: ${label}`}
+            accessibilityHint="Trust and safety feature"
+          >
             <Ionicons name="checkmark-circle" size={16} color={primaryColor} />
             <ThemedText style={styles.badgeText}>{label}</ThemedText>
           </View>
@@ -213,7 +232,14 @@ export default function OnboardingScreen() {
         <ThemedText style={styles.subtitle}>{currentSlide.description}</ThemedText>
         <View style={styles.cardGrid}>
           {steps.map((step) => (
-            <View key={step.title} style={styles.infoCard}>
+            <View
+              key={step.title}
+              style={styles.infoCard}
+              accessible
+              accessibilityRole="text"
+              accessibilityLabel={`How it works: ${step.title}`}
+              accessibilityHint={step.body}
+            >
               <View style={styles.infoIconWrap}>
                 <Ionicons name={step.icon} size={24} color={primaryColor} />
               </View>
@@ -239,7 +265,13 @@ export default function OnboardingScreen() {
         <View style={styles.ratingBody}>
           <View style={styles.avatarRow}>
             {[0, 1, 2].map((i) => (
-              <View key={i} style={[styles.avatar, { zIndex: 3 - i, marginLeft: i === 0 ? 0 : -12 }]}>
+              <View
+                key={i}
+                style={[styles.avatar, { zIndex: 3 - i, marginLeft: i === 0 ? 0 : -12 }]}
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel={`Walker avatar ${i + 1}`}
+              >
                 <Ionicons name="paw" size={16} color="#fff" />
               </View>
             ))}
@@ -288,12 +320,16 @@ export default function OnboardingScreen() {
   };
 
   return (
-    // <SafeAreaView style={styles.container}>
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      
       <ThemedView style={styles.content}>
         {currentSlide.showSkip && (
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={handleSkip}
+            accessibilityRole="button"
+            accessibilityLabel="Skip onboarding"
+            accessibilityHint="Skip to the final onboarding screen where you can create an account"
+          >
             <ThemedText style={styles.skipText}>Skip</ThemedText>
           </TouchableOpacity>
         )}
@@ -325,26 +361,60 @@ export default function OnboardingScreen() {
 
           {!isFinalSlide ? (
             <View style={styles.actionsStack}>
-              <TouchableOpacity style={styles.primaryButton} onPress={handlePrimaryPress} activeOpacity={0.9}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handlePrimaryPress}
+                activeOpacity={0.9}
+                accessibilityRole="button"
+                accessibilityLabel={`${currentSlide.primaryCta} button`}
+                accessibilityHint={currentSlide.primaryAction === 'createAccount' ? 'Create an account' : 'Go to the next slide'}
+              >
                 <ThemedText style={styles.primaryButtonText}>{currentSlide.primaryCta}</ThemedText>
               </TouchableOpacity>
               {currentSlide.secondaryCta && (
-                <Pressable style={styles.secondaryLink} onPress={handleSecondaryPress} hitSlop={8}>
+                <Pressable
+                  style={styles.secondaryLink}
+                  onPress={handleSecondaryPress}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${currentSlide.secondaryCta} button`}
+                  accessibilityHint="Activate secondary onboarding action"
+                >
                   <ThemedText style={styles.secondaryLinkText}>{currentSlide.secondaryCta}</ThemedText>
                 </Pressable>
               )}
             </View>
           ) : (
             <View style={styles.actionsStack}>
-              <TouchableOpacity style={styles.finalPrimaryButton} onPress={handlePrimaryPress} activeOpacity={0.9}>
+              <TouchableOpacity
+                style={styles.finalPrimaryButton}
+                onPress={handlePrimaryPress}
+                activeOpacity={0.9}
+                accessibilityRole="button"
+                accessibilityLabel={`${currentSlide.primaryCta} button`}
+                accessibilityHint={currentSlide.primaryAction === 'createAccount' ? 'Create an account' : 'Confirm primary action'}
+              >
                 <ThemedText style={styles.finalPrimaryButtonText}>{currentSlide.primaryCta}</ThemedText>
               </TouchableOpacity>
               {currentSlide.secondaryCta && (
-                <TouchableOpacity style={styles.finalSecondaryButton} onPress={handleSecondaryPress} activeOpacity={0.8}>
+                <TouchableOpacity
+                  style={styles.finalSecondaryButton}
+                  onPress={handleSecondaryPress}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${currentSlide.secondaryCta} button`}
+                  accessibilityHint="Activate secondary onboarding action"
+                >
                   <ThemedText style={styles.finalSecondaryButtonText}>{currentSlide.secondaryCta}</ThemedText>
                 </TouchableOpacity>
               )}
-              <Pressable style={styles.legalLink} onPress={handleLegalPress}>
+              <Pressable
+                style={styles.legalLink}
+                onPress={handleLegalPress}
+                accessibilityRole="button"
+                accessibilityLabel="Terms and privacy"
+                accessibilityHint="Open terms and privacy information"
+              >
                 <ThemedText style={styles.legalText}>Terms & Privacy</ThemedText>
               </Pressable>
             </View>
@@ -460,9 +530,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 18,
     backgroundColor: '#F8FAFC',
-    
-    
-    
   },
   infoIconWrap: {
     width: 48,
@@ -486,7 +553,6 @@ const styles = StyleSheet.create({
   },
   ratingCard: {
     width: '100%',
-    
   },
   ratingHeader: {
     flexDirection: 'row',
@@ -564,7 +630,7 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     paddingBottom: Platform.OS === 'ios' ? 16 : 40,
-  alignItems: 'center',
+    alignItems: 'center',
   },
   pagination: {
     flexDirection: 'row',

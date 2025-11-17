@@ -105,15 +105,15 @@ Dog Walker is YOUR local dog walking business where:
 ## ⚠️ **Architecture Gap Backlog – November 14, 2025**
 
 1. **GW-001 – Navigation store drift (`stores/navigationStore.ts` vs `app/(tabs)/_layout.tsx`)**  
-	Store only tracks `dashboard`/`explore`, so any tab state derived from it will ignore the new Pets tab. No observer ties store updates to `Tabs`, leaving future cross-tab actions without a source of truth.
+    Store only tracks `dashboard`/`explore`, so any tab state derived from it will ignore the new Pets tab. No observer ties store updates to `Tabs`, leaving future cross-tab actions without a source of truth.
 2. **GW-002 – Missing guarded route groups (`app/_layout.tsx`)**  
-	Current stack exposes `(tabs)` and `auth` peers without `Stack.Protected` or an anchor. Deep links can bypass `app/index.tsx` redirects, contradicting Expo Router guidance (Context7 `/expo/expo`, Protected Routes) and trust/safety requirements.
+    Current stack exposes `(tabs)` and `auth` peers without `Stack.Protected` or an anchor. Deep links can bypass `app/index.tsx` redirects, contradicting Expo Router guidance (Context7 `/expo/expo`, Protected Routes) and trust/safety requirements.
 3. **GW-003 – Bootstrap diagnostics gap (`stores/bootstrapStore.ts`)**  
-	Bootstrap is a single try/catch around AppState + Auth. There are no per-phase timestamps, retries, or Sentry spans, making it hard to identify whether onboarding persistence, Supabase restore, or secure storage is failing. Acceptance criterion: capture phase-level duration + error context before Day 2 refactor.
+    Bootstrap is a single try/catch around AppState + Auth. There are no per-phase timestamps, retries, or Sentry spans, making it hard to identify whether onboarding persistence, Supabase restore, or secure storage is failing. Acceptance criterion: capture phase-level duration + error context before Day 2 refactor.
 4. **GW-004 – Theme/onboarding persistence not validated (`stores/appStateStore.ts`, `app/index.tsx`)**  
-	`firstLaunch` relies on AsyncStorage but there is no verification hook ensuring `completeOnboarding()` runs (no call site in onboarding flow today). Risk: returning users may be trapped in welcome loop until manual storage clear.
+    `firstLaunch` relies on AsyncStorage but there is no verification hook ensuring `completeOnboarding()` runs (no call site in onboarding flow today). Risk: returning users may be trapped in welcome loop until manual storage clear.
 5. **GW-005 – Walker flows missing placeholder issues**  
-	Dashboard references booking CTA and future walker tracking, yet there is no service or route group for booking (`app/booking/*`). Need backlog item to introduce route guard + stub screens before integrating live data.
+    Dashboard references booking CTA and future walker tracking, yet there is no service or route group for booking (`app/booking/*`). Need backlog item to introduce route guard + stub screens before integrating live data.
 
 ---
 

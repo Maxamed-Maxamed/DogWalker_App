@@ -3,6 +3,23 @@ import { supabase } from '@/utils/supabase';
 
 // Create a booking (owner creates, walker may be assigned later)
 export async function createBooking(payload: Partial<Booking>) {
+  // Basic validation for required booking fields
+  const missing: string[] = [];
+  if (!payload.owner_id) missing.push('owner_id');
+  if (!payload.pet_id) missing.push('pet_id');
+  if (!payload.scheduled_at) missing.push('scheduled_at');
+  if (typeof payload.duration_minutes !== 'number') missing.push('duration_minutes');
+  if (!payload.status) missing.push('status');
+
+  if (missing.length) {
+    throw new Error(`ValidationError: missing required booking fields: ${missing.join(', ')}`);
+  }
+
+  // Validate scheduled_at is a valid ISO timestamp
+  if (isNaN(Date.parse(String(payload.scheduled_at)))) {
+    throw new Error('ValidationError: scheduled_at must be a valid ISO timestamp');
+  }
+
   const { data, error } = await supabase
     .from('bookings')
     .insert([payload])
@@ -40,8 +57,29 @@ export async function startWalk(bookingId: string, walkerId: string) {
     .single();
 
   if (error) throw error;
-  // Also mark booking in_progress
-  await supabase.from('bookings').update({ status: 'in_progress' }).eq('id', bookingId);
+
+  // Attempt to update booking; if that fails, roll back the inserted walk to avoid inconsistent state
+  try {
+    const { error: bookingError } = await supabase
+      .from('bookings')
+      .update({ status: 'in_progress' })
+      .eq('id', bookingId);
+
+    if (bookingError) {
+      // Try to remove the created walk to keep consistency
+      try {
+        if (data?.id) {
+          await supabase.from('walks').delete().eq('id', data.id);
+        }
+      } catch (delErr) {
+        console.error('Failed to rollback created walk after booking update failure', delErr);
+      }
+
+      throw bookingError;
+    }
+  } catch (e) {
+    throw e;
+  }
 
   return data as Walk;
 }
@@ -126,9 +164,9 @@ export async function getActiveWalkForWalker(walkerId: string) {
     .is('ended_at', null)
     .order('started_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error && (error as any).code !== 'PGRST116') throw error; // PGRST116 = no rows? keep as passthrough
+  if (error) throw error;
   return data as Walk | null;
 }
 
