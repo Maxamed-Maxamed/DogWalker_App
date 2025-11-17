@@ -1,6 +1,14 @@
 import { Booking, Walk, WalkPhoto } from '@/types/walker';
 import { supabase } from '@/utils/supabase';
 
+const ALLOWED_BOOKING_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'] as const;
+
+function validateWalkerId(walkerId: string) {
+  if (!walkerId || typeof walkerId !== 'string' || !walkerId.trim()) {
+    throw new Error('Invalid walkerId');
+  }
+}
+
 // Create a booking (owner creates, walker may be assigned later)
 export async function createBooking(payload: Partial<Booking>) {
   // Basic validation for required booking fields
@@ -35,6 +43,12 @@ export async function createBooking(payload: Partial<Booking>) {
 
 // Get bookings for a walker
 export async function getBookingsForWalker(walkerId: string, status?: string) {
+  validateWalkerId(walkerId);
+
+  if (status && !ALLOWED_BOOKING_STATUSES.includes(status as any)) {
+    throw new Error(`Invalid status: ${status}`);
+  }
+
   let query = supabase
     .from('bookings')
     .select('*')
@@ -89,7 +103,11 @@ export async function startWalk(bookingId: string, walkerId: string) {
 
 // End a walk
 export async function endWalk(walkId: string, updates?: Partial<Walk>) {
-  const payload = { ended_at: new Date().toISOString(), ...updates };
+  const endedAt = new Date().toISOString();
+  const safeUpdates = { ...(updates || {}) } as Partial<Walk>;
+  // Prevent caller from overriding our generated ended_at
+  delete (safeUpdates as any).ended_at;
+  const payload = { ...safeUpdates, ended_at: endedAt };
   const { data, error } = await supabase
     .from('walks')
     .update(payload)
@@ -120,9 +138,34 @@ export async function uploadWalkPhoto(walkerId: string, walkId: string, fileUri:
   const arrayBuffer = await blob.arrayBuffer();
   const uint8 = new Uint8Array(arrayBuffer);
 
-  // Build file path
+  // Build file path with robust extension extraction
   const timestamp = Date.now();
-  const ext = fileUri.split('.').pop() || 'jpg';
+  let path = '';
+  try {
+    const parsed = new URL(fileUri);
+    path = parsed.pathname || '';
+  } catch {
+    // Not a valid URL (could be blob:, data: or local path). Strip query/fragment.
+    path = fileUri.split('?')[0].split('#')[0];
+  }
+
+  const lastSegment = path.substring(path.lastIndexOf('/') + 1) || '';
+  let ext = '';
+  if (lastSegment && lastSegment.includes('.')) {
+    ext = lastSegment.substring(lastSegment.lastIndexOf('.') + 1).toLowerCase();
+  } else if (blob && blob.type) {
+    const mime = blob.type.toLowerCase();
+    const mimeMap: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+    ext = mimeMap[mime] || '';
+  }
+
+  if (!ext) ext = 'jpg';
+
   const filePath = `${walkerId}/${walkId}_${timestamp}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
@@ -160,6 +203,7 @@ export async function uploadWalkPhoto(walkerId: string, walkId: string, fileUri:
 
 // Utility: get active walk for a walker
 export async function getActiveWalkForWalker(walkerId: string) {
+  validateWalkerId(walkerId);
   const { data, error } = await supabase
     .from('walks')
     .select('*')

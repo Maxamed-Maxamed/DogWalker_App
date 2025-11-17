@@ -14,7 +14,7 @@ export default function EditPetScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { pets, fetchPets, loading } = usePetStore();
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const errorStore = useErrorStore.getState();
+  const addError = useErrorStore.getState().addError;
 
   // Fetch pets on mount if not loaded - fetchPets is stable from Zustand store
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function EditPetScreen() {
           }
 
           // Record error in global error store for UI/monitoring
-          errorStore.addError({
+          addError({
             level: 'error',
             message: errorMessage,
             context: { action: 'fetch_pets', error: String(errorMessage) },
@@ -41,7 +41,7 @@ export default function EditPetScreen() {
         }
       })();
     }
-  }, [fetchPets, pets.length, errorStore]);
+  }, [addError, fetchPets, pets.length]);
 
   // Memoize pet lookup to avoid recalculation on every render
   const pet = useMemo(() => pets.find((p) => p.id === id) || null, [pets, id]);
@@ -102,7 +102,7 @@ export default function EditPetScreen() {
                 } catch (err: unknown) {
                   const errorMessage = err instanceof Error ? err.message : 'Failed to fetch pets';
                   if (__DEV__) console.error('Retry fetch pets error:', err);
-                  errorStore.addError({ level: 'error', message: errorMessage, context: { action: 'retry_fetch_pets' } });
+                  addError({ level: 'error', message: errorMessage, context: { action: 'retry_fetch_pets' } });
                   setFetchError(errorMessage);
                 }
               }}

@@ -159,7 +159,7 @@ export default function SignupScreen() {
             {/* Terms Agreement */}
             <Text style={styles.termsText}>
               By creating an account, you agree to our{' '}
-              <TouchableOpacity
+              <Text
                 onPress={() => {
                   Linking.openURL('https://dogwalker.app/terms').catch(() => {
                     Alert.alert('Error', 'Unable to open Terms of Service');
@@ -168,11 +168,12 @@ export default function SignupScreen() {
                 accessible
                 accessibilityRole="link"
                 accessibilityLabel="Terms of Service"
+                style={styles.termsLink}
               >
-                <Text style={styles.termsLink}>Terms of Service</Text>
-              </TouchableOpacity>
+                Terms of Service
+              </Text>
               {' and '}
-              <TouchableOpacity
+              <Text
                 onPress={() => {
                   Linking.openURL('https://dogwalker.app/privacy').catch(() => {
                     Alert.alert('Error', 'Unable to open Privacy Policy');
@@ -181,9 +182,10 @@ export default function SignupScreen() {
                 accessible
                 accessibilityRole="link"
                 accessibilityLabel="Privacy Policy"
+                style={styles.termsLink}
               >
-                <Text style={styles.termsLink}>Privacy Policy</Text>
-              </TouchableOpacity>
+                Privacy Policy
+              </Text>
             </Text>
 
             {/* Signup Button */}

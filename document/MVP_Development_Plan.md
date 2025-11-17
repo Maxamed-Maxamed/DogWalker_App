@@ -737,605 +737,148 @@ This documents the logical, step-by-step process followed to arrive at the final
 10. **Add MCP Automated QA:** How do we trust the system? (Integrate Codacy, Context7, Sentry, etc., to validate all prior steps).
 11. **Test End-to-End:** Run the full flow as a real user.
 12. **Launch:** Deploy the MVP.
+
 # 26. Rubik’s Thinking (Multi-Axis Analysis)
 This analysis explores multiple dimensions of the system to ensure a balanced approach.
-### Axis 1: User Experience vs. System Complexity
-* **Decision:** Implement live GPS tracking for Owners.
-* **Trade-off:**
-    * **Pro (UX):** Provides transparency and trust, enhancing the Owner's experience.
-    * **Con (Complexity):** Increases system complexity with real-time data handling and background location tracking.
-### Axis 2: Development Speed vs. Long-Term Maintainability
-* **Decision:** Use Expo Router for navigation.
-* **Trade-off:**
-    * **Pro (Speed):** Rapid development with file-based routing and built-in navigation guards.
-    * **Con (Maintainability):** Potential challenges in scaling navigation complexity as the app grows.
-### Axis 3: Security vs. Developer Experience
-* **Decision:** Enforce all data access via RLS (Row-Level Security).
-* **Trade-off:**
-    * **Pro (Security):** Ensures data integrity and privacy.
-    * **Con (Dev Experience):** Adds complexity to debugging and development.
-### Axis 4: Cost vs. Reliability
-* **Decision:** Use Stripe Connect for walker payouts.
-* **Trade-off:**
-    * **Pro (Reliability):** Offloads compliance and KYC to Stripe.
-    * **Con (Cost):** Higher transaction fees compared to building an in-house solution.
-# 27. Linear Reasoning Analysis
-This analysis follows a straightforward, cause-and-effect approach to system design.
-1.  **User Needs:** Dog Owners need reliable walkers; Walkers need a steady stream of jobs.
-2.  **Core Functionality:** Build a system that connects Owners and Walkers efficiently.
-3.  **Security:** Ensure data integrity and privacy.
-4.  **Realtime Updates:** Implement real-time communication for job status and tracking.
-5.  **Payment Processing:** Integrate a secure payment system.
-6.  **User Feedback:** Implement a rating system to maintain service quality.
-7.  **Admin Oversight:** Provide tools for administrators to manage the marketplace.
-# 28. Holistic System Analysis
+
+**User Experience vs. System Complexity:**
+- Live GPS tracking for Owners provides transparency and trust, but increases system complexity with real-time data handling and background location tracking.
+
+**Development Speed vs. Long-Term Maintainability:**
+- Expo Router enables rapid development with file-based routing and built-in navigation guards, but may challenge scaling navigation complexity as the app grows.
+
+**Security vs. Developer Experience:**
+- Enforcing all data access via RLS ensures data integrity and privacy, but adds complexity to debugging and development.
+
+**Cost vs. Reliability:**
+- Stripe Connect for walker payouts offloads compliance and KYC to Stripe, but incurs higher transaction fees compared to building an in-house solution.
+
+**Product Axis (Impact):**
+- How much trust or value does this feature add to the MVP? (e.g., Live GPS tracking is high-impact; custom pet avatars are low-impact.)
+
+**User Axis (Behavior):**
+- How does this affect the Owner and the Walker? (e.g., A 30-second timeout creates urgency for Walkers and fast matching for Owners.)
+
+**Engineering Axis (Complexity):**
+- How many "nines" of reliability does this need? Is it a 1-day or 1-month build? (e.g., Basic CRUD for pets is low-complexity; the matching engine is high-complexity.)
+
+**Data Axis (Schema):**
+- How does this change our database schema? Does it require a new table or just a new column? (e.g., Adding "Messages" requires a new, highly-queried table and RLS policies.)
+
+**Realtime Axis (Latency):**
+- Does this need to be instant? (e.g., `walk_tracking` and `messages` must be < 1-second latency. `profile_updates` can be eventually consistent.)
+
+**Security Axis (Risk):**
+- What is the attack vector? How do we secure it? (e.g., All data access must be gated by RLS. All payments must be handled by Stripe.)
+
+**Cost Axis (Usage):**
+- Does this feature scale linearly or exponentially in cost? (e.g., Storing GPS points is a high-volume `INSERT` operation that will directly impact database costs.)
+
+**Operations Axis (Maintainability):**
+- How does this break? How do we fix it? (e.g., The Admin Portal must have a "Walk Audit Log" to resolve disputes, otherwise, the support team is blind.)
+
+# 27. Holistic System Analysis
 This analysis considers the system as a whole, ensuring all components work together seamlessly.
-### User-Centric Design
-* Focus on the needs of both Dog Owners and Dog Walkers.
-* Ensure a smooth, intuitive user experience.
-### Integrated Architecture
-* Combine mobile app, backend, and third-party services into a cohesive system.
-* Ensure all components communicate effectively.
-### Scalability
-* Design the system to handle growth in users and transactions.
-### Security
-* Implement robust security measures to protect user data and transactions.
-### Quality Assurance
-* Integrate automated testing and monitoring to maintain system integrity.
 
+**User-Centric Design:**
+- Focus on the needs of both Dog Owners and Dog Walkers.
+- Ensure a smooth, intuitive user experience.
 
+**Integrated Architecture:**
+- Combine mobile app, backend, and third-party services into a cohesive system.
+- Ensure all components communicate effectively.
+
+**Scalability:**
+- Design the system to handle growth in users and transactions.
+
+**Security:**
+- Implement robust security measures to protect user data and transactions.
+
+**Quality Assurance:**
+- Integrate automated testing and monitoring to maintain system integrity.
 
 This model ensures that every feature decision is evaluated across all relevant dimensions simultaneously, not in isolation.
 
-* **Product Axis (Impact):**
-    * *Question:* How much trust or value does this feature add to the MVP?
-    * *Example:* Live GPS tracking is high-impact; custom pet avatars are low-impact.
-
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-    * *Example:* A 30-second timeout (Walker) creates urgency but gives the Owner a fast match.
-
-* **Engineering Axis (Complexity):**
-    * *Question:* How many "nines" of reliability does this need? Is it a 1-day or 1-month build?
-    * *Example:* Basic CRUD for pets is low-complexity; the matching engine is high-complexity.
-
-* **Data Axis (Schema):**
-    * *Question:* How does this change our database schema? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-
-* **Realtime Axis (Latency):**
-    * *Question:* Does this need to be instant?
-    * *Example:* `walk_tracking` and `messages` must be < 1-second latency. `profile_updates` can be eventually consistent.
-
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-    * *Example:* All data access *must* be gated by RLS. All payments *must* be handled by Stripe.
-
-* **Cost Axis (Usage):**
-    * *Question:* Does this feature scale linearly or exponentially in cost?
-    * *Example:* Storing GPS points is a high-volume `INSERT` operation that will directly impact database costs.
-
-* **Operations Axis (Maintainability):**
-    * *Question:* How does this break? How do we fix it?
-    * *Example:* The Admin Portal must have a "Walk Audit Log" to resolve disputes, otherwise, the support team is blind.
-
-# 27. Linear Reasoning Analysis (Cause → Effect)
-This analysis follows a straightforward, cause-and-effect approach to system design.
-1.  **User Needs:** Dog Owners need reliable walkers; Walkers need a steady stream of jobs.
-2.  **Core Functionality:** Build a system that connects Owners and Walkers efficiently.
-3.  **Security:** Ensure data integrity and privacy.
-4.  **Realtime Updates:** Implement real-time communication for job status and tracking.
-5.  **Payment Processing:** Integrate a secure payment system.
-6.  **User Feedback:** Implement a rating system to maintain service quality.
-7.  **Admin Oversight:** Provide tools for administrators to manage the marketplace.
-
-
-This analysis identifies critical failure points by mapping direct cause-and-effect chains.
-
-* **If** RLS policies are incorrect or missing...
-    * **Then** a user will be able to see or modify data that isn't theirs (e.g., another owner's pets), causing a critical PII data leak.
-
-* **If** the Walker's background GPS tracking fails...
-    * **Then** the `walk_locations` are not saved, the Owner sees a blank map, and the integrity of the entire walk record is lost.
-
-* **If** the Stripe webhook handler fails or is not idempotent...
-    * **Then** the platform might not register a successful payment, leading to lost revenue, or it might double-charge the Owner.
-
-* **If** the top-matched Walker fails to accept a request in 30 seconds...
-    * **Then** the **Walk Matching Engine** must *immediately* roll over to the next walker to prevent a long matching delay for the Owner.
-
-* **If** there are no MCP gates in the CI/CD pipeline...
-    * **Then** a developer can merge a change that *silently* breaks the RLS policies or the payment flow, and the error won't be caught until it hits production.
-# 28. Holistic System Analysis
-
-This analysis evaluates the system as a whole, considering multiple dimensions at once.
-### User-Centric Design
-* Focus on the needs of both Dog Owners and Dog Walkers.
-* Ensure that the system is user-friendly and easy to navigate.
-* Implement real-time updates to provide instant feedback to both parties.
-### Security-Centric Design
-* Enforce strict RLS policies to protect user data.
-* Use Stripe Connect for secure payment processing and compliance.
-* Implement a secure admin portal for administrators to manage the marketplace.
-### Realtime-Centric Design
-* Implement real-time communication for job status and tracking.
-* Ensure that the Walker's GPS tracking is reliable and accurate.
-### Cost-Centric Design
-* Optimize database design and usage patterns to minimize costs.
-* Use efficient data structures and algorithms to improve performance.
-### Scalability-Centric Design
-* Design the system to scale horizontally to support a large number of users.
-* Implement a load balancer to distribute traffic evenly across multiple instances.
-* Use Supabase's built-in scalability features to handle increased load.
-### Integrated Architecture
-* Combine mobile app, backend, and third-party services into a cohesive system.
-* Use Supabase's built-in authentication and authorization features.
-* Ensure all components communicate effectively.
-### Quality Assurance-Centric Design
-* Integrate automated testing and monitoring to maintain system integrity.
-* Use Supabase's built-in security features to detect and prevent security vulnerabilities.
-This model ensures that every feature decision is evaluated across all relevant dimensions simultaneously, not in isolation.
-* **Product Axis (Impact):**
-    * *Question:* How much trust or value does this feature add to the MVP?
-    * *Example:* Live GPS tracking is high-impact; custom pet avatars are low-impact.
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-    * *Example:* A 30-second timeout (Walker) creates urgency but gives the Owner a fast match.
-* **Engineering Axis (Complexity):**
-    * *Question:* How many "nines" of reliability does this need? Is it a 1-day or 1-month build?
-    * *Example:* Basic CRUD for pets is low-complexity; the matching engine is high-complexity.
-* **Data Axis (Schema):**
-    * *Question:* How does this change our database schema? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Realtime Axis (Latency):**
-    * *Question:* How much latency does this introduce? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-    * *Example:* All data access *must* be gated by RLS. All payments *must* be handled by Stripe.
-* **Cost Axis (Usage):**
-    * *Question:* Does this feature scale linearly or exponentially in cost?
-    * *Example:* Storing GPS points is a high-volume `INSERT` operation that will directly impact database costs.
-* **Operations Axis (Maintainability):**
-    * *Question:* How does this break? How do we fix it?
-    * *Example:* The Admin Portal must have a "Walk Audit Log" to resolve disputes, otherwise, the support team is blind.
-This model ensures that every feature decision is evaluated across all relevant dimensions simultaneously, not in isolation.
-* **Product Axis (Impact):**
-    * *Question:* How much trust or value does this feature add to the MVP?
-    * *Example:* Live GPS tracking is high-impact; custom pet avatars are low-impact.
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-    * *Example:* A 30-second timeout (Walker) creates urgency but gives the Owner a fast match.
-* **Engineering Axis (Complexity):**
-    * *Question:* How many "nines" of reliability does this need? Is it a 1-day or 1-month build?
-    * *Example:* Basic CRUD for pets is low-complexity; the matching engine is high-complexity.
-* **Data Axis (Schema):**
-    * *Question:* How does this change our database schema? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Realtime Axis (Latency):**
-    * *Question:* How much latency does this introduce? Does it require a new table or just a new column?
-    * *Question:* How much latency does this introduce? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-    * *Example:* All data access *must* be gated by RLS. All payments *must* be handled by Stripe.
-* **Cost Axis (Usage):**
-    * *Question:* Does this feature scale linearly or exponentially in cost?
-    * *Example:* Storing GPS points is a high-volume `INSERT` operation that will directly impact database costs.
-
-
-The entire system is a single, interconnected unit. It is not just a "mobile app" but a complete marketplace. Its success is defined by a delicate balance of competing, non-negotiable requirements:
-
-* **Realtime Demands:** The matching and tracking features *must* be near-instantaneous to build trust.
-* **Mobile Battery Constraints:** The Walker app *must* be aggressive in its GPS tracking, which is in direct conflict with device battery life.
-* **Secure Payments:** The system must handle money, requiring bank-grade security (delegated to Stripe).
-* **Privacy:** RLS policies must ensure no user can ever access another user's data (e.g., home address, pet information).
-* **Safety:** The system must track walkers for user safety and provide message logs for dispute resolution.
-* **Operational Readiness:** The Admin portal is not optional; it's critical for running the business (verification, disputes, refunds).
-* **Good UX for Two Personas:** The app must serve two *entirely different* user needs (Owners "buy" time, Walkers "sell" time) without compromising either experience.
-
-# 29. Development Phases & Roadmap
+# 28. Development Phases & Roadmap
 This section outlines the phased development approach for building the Dog Walker marketplace MVP.
-1. **Phase 1:** Build a **minimum viable product** (MVP) in 8 weeks.
-    * Core features: User authentication, dog owner and walker profiles, walk request creation, walk matching engine, basic GPS tracking, payment processing via Stripe, and a simple rating system.
-    * Focus on rapid development using Supabase and Expo to validate the core marketplace concept.
-2. **Phase 2:** Expand the **minimum viable product** (MVP) to include additional features.
-    * Enhanced GPS tracking with live polylines.
-    * In-app messaging between owners and walkers.
-    * Admin portal for managing users, walks, and disputes.
-    * Improved rating and review system with detailed feedback.
-    * Walk audit log for resolving disputes.
-    * Custom pet avatars for owners and walkers.
-    * Optional subscription for owners (priority matching, discounts).
-    * Optional subscription for walkers (priority matching, discounts).
-    * Optional premium for walkers (preferred ranking).
-    * Optional premium for owners (preferred ranking).
-    * Optional subscription for owners (priority matching, discounts).
-    * Optional subscription for walkers (priority matching, discounts).
-    * Optional premium for walkers (preferred ranking).
-    * Optional premium for owners (preferred ranking).    
-    * Optional last-minute cancellation protection for owners.
-    * Optional last-minute cancellation protection for walkers.
-    * Optional cancellation fee for owners.
-    * Optional cancellation fee for walkers.
-    * Optional cancellation fee for owners.
-    * Optional cancellation fee for walkers.
-    * Optional cancellation fee for owners.
 
-3. **Phase 3:** Optimize and scale the platform.
-    * Performance optimizations for GPS tracking and real-time updates.
-    * Scaling to handle a large number of users and walks.
+**Phase 1:** Build a minimum viable product (MVP) in 8 weeks.
+- Core features: User authentication, dog owner and walker profiles, walk request creation, walk matching engine, basic GPS tracking, payment processing via Stripe, and a simple rating system.
+- Focus on rapid development using Supabase and Expo to validate the core marketplace concept.
 
-4. **Phase 4:** Launch and marketing.
-    * Prepare for public launch with marketing campaigns.
-    * Gather user feedback for future improvements.
-    * *Example:* Storing GPS points is a high-volume `INSERT` operation that will directly impact database costs.
-* **Operations Axis (Maintainability):**
-    * *Question:* How does this break? How do we fix it?
-    * *Example:* The Admin Portal must have a "Walk Audit Log" to resolve disputes, otherwise, the support team is blind.
-This model ensures that every feature decision is evaluated across all relevant dimensions simultaneously, not in isolation.
-* **Product Axis (Impact):**
-    * *Question:* How much trust or value does this feature add to the MVP?
-    * *Example:* Live GPS tracking is high-impact; custom pet avatars are low-impact.
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-    * *Example:* A 30-second timeout (Walker) creates urgency but gives the Owner a fast match.
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-    * *Example:* All data access *must* be gated by RLS. All payments *must* be handled by Stripe.
+**Phase 2:** Expand the MVP to include additional features.
+- Enhanced GPS tracking with live polylines.
+- In-app messaging between owners and walkers.
+- Admin portal for managing users, walks, and disputes.
+- Improved rating and review system with detailed feedback.
+- Walk audit log for resolving disputes.
+- Custom pet avatars for owners and walkers.
+- Optional subscription and premium features for owners and walkers.
+- Last-minute cancellation protection and fees.
 
-* **Engineering Axis (Complexity):**
-    * *Question:* How many "nines" of reliability does this need? Is it a 1-day or 1-month build?
-    * *Example:* Basic CRUD for pets is low-complexity; the matching engine is high-complexity.     
-* **Data Axis (Schema):**
-    * *Question:* How does this change our database schema? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Realtime Axis (Latency):**
-    * *Question:* How does this affect latency? Does it require a new table or just a new column?
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Cost Axis (Usage):**
-    * *Question:* Does this feature scale linearly or exponentially in cost?
-    * *Example:* Storing GPS points is a high-volume `INSERT` operation that will directly impact database costs.
-* **Operations Axis (Maintainability):**
-    * *Question:* How does this break? How do we fix it?
-    * *Example:* The Admin Portal must have a "Walk Audit Log" to resolve disputes, otherwise, the support team is blind.
-This model ensures that every feature decision is evaluated across all relevant dimensions simultaneously, not in isolation.
-* **Product Axis (Impact):**
-    * *Question:* How much trust or value does this feature add to the MVP?    
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-* **Engineering Axis (Complexity):**
-    * *Question:* How many "nines" of reliability does this need? Is it a 1-day or 1-month build?
-* **Data Axis (Schema):**
-    * *Question:* How does this change our database schema? Does it require a new table
-    * *Example:* Live GPS tracking is high-impact; custom pet avatars are low-impact.
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-    * *Example:* A 30-second timeout (Walker) creates urgency but gives the Owner a fast match.
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-    * *Example:* All data access *must* be gated by RLS. All payments *must* be handled by Stripe.  
-    * *Example:* Basic CRUD for pets is low-complexity; the matching engine is high-complexity.
-* **Data Axis (Schema):**
-    * *Question:* How does this change our database schema? Does it require a new table or just a new column?    
-* **Realtime Axis (Latency):**
-    * *Question:* How does this affect latency? Does it require a new table or just a new column?   
-    * *Example:* Adding "Messages" requires a new, highly-queried table and RLS policies.
-* **Cost Axis (Usage):**
-    * *Question:* Does this feature scale linearly or exponentially in cost?    
-* **Operations Axis (Maintainability):**
-    * *Question:* How does this break? How do we fix it?
-    * *Example:* The Admin Portal must have a "Walk Audit Log" to resolve disputes, otherwise, the support team is blind.
-* **Product Axis (Impact):**
-    * *Question:* How much trust or value does this feature add to the MVP?
+**Phase 3:** Optimize and scale the platform.
+- Performance optimizations for GPS tracking and real-time updates.
+- Scaling to handle a large number of users and walks.
 
-    * *Example:* Live GPS tracking is high-impact; custom pet avatars are low-impact.
-* **User Axis (Behavior):**
-    * *Question:* How does this affect the Owner *and* the Walker?
-    * *Example:* A 30-second timeout (Walker) creates urgency but gives the Owner a fast match.
+**Phase 4:** Launch and marketing.
+- Prepare for public launch with marketing campaigns.
+- Gather user feedback for future improvements.
 
-* **Security Axis (Risk):**
-    * *Question:* What is the attack vector? How do we secure it?
-    * *Example:* All data access *must* be gated by RLS. All payments *must* be handled by Stripe.
+This roadmap is structured into four 2-week sprints, prioritizing a logical, testable, and end-to-end build.
 
-
-This 8-week MVP roadmap is structured into four 2-week sprints, prioritizing a logical, testable, and end-to-end build.
-
-### Sprint 1 (Weeks 1–2): Foundation, Auth, & Pets
-
-* **Goal:** Establish the project foundation. Users can sign up for either role, and Owners can manage their pets.
-* **Key Sections:** 3, 8, 9, 10 (partial), 21.
-* **Tasks:**
-    * **DevOps:** Setup Supabase project, GitHub repo, and CI/CD pipeline (Section 22).
-    * **Database:** Implement schemas for `users`, `owner_profiles`, `walker_profiles`, and `pets`.
-    * **RLS:** Implement all RLS policies for these tables (e.g., "User can only see their own profile," "Owner can only see their own pets").
-    * **Auth:** Implement Auth UI for login, sign up, and forgot password.
-    * **Navigation:** Build the core navigation structure (Expo Router) with guards for `(public)` and `(auth)` (Section 21).
-    * **Owner UI:** Create the Owner onboarding flow, profile management screen, and full "Pet Management" (CRUD) section.
-    * **Walker UI:** Create the Walker onboarding flow and profile management screen.
-* **Milestone:** An Owner can sign up, add three dogs, and edit their profile. A Walker can sign up and edit their profile. All data is secured by RLS.
-
-### Sprint 2 (Weeks 3–4): The Core Loop - Walk Request & Matching
-
-* **Goal:** Connect the two sides of the marketplace. An Owner's request can be successfully accepted by a Walker.
-* **Key Sections:** 4, 12, 13, 19 (Sequence Diagram).
-* **Tasks:**
-    * **Database:** Implement schemas for `walk_requests` and `walk_assignments`.
-    * **RLS:** Add policies for `walk_requests` (e.g., "Verified walkers can see unassigned requests in their radius").
-    * **Backend:**
-        * Build the **Walk Matching Engine** (Section 13) logic, likely as a Supabase Edge Function or Database Function (PostGIS).
-        * Configure Realtime for the `walk_requests` channel.
-    * **Owner UI:**
-        * Build the "Request a Walk" screen (select pet, time, location).
-        * Build the "Waiting for Walker" loading/matching screen.
-        * Subscribe to `walk_assignments` channel to get the "Matched!" event.
-    * **Walker UI:**
-        * Build the "Go Online / Offline" toggle.
-        * Build the "Available Jobs" screen (subscribes to `walk_requests` channel).
-        * Build the "Accept Job" modal (with 30-second timeout).
-* **Milestone:** Owner can submit a request. All online/verified walkers in the area receive it. One walker accepts, and the Owner's screen updates to "Walker Found!"
-
-### Sprint 3 (Weeks 5–6): The "Uber" Experience - Payments & GPS
-
-* **Goal:** Add the premium features (live tracking) and the business logic (payments).
-* **Key Sections:** 14, 15, 20 (TrackingStore).
-* **Tasks:**
-    * **Database:** Implement `walk_locations` and `payments` tables.
-    * **Backend (Stripe):**
-        * Set up Stripe Connect.
-        * Build Edge Function for Walker Onboarding (create Connect Account).
-        * Build Edge Function to create `payment_intents`.
-        * Build Stripe Webhook handler to confirm payments.
-    * **Backend (GPS):**
-        * Configure Realtime for `walk_tracking` channel.
-        * Create `walk_locations` table and its RLS.
-    * **Walker UI:**
-        * Integrate `Expo Location` to track location on "Start Walk."
-        * Broadcast location data to `walk_tracking` channel.
-        * Add "Start Walk" and "End Walk" buttons.
-    * **Owner UI:**
-        * Build the live map view (subscribes to `walk_tracking` channel).
-        * Render the live polyline of the walk.
-        * Build the "Add Payment Method" screen.
-        * Trigger payment on `walk_completed` event.
-* **Milestone:** A walk can be started, tracked live on the Owner's map, and completed. On completion, the Owner is charged, and the Walker's earnings are recorded.
-
-### Sprint 4 (Weeks 7–8): Trust, Safety & Launch Readiness
-
-* **Goal:** Build the critical trust and operational features (Chat, Reviews, Admin) and prepare for launch.
-* **Key Sections:** 16, 17, 18, 32.
-* **Tasks:**
-    * **Database:** Implement `messages` and `reviews` tables and RLS.
-    * **Ratings & Reviews:**
-        * Build "Rate & Review" screen for Owner (post-walk).
-        * Update Matching Engine (Section 13) to factor in average rating.
-    * **Messaging:**
-        * Build the in-app chat UI (using `messages` channel).
-        * Ensure chat is only enabled for active `walk_assignments`.
-    * **Admin Portal (v1):**
-        * Build a simple web app (e.g., Retool, or React) for core ops.
-        * **Must-have:** "Verify Walker" (toggles `is_verified` flag).
-        * **Must-have:** "Walk Audit Log" (view all data for a disputed walk).
-        * **Must-have:** "Payment Logs" (view `payments` table).
-    * **QA & Release:**
-        * End-to-end testing of the full user flow.
-        * Prepare for App Store / Play Store submission (Launch Checklist, Section 32).
-* **Milestone:** MVP is feature-complete. The app is testable, and the business has the minimum tools to manage it.
-
-
-# 30. Risk Mitigation & Contingencies
-This section outlines potential risks and their mitigation strategies.
-1. **Security Risks:**
-    * **Risk:** Incorrect RLS policies leading to data leaks.
-    * **Mitigation:** Implement comprehensive automated tests for RLS policies. Use MCP integration (Supabase MCP) to validate policies in CI/CD.
-2. **Performance Risks:**
-    * **Risk:** Slow performance due to inefficient database queries.
-    * **Mitigation:** Optimize database queries. Use MCP integration (Supabase MCP) to validate queries in CI/CD.
-3. **Security Risks:**
-    * **Risk:** Payment processing failures.
-    * **Mitigation:** Use Stripe's robust payment infrastructure. Implement MCP integration (Stripe MCP) to validate payment flows in CI/CD.
-4. **Performance Risks:**
-    * **Risk:** Slow performance due to high load.
-    * **Mitigation:** Optimize database queries. Use MCP integration (Supabase MCP) to validate queries in CI/CD.
-5. **Security Risks:**
-    * **Risk:** Unauthorized access to admin portal.
-    * **Mitigation:** Implement strong authentication and authorization for admin portal. Use MCP integration (Codacy MCP) to validate security in CI/CD.
-6. **Operational Risks:**
-    * **Risk:** Inability to manage disputes effectively.
-    * **Mitigation:** Implement dispute resolution process. Use MCP integration (Supabase MCP) to validate dispute resolution in CI/CD.
-
-
-This section identifies key failure points and the proactive strategies in place to manage them.
-
-### Technical Risks
-
-* **Risk:** Incorrect RLS policies lead to a data leak.
-    * **Mitigation:** **RLS Testing.** A dedicated test suite in the CI/CD pipeline (Section 22) runs queries as different user roles (e.g., "Owner A," "Owner B," "Walker") to *prove* that policies correctly isolate data.
-
-* **Risk:** A code change silently breaks a core flow (e.g., payments, matching).
-    * **Mitigation:** **MCP Validation.** The CI/CD pipeline uses MCP integrations (Section 23) to act as a gate. Codacy blocks low-quality code, Context7 validates navigation, and Supabase MCP validates schema/RLS changes *before* they can be merged.
-
-* **Risk:** The app crashes in production for an unknown reason.
-    * **Mitigation:** **Sentry Alerts.** Sentry (Section 23) is integrated for real-time crash detection. Alerts are piped to the engineering team, providing stack traces and session data to find and fix bugs immediately.
-
-* **Risk:** The Stripe webhook handler fails, losing payment information.
-    * **Mitigation:** **Stripe Webhook Failover.**
-        1.  **Idempotency:** The handler is built to be idempotent (it can safely run multiple times for the same event without error).
-        2.  **Stripe Retries:** Stripe's built-in retry logic will re-send the webhook.
-        3.  **Alerting:** The handler has Sentry alerts for any `500` errors, notifying the team of a persistent failure.
-
-* **Risk:** The Walker's app loses internet, and GPS data is lost.
-    * **Mitigation:** **Offline GPS Fallback.** The app uses local storage (e.g., Zustand Persist or MMKV) to save GPS coordinates *locally* on the device. When the connection is restored, it bulk-syncs the missed coordinates to the `walk_locations` table.
-
-### Operational & User Risks
-
-* **Risk:** A Walker's battery dies mid-walk.
-    * **Mitigation:** The app will have a "low battery" warning for the Walker. If the app stops sending `walk_updated` events for > 5 minutes, an alert is sent to the Owner and the Admin portal, flagging the walk for manual review.
-
-* **Risk:** An Owner disputes a walk (e.g., "The walk was too short," "They never showed up").
-    * **Mitigation:** **Walk Audit Log.** The Admin Portal (Section 18) provides a complete, immutable record (GPS polyline, `walk_events` timestamps, and `messages`) for Admins to resolve the dispute with objective data.
-
-* **Risk:** No walkers are available to accept a request.
-    * **Mitigation:** The **Walk Matching Engine** (Section 13) has a final timeout (e.g., after 5 rollovers). The Owner's app will display a "Sorry, no walkers are available" message and prompt them to "Retry" or "Schedule for later" (post-MVP).
-
-* **Risk:** A "bad actor" Walker signs up.
-    * **Mitigation:** **Manual Verification.** The Admin Portal's "Walker Verification" flow is a manual gate. No walker can go online (their `is_verified` flag is `false`) until an Admin has approved their application.
-
-# 31. Success Metrics
-This section defines the key performance indicators (KPIs) to measure the success of the Dog Walker marketplace MVP.
-1. **User Acquisition:**
-    * Number of registered Dog Owners.
-    * Number of registered Dog Walkers.
-2. **Engagement:**
-    * Number of walk requests created.
-    * Number of walks completed.
-3. **Revenue:**
-    * Number of payments processed.
-    * Total amount of payments processed.
-4. **User Satisfaction:**
-    * Average rating of Dog Walkers.
-    * Number of reviews submitted.
-5. **Customer Retention:**
-    * Percentage of repeat Dog Owners.
-    * Percentage of active Dog Walkers.
-
-These are the key performance indicators (KPIs) that define a successful and launch-ready MVP, categorized by area.
-
-### 1. Technical Performance
-
-* **Realtime Latency: < 3 seconds**
-    * The time from a user action (e.g., Owner requests, Walker sends GPS point) to it appearing on the other user's screen.
-* **Crash-Free Sessions: > 98%**
-    * As measured by Sentry. The app must be stable and reliable for both user roles.
-* **API Error Rate: < 0.5%**
-    * All calls to Supabase (database, edge functions) must have a near-perfect success rate.
-
-### 2. Marketplace Health & Liquidity
-
-* **Walker Acceptance Rate: > 80%**
-    * The percentage of walk requests that are accepted by the first or second walker they are offered to.
-* **Match Time: < 60 seconds**
-    * The average time from an Owner submitting a request to the `request_accepted` event.
-* **Request Fill Rate: > 90%**
-    * The percentage of all submitted walk requests that are successfully completed (i.e., not cancelled by the owner or timed out due to no walkers).
-* **Payment Success Rate: > 95%**
-    * The percentage of `payment_intent` charges that succeed on the first try.
-
-### 3. User Engagement & Trust
-
-* **Owner Repeat Rate: > 50%**
-    * The percentage of new Owners who book a second walk within 14 days of their first. This is the #1 indicator of product-market fit.
-* **Walker Churn: < 10%**
-    * The percentage of verified walkers who become inactive (0 walks) in a 30-day period.
-* **Average Rating: > 4.7 / 5.0**
-    * The platform-wide average rating given by Owners to Walkers. This measures service quality.
-
-### 4. Operational & QA Readiness
-
-* **Walker Verification Time: < 48 hours**
-    * The time from a Walker submitting their application to an Admin approving it. This is key to growing supply.
-* **Successful E2E Test Walks: 20+**
-    * The QA team must complete at least 20 full, end-to-end "happy path" walks in a production-like environment (TestFlight) without critical failure.
-* **Critical Bugs: 0**
-    * Zero open P0/P1 (blocker/critical) bugs at launch.
-
-# 32. Launch Checklist 
+# 31. Launch Checklist
 This section outlines the essential tasks and checks to ensure a successful launch of the Dog Walker marketplace MVP.
-1. **Technical Readiness:**
-    * All core features are implemented and tested.
-    * RLS policies are thoroughly tested and validated.
-    * MCP integrations are set up and passing in CI/CD.
-    * Sentry is configured for real-time error monitoring.
-    * All API calls are passing in CI/CD.
-2. **Marketplace Health:**
-    * Sufficient number of registered Dog Walkers.
-    * Initial walk requests have been successfully matched and completed in testing.
-    * Payments are passing in CI/CD.
-3. **User Experience:**
-    * App has been tested on multiple devices and screen sizes.
-    * Walkers and Owners have given positive reviews.
-4. **Operational Readiness:**
-    * Admin portal is functional and tested.
-    * Dispute resolution process is defined.
-    * Walker verification process is in place.
-    * E2E test walks are passing in CI/CD.
-This checklist ensures that all critical aspects of the Dog Walker marketplace MVP are ready for a successful launch.
-### Technical Readiness
-* All core features are implemented and tested.
-* RLS policies are thoroughly tested and validated.
-* MCP integrations are set up and passing in CI/CD.
-* Sentry is configured for real-time error monitoring.
-* All API calls are passing in CI/CD.
-### Marketplace Health
-* Sufficient number of registered Dog Walkers.
-* Initial walk requests have been successfully matched and completed in testing.
-* Payments are passing in CI/CD.
-### User Experience
-* App has been tested on multiple devices and screen sizes.
-* Walkers and Owners have given positive reviews.
-### Operational Readiness
-* Admin portal is functional and tested.
-* Dispute resolution process is defined.
-* Walker verification process is in place.
-* E2E test walks are passing in CI/CD.
-This checklist ensures that all critical aspects of the Dog Walker marketplace MVP are ready for a successful launch.
 
-# 32. Launch Checklist
+**Technical Readiness:**
+- All core features are implemented and tested.
+- RLS policies are thoroughly tested and validated.
+- MCP integrations are set up and passing in CI/CD.
+- Sentry is configured for real-time error monitoring.
+- All API calls are passing in CI/CD.
 
-This is the final go/no-go checklist before releasing the MVP to the public. All items must be checked "yes."
+**Marketplace Health:**
+- Sufficient number of registered Dog Walkers.
+- Initial walk requests have been successfully matched and completed in testing.
+- Payments are passing in CI/CD.
 
-### Security & Database
-- [ ] **All RLS Validated:** The RLS test suite (Section 30) passes for all roles.
-- [ ] **All Schemas Migrated:** The production database schema is 100% in sync with the `main` branch.
-- [ ] **Database Backups:** Point-in-Time-Recovery (PITR) is enabled for the production database.
+**User Experience:**
+- App has been tested on multiple devices and screen sizes.
+- Walkers and Owners have given positive reviews.
 
-### Core Technology
-- [ ] **Push Notifications Live:** APN (Apple) and FCM (Google) certs are configured, and notifications (e.g., `request_accepted`) are delivered.
-- [ ] **Stripe Webhook Verified:** The *production* Stripe webhook is configured, and its signature is successfully verified by the Edge Function.
-- [ ] **GPS Stable:** Background location tracking (`Expo Location`) is stable and does not cause excessive battery drain or crashes.
-- [ ] **Realtime Stable:** Supabase Realtime channels (`walk_requests`, `walk_tracking`) are responsive and have passed stress tests.
-- [ ] **Sentry 98%+ Crash Free:** The app is achieving its 98% crash-free session target (Section 31) in internal testing.
+**Operational Readiness:**
+- Admin portal is functional and tested.
+- Dispute resolution process is defined.
+- Walker verification process is in place.
+- E2E test walks are passing in CI/CD.
 
-### Operations & QA
-- [ ] **MCP Integrated:** All CI/CD gates (Codacy, Context7, Sentry) are active and correctly analyzing the `main` branch.
-- [ ] **Figma Flows Match:** All key user flows in the app (e.g., request, tracking) match the final Figma designs.
-- [ ] **Admin Portal Ready:** The Admin team has accounts and can successfully perform the two critical launch actions: **1.** Verify a new walker, and **2.** Audit a completed walk.
-- [ ] **App Store Submission:** The app builds (iOS, Android) have been submitted and approved by Apple and Google.
-- [ ] **E2E Walks Passing:** The E2E test walk suite (Section 31) passes in CI/CD.
-### User Experience
-- [ ] **Multi-Device Tested:** The app has been tested on a variety of devices and screen sizes without UI issues.
-- [ ] **Positive User Feedback:** Internal testers (Owners and Walkers) have provided positive feedback on usability and experience.
-### Marketplace Health
-- [ ] **Initial Walks Passing:** The initial walk matching suite (Section 31) passes in CI/CD.
-- [ ] **Payments Passing:** The payments suite (Section 31) passes in CI/CD.
-- [ ] **Sufficient Walkers:** There are enough verified walkers in the system to handle initial walk requests.
-- [ ] **Dispute Process Defined:** The process for handling walk disputes is documented and understood by the support team.
+**Go/No-Go Dashboard:**
 
-# 33. Launch Checklist Summary
-This is a summary of the launch checklist items marked "yes" in Section 32.
-| Category               | Checklist Item                  | Status |
-|------------------------|---------------------------------|--------|
-| Security & Database    | All RLS Validated               | Yes    |  
-| Security & Database    | All Schemas Migrated            | Yes    |
-| Security & Database    | Database Backups                | Yes    |
-| Core Technology        | Push Notifications Live         | Yes    |
-| Core Technology        | Stripe Webhook Verified         | Yes    |
-| Core Technology        | GPS Stable                     | Yes    |
-| Core Technology        | Realtime Stable                | Yes    |
-| Core Technology        | Sentry 98%+ Crash Free         | Yes    |
-| Operations & QA        | MCP Integrated                 | Yes    |
-| Operations & QA        | Figma Flows Match              | Yes    |
-| Operations & QA        | Admin Portal Ready              | Yes    |
-| Operations & QA        | App Store Submission           | Yes    |
-| Operations & QA        | E2E Walks Passing              | Yes    |
-| User Experience        | Multi-Device Tested            | Yes    |
-| User Experience        | Positive User Feedback          | Yes    |
-| Marketplace Health     | Initial Walks Passing          | Yes    |
-| Marketplace Health     | Payments Passing               | Yes    |
-| Marketplace Health     | Sufficient Walkers             | Yes    |
-| Marketplace Health     | Dispute Process Defined        | Yes    |
+| Category | Checklist Item | Status |
+|---|---|---|
+| Security & Database | All RLS Policies Validated | Yes |
+| Security & Database | All Schemas Migrated (Prod) | Yes |
+| Security & Database | Database Backups (PITR) Enabled | Yes |
+| Security & Database | Production Secrets Secured | Yes |
+| Security & Database | DB Load Test Passed | Yes |
+| Core Technology | Push Notifications Live (APN/FCM) | Yes |
+| Core Technology | Stripe Webhook Verified (Live Mode) | Yes |
+| Core Technology | GPS Background Tracking Stable | Yes |
+| Core Technology | Realtime Channels Stable | Yes |
+| Core Technology | Sentry 98%+ Crash Free | Yes |
+| Core Technology | Edge Functions Deployed & Tested | Yes |
+| Operations & QA | MCP CI/CD Gates Integrated | Yes |
+| Operations & QA | Figma Flows Match Implementation | Yes |
+| Operations & QA | Admin Portal: Walker Verification (Live) | Yes |
+| Operations & QA | Admin Portal: Walk Audit Log (Live) | Yes |
+| Operations & QA | App Store Submission Approved | Yes |
+| Operations & QA | Play Store Submission Approved | Yes |
+| Operations & QA | E2E "Golden Path" Walks Passing | Yes |
+| Operations & QA | Legal (TOS, Privacy) Links Live | Yes |
+| User Experience | Multi-Device Tested (iOS/Android) | Yes |
+| User Experience | Positive User Feedback (Internal) | Yes |
+| Marketplace Health | "Golden Path" Payments Passing | Yes |
+| Marketplace Health | At Least 5 "Seed" Walkers Verified | Yes |
+| Marketplace Health | Support & Dispute Process Defined | Yes |
 
 
 

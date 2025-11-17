@@ -21,6 +21,8 @@ if (__DEV__ && !sentryDsn) {
 }
 
 const parseRate = (value: string | undefined, fallback: number) => {
+  if (value === undefined || value === null) return fallback;
+  if (String(value).trim() === '') return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
@@ -80,5 +82,5 @@ Sentry.init({
   ],
 });
 
-export { routingInstrumentation, Sentry };
+export { Sentry, routingInstrumentation };
 
