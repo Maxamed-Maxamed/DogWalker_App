@@ -1,5 +1,6 @@
-nodeLinker: hoisted
+﻿nodeLinker: hoisted
 
 onlyBuiltDependencies:
   - '@sentry/cli'
   - unrs-resolver
+
