@@ -22,9 +22,10 @@ export default function ForgotPasswordScreen() {
       setLoading(true);
       // Mock sending reset link
       setTimeout(() => {
-        setLoading(false);
-        Alert.alert('Reset link sent', `A password reset link was sent to ${email} (mock)`);
-        router.back();
+          setLoading(false);
+          // Do not include email in alerts or logs to avoid exposing PII
+          Alert.alert('Password reset link sent', 'If an account exists for that email, a reset link has been sent.');
+          router.back();
       }, 900);
     })();
   };

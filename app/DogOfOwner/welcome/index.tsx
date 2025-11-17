@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useCallback } from 'react';
-import { Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -45,9 +45,10 @@ export default function WelcomeScreen() {
         await setActivePersona('walker');
         router.replace('/DogWalker/welcome');
       } catch (error) {
-        if (__DEV__) {
-          console.error('Failed to switch persona:', error);
-        }
+        // Surface an error to the user in both dev and production
+        Alert.alert('Could not switch to Walker', 'Could not switch to Dog Walker. Please try again.');
+        console.error('Failed to switch persona:', error);
+        return;
       }
     })();
   }, [setActivePersona]);
@@ -59,9 +60,13 @@ export default function WelcomeScreen() {
         const supported = await Linking.canOpenURL(TERMS_URL);
         if (supported) {
           await Linking.openURL(TERMS_URL);
+        } else {
+          // Provide user-visible feedback if the URL cannot be opened
+          Alert.alert('Unable to open legal page', 'Unable to open legal page. Please try again or copy the link to open it elsewhere.');
         }
       } catch (error) {
         console.error('Failed to open legal URL:', error);
+        Alert.alert('Unable to open legal page', 'An error occurred while opening the legal page. Please try again.');
       }
     })();
   }, []);

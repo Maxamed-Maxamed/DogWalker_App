@@ -101,7 +101,7 @@ export const useWalkerStore = create<WalkerState>((set, get) => ({
 export async function pickWalkPhotoFromGallery(): Promise<string | null> {
   try {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images as any,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 0.8,
     });

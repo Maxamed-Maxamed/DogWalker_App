@@ -50,7 +50,15 @@ export default Sentry.wrap(function RootLayout() {
   }, [bootstrap]);
 
   useEffect(() => {
-    routingInstrumentation.registerNavigationContainer(navigationRef);
+    // Only register when the navigation ref becomes available/ready
+    try {
+      if (navigationRef && (navigationRef as any).current) {
+        routingInstrumentation.registerNavigationContainer(navigationRef);
+      }
+    } catch (e) {
+      // Avoid crashing the app if registration fails
+      console.error('Failed to register navigation container for routing instrumentation', e);
+    }
   }, [navigationRef]);
 
   // Hide Expo splash once bootstrap is ready or on error

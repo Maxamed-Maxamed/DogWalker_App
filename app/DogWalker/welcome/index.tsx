@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useCallback } from 'react';
-import { Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -45,9 +46,10 @@ export default function WelcomeScreen() {
         await setActivePersona('owner');
         router.replace('/DogOfOwner/welcome');
       } catch (error) {
-        if (__DEV__) {
-          console.error('Failed to switch persona:', error);
-        }
+        // Show user-friendly message in both dev and production
+        Alert.alert('Could not switch to owner persona', 'Could not switch to owner persona. Please try again.');
+        console.error('Failed to switch persona:', error);
+        return;
       }
     })();
   }, [setActivePersona]);
@@ -59,9 +61,16 @@ export default function WelcomeScreen() {
         const supported = await Linking.canOpenURL(TERMS_URL);
         if (supported) {
           await Linking.openURL(TERMS_URL);
+        } else {
+          // Not supported: offer fallback to copy the URL
+          Alert.alert('Unable to open legal page', 'This device cannot open the legal page. Would you like to copy the link to your clipboard?', [
+            { text: 'Copy link', onPress: async () => { await Clipboard.setStringAsync(TERMS_URL); Alert.alert('Copied', 'Link copied to clipboard.'); } },
+            { text: 'OK', style: 'cancel' },
+          ]);
         }
       } catch (error) {
         console.error('Failed to open legal URL:', error);
+        Alert.alert('Unable to open legal page', 'An error occurred while opening the legal page. Please try again.');
       }
     })();
   }, []);
