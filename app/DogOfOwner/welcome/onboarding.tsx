@@ -100,7 +100,9 @@ export default function OnboardingScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [currentIndex, fadeAnim, slideAnim]);
+  // Fade/slide Animated.Values are stable refs — only re-run when slide index changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
 
   const animateOutAnd = (callback: () => void) => {
     Animated.parallel([

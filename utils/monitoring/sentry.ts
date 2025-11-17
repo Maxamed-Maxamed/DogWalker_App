@@ -63,7 +63,6 @@ Sentry.init({
           Sentry.reactNativeTracingIntegration({
             traceFetch: true,
             traceXHR: true,
-            enableHTTPTimings: true,
           }),
           Sentry.mobileReplayIntegration({
             maskAllText: true,

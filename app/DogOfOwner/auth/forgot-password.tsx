@@ -1,3 +1,4 @@
+import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
@@ -15,19 +16,42 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleReset = () => {
-    if (!email) { Alert.alert('Please enter your email'); return; }
-    
-    void (async () => {
-      setLoading(true);
-      // Mock sending reset link
-      setTimeout(() => {
-          setLoading(false);
-          // Do not include email in alerts or logs to avoid exposing PII
-          Alert.alert('Password reset link sent', 'If an account exists for that email, a reset link has been sent.');
-          router.back();
-      }, 900);
-    })();
+  const validateEmail = (value: string) => {
+    // Simple RFC-5322-ish check (not exhaustive but sufficient for client-side)
+    return /^\S+@\S+\.\S+$/.test(value);
+  };
+
+  const handleReset = async () => {
+    if (!email) {
+      Alert.alert('Please enter your email');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid email', 'Please enter a valid email address');
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      Alert.alert('Service unavailable', 'Password reset service is not configured.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Supabase: send password reset email. Optionally pass `redirectTo`.
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+
+      // Generic success message to avoid exposing PII
+      Alert.alert('Password reset link sent', 'If an account exists for that email, a reset link has been sent.');
+      router.back();
+    } catch (err) {
+      console.error('Failed to request password reset', err);
+      Alert.alert('Error', 'Failed to send reset link. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,7 +64,17 @@ export default function ForgotPasswordScreen() {
           Enter the email associated with your account
         </ThemedText>
 
-        <TextInput placeholder="Email" placeholderTextColor="#9CA3AF" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" style={styles.input} />
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#9CA3AF"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          accessibilityLabel="Email"
+          accessibilityHint="Enter your email address to receive password reset instructions"
+          style={styles.input}
+        />
 
         <TouchableOpacity style={[styles.button, { backgroundColor: colors.tint }]} onPress={handleReset} disabled={loading}>
           {loading ? <ActivityIndicator color="#fff" /> : <ThemedText style={styles.buttonText}>Send reset link</ThemedText>}

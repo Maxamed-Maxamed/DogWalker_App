@@ -4,7 +4,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePetStore } from '@/stores/petStore';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EditPetScreen() {
@@ -13,12 +13,29 @@ export default function EditPetScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { pets, fetchPets, loading } = usePetStore();
 
+  
+
   // Fetch pets on mount if not loaded - fetchPets is stable from Zustand store
   useEffect(() => {
-    // Fetch pets if not already loaded
-    if (pets.length === 0) {
-      fetchPets();
-    }
+    let mounted = true;
+
+    const load = async () => {
+      if (pets.length !== 0) return;
+      try {
+        await fetchPets();
+      } catch (e) {
+        console.error('Failed to fetch pets', e);
+        if (!mounted) return;
+        
+        Alert.alert('Error', 'Failed to load pets. Please try again.' );
+      }
+    };
+
+    void load();
+
+    return () => {
+      mounted = false;
+    };
   }, [fetchPets, pets.length]);
 
   // Memoize pet lookup to avoid recalculation on every render

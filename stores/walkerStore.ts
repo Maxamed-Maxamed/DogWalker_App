@@ -100,12 +100,21 @@ export const useWalkerStore = create<WalkerState>((set, get) => ({
 // Helper for selecting/taking an image (exposed for convenience)
 export async function pickWalkPhotoFromGallery(): Promise<string | null> {
   try {
+    // Request permission first to avoid launching the picker when not allowed
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    // Some platforms return `granted` boolean, others return `status` string
+    const granted = (permission as any).granted === true || (permission as any).status === 'granted';
+    if (!granted) {
+      console.warn('Media library permission not granted');
+      return null;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.8,
     });
-    if (!result.canceled && result.assets[0]) return result.assets[0].uri;
+    if (!result.canceled && result.assets && result.assets[0]) return result.assets[0].uri;
     return null;
   } catch (e) {
     console.error('pickWalkPhotoFromGallery error', e);

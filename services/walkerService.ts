@@ -8,7 +8,10 @@ export async function createBooking(payload: Partial<Booking>) {
   if (!payload.owner_id) missing.push('owner_id');
   if (!payload.pet_id) missing.push('pet_id');
   if (!payload.scheduled_at) missing.push('scheduled_at');
-  if (typeof payload.duration_minutes !== 'number') missing.push('duration_minutes');
+  const duration = Number(payload.duration_minutes);
+  if (!Number.isFinite(duration) || duration <= 0) {
+    missing.push('duration_minutes');
+  }
   if (!payload.status) missing.push('status');
 
   if (missing.length) {
