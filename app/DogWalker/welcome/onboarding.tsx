@@ -365,10 +365,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   skipButton: {
-    // alignSelf: 'flex-end',
-    // paddingTop: 20,
-    // paddingBottom: 16,
-    // paddingHorizontal: 4,
     alignSelf: 'flex-end',
     paddingTop: 20,
     paddingBottom: 16,
@@ -490,10 +486,7 @@ const styles = StyleSheet.create({
   },
   ratingCard: {
     width: '100%',
-    borderRadius: 20,
-    padding: 20,
-    backgroundColor: '#0F172A',
-    gap: 16,
+    
   },
   ratingHeader: {
     flexDirection: 'row',

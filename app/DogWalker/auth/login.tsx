@@ -40,7 +40,7 @@ export default function LoginScreen() {
     async (fields) => {
       try {
         await login(fields.email, fields.password);
-        router.replace('./DogWalker/(tabs)/dashboard');
+        router.replace('/DogWalker/(tabs)/dashboard');
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Login failed';
         Alert.alert('Login Error', message);
@@ -153,7 +153,7 @@ export default function LoginScreen() {
 
               {/* Forgot Password Link */}
               <TouchableOpacity
-                onPress={() => router.push('./DogWalker/auth/forgot-password')}
+                onPress={() => router.push('/DogWalker/auth/forgot-password')}
                 disabled={loading}
                 accessible={true}
                 accessibilityLabel="Forgot password"
@@ -188,7 +188,7 @@ export default function LoginScreen() {
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don&apos;t have an account? </Text>
               <Pressable
-                onPress={() => router.push('./DogWalker/auth/signup')}
+                onPress={() => router.push('/DogWalker/auth/signup')}
                 disabled={loading}
                 accessible={true}
                 accessibilityLabel="Sign up"

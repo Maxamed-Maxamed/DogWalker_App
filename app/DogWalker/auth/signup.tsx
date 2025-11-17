@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -15,7 +14,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FormInput from '@/components/ui/FormInput';
 import { PasswordStrengthIndicator } from '@/components/ui/PasswordStrengthIndicator';
@@ -23,6 +21,7 @@ import { DesignTokens } from '@/constants/designTokens';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { usePasswordStrength } from '@/hooks/usePasswordStrength';
 import { useAuthStore } from '@/stores/authStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -42,7 +41,6 @@ export default function SignupScreen() {
     handleSubmit,
     setShowPassword,
     setShowConfirmPassword,
-    setFocusedField,
   } = useAuthForm(
     async (fields) => {
       try {
@@ -157,34 +155,32 @@ export default function SignupScreen() {
             />
 
             {/* Terms Agreement */}
-            <Text style={styles.termsText}>
-              By creating an account, you agree to our{' '}
-              <TouchableOpacity
+            <View style={styles.termsContainer}>
+              <Text style={styles.termsText}>By creating an account, you agree to our </Text>
+              <Pressable
                 onPress={() => {
                   Linking.openURL('https://dogwalker.app/terms').catch(() => {
                     Alert.alert('Error', 'Unable to open Terms of Service');
                   });
                 }}
-                accessible
                 accessibilityRole="link"
                 accessibilityLabel="Terms of Service"
               >
                 <Text style={styles.termsLink}>Terms of Service</Text>
-              </TouchableOpacity>
-              {' and '}
-              <TouchableOpacity
+              </Pressable>
+              <Text style={styles.termsText}> and </Text>
+              <Pressable
                 onPress={() => {
                   Linking.openURL('https://dogwalker.app/privacy').catch(() => {
                     Alert.alert('Error', 'Unable to open Privacy Policy');
                   });
                 }}
-                accessible
                 accessibilityRole="link"
                 accessibilityLabel="Privacy Policy"
               >
                 <Text style={styles.termsLink}>Privacy Policy</Text>
-              </TouchableOpacity>
-            </Text>
+              </Pressable>
+            </View>
 
             {/* Signup Button */}
             <Pressable
@@ -275,6 +271,14 @@ const styles = StyleSheet.create({
     color: DesignTokens.colors.primary.gray[600],
     textAlign: 'center',
     lineHeight: 18,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: DesignTokens.spacing.xs,
+    paddingHorizontal: DesignTokens.spacing.sm,
   },
   termsLink: {
     color: DesignTokens.colors.primary.blue,
