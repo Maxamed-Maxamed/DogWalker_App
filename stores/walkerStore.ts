@@ -101,7 +101,7 @@ export async function pickWalkPhotoFromGallery(): Promise<string | null> {
     // Request permission first to avoid launching the picker when not allowed
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     // Some platforms return `granted` boolean, others return `status` string
-    const granted = (permission as any).granted === true || (permission as any).status === 'granted';
+    const granted = permission.granted === true || permission.status === 'granted';
     if (!granted) {
       console.warn('Media library permission not granted');
       return null;

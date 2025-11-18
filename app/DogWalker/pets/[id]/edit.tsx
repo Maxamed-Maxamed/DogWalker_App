@@ -20,14 +20,15 @@ export default function EditPetScreen() {
     let mounted = true;
 
     const load = async () => {
-      if (pets.length !== 0) return;
+      // If the pet for this route `id` is already loaded, skip fetching
+      if (id && pets.some((p) => p.id === id)) return;
       try {
         await fetchPets();
       } catch (e) {
         console.error('Failed to fetch pets', e);
         if (!mounted) return;
-        
-        Alert.alert('Error', 'Failed to load pets. Please try again.' );
+
+        Alert.alert('Error', 'Failed to load pets. Please try again.');
       }
     };
 
@@ -36,7 +37,7 @@ export default function EditPetScreen() {
     return () => {
       mounted = false;
     };
-  }, [fetchPets, pets.length]);
+  }, [fetchPets, pets, id]);
 
   // Memoize pet lookup to avoid recalculation on every render
   const pet = useMemo(() => pets.find((p) => p.id === id) || null, [pets, id]);

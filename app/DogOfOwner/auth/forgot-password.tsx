@@ -21,7 +21,7 @@ export default function ForgotPasswordScreen() {
     return /^\S+@\S+\.\S+$/.test(value);
   };
 
-  const PASSWORD_RESET_REDIRECT = process.env.PASSWORD_RESET_REDIRECT || 'dogwalker://auth/password-reset-confirmation';
+  const PASSWORD_RESET_REDIRECT = process.env.PASSWORD_RESET_REDIRECT || 'dogofowner://auth/password-reset-confirmation';
   const handleReset = async () => {
     if (!email) {
       Alert.alert('Please enter your email');
@@ -77,7 +77,7 @@ export default function ForgotPasswordScreen() {
           style={[styles.input, { borderColor: colors.icon }]}
         />
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: colors.tint }]} onPress={handleReset} disabled={loading}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: colors.tint }]} onPress={() => void handleReset()} disabled={loading}>
           {loading ? <ActivityIndicator color={'#FFFFFF'} /> : <ThemedText style={[styles.buttonText, { color: '#FFFFFF' }]}>Send reset link</ThemedText>}
         </TouchableOpacity>
 

@@ -27,7 +27,7 @@ import { Sentry, routingInstrumentation } from '@/utils/monitoring/sentry';
 
 export const unstable_settings = {
   initialRouteName: 'index',
-  anchor: 'DogOfOwner',
+  anchor: 'index',
 };
 
 // Prevent Expo splash from auto-hiding during initialization

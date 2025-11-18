@@ -78,25 +78,18 @@ export async function startWalk(bookingId: string, walkerId: string) {
 
   // Attempt to update booking; if that fails, roll back the inserted walk to avoid inconsistent state
   try {
-    const { error: bookingError } = await supabase
-      .from('bookings')
-      .update({ status: 'in_progress' })
-      .eq('id', bookingId);
-
-    if (bookingError) {
-      // Try to remove the created walk to keep consistency
-      try {
-        if (data?.id) {
-          await supabase.from('walks').delete().eq('id', data.id);
-        }
-      } catch (delErr) {
-        console.error('Failed to rollback created walk after booking update failure', delErr);
+    await updateBookingStatus(bookingId, 'in_progress');
+  } catch (bookingError) {
+    // Try to remove the created walk to keep consistency
+    try {
+      if (data?.id) {
+        await supabase.from('walks').delete().eq('id', data.id);
       }
-
-      throw bookingError;
+    } catch (delErr) {
+      console.error('Failed to rollback created walk after booking update failure', delErr);
     }
-  } catch (e) {
-    throw e;
+
+    throw bookingError;
   }
 
   return data as Walk;
@@ -118,14 +111,11 @@ export async function endWalk(walkId: string, updates?: Partial<Walk>) {
 
   if (error) throw error;
 
-  // If the walk has booking_id, mark booking completed
-  try {
-    if (data?.booking_id) {
-      await supabase.from('bookings').update({ status: 'completed' }).eq('id', data.booking_id);
-    }
-  } catch (e) {
-    // Non-blocking: log but don't throw
-    console.error('Failed to update booking status after ending walk', e);
+  // If the walk has booking_id, mark booking completed.
+  // Make this deterministic: updateBookingStatus performs retries with exponential backoff
+  // and will throw if retries exhaust. We await it here so callers observe failures.
+  if (data?.booking_id) {
+    await updateBookingStatus(data.booking_id, 'completed');
   }
 
   return data as Walk;
@@ -225,25 +215,42 @@ export function validateBookingStatus(status: any) {
   }
 }
 
-// Make booking status update blocking/retry
-async function updateBookingStatus(bookingId: string, status: string) {
-  const { error } = await supabase
-    .from('bookings')
-    .update({ status })
-    .eq('id', bookingId);
+// Update booking status with retries and exponential backoff.
+// This helper will attempt the update up to `maxAttempts` times and throw
+// the last error if all attempts fail. Callers can rely on this to provide
+// deterministic behavior (i.e. the booking will be updated or the call will fail).
+export async function updateBookingStatus(
+  bookingId: string,
+  status: string,
+  maxAttempts = 3,
+  initialDelayMs = 100
+) {
+  if (!bookingId || typeof bookingId !== 'string') {
+    throw new Error('Invalid bookingId');
+  }
 
-  if (error) {
-    // Retry once more on failure
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    const { error: retryError } = await supabase
+  let attempt = 0;
+  let lastError: any = null;
+
+  while (attempt < maxAttempts) {
+    attempt += 1;
+    const { error } = await supabase
       .from('bookings')
       .update({ status })
       .eq('id', bookingId);
 
-    if (retryError) {
-      throw retryError;
+    if (!error) return;
+
+    lastError = error;
+
+    if (attempt < maxAttempts) {
+      const delay = initialDelayMs * Math.pow(2, attempt - 1);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
+
+  // All attempts failed — surface the last error to the caller
+  throw lastError || new Error('Failed to update booking status');
 }
 
 export default {
@@ -256,3 +263,28 @@ export default {
   validateBookingStatus,
   updateBookingStatus,
 };
+
+// Search walkers with simple pagination and optional query
+export async function searchWalkers(
+  page = 1,
+  pageSize = 12,
+  query?: string
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let q = supabase.from('walkers').select('*', { count: 'exact' }).range(from, to);
+
+  if (query) {
+    // Try to match name or bio; keep query simple to avoid complex DB expressions
+    q = q.ilike('name', `%${query}%`);
+  }
+
+  const { data, error, count } = await q;
+  if (error) throw error;
+
+  return {
+    walkers: (data || []) as any[],
+    total: typeof count === 'number' ? count : (data || []).length,
+  };
+}

@@ -120,11 +120,17 @@ export default function WelcomeScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.personaSwitchButton}
+              style={[
+                styles.personaSwitchButton,
+                {
+                  borderColor: isDark ? '#374151' : '#E2E8F0',
+                  backgroundColor: isDark ? '#1F2937' : '#F8FAFC',
+                },
+              ]}
               onPress={handleSwitchPersona}
               activeOpacity={0.85}
             >
-              <ThemedText style={[styles.personaSwitchText, { color: tintColor }]}>
+              <ThemedText style={[styles.personaSwitchText, { color: tintColor }]}> 
                 Need walks for your pup? Switch to the Pet Owner app
               </ThemedText>
             </TouchableOpacity>
@@ -237,8 +243,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
   },
   personaSwitchText: {
     fontSize: 14,

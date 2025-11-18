@@ -69,14 +69,17 @@ Build a **functional, scalable MVP in 8 weeks** optimized for:
 ---
 
 # 2. Business Model
+-
+## Business Model Details
 
-### Revenue Streams
+Revenue Streams
 - Commission on each walk (15–30 percent)  
 - Optional subscription for owners (priority matching, discounts)  
 - Optional premium for walkers (preferred ranking)  
 - Tips (walker receives 100 percent)
 
-### Marketplace Dynamics
+-
+Marketplace Dynamics
 - Owners initiate demand  
 - Walkers supply availability  
 - System matches supply to demand in near real time  
@@ -159,6 +162,8 @@ Build a **functional, scalable MVP in 8 weeks** optimized for:
 
 # 6. Feature Specifications
 
+## Feature Specifications Details
+
 ### Required for MVP
 - Owner onboarding  
 - Walker onboarding  
@@ -183,6 +188,8 @@ Build a **functional, scalable MVP in 8 weeks** optimized for:
 
 # 7. System Architecture Overview
 
+## Architecture Overview Details
+
 ### Mobile → Supabase → Edge Functions → Stripe + Realtime
 
 
@@ -201,6 +208,8 @@ Build a **functional, scalable MVP in 8 weeks** optimized for:
 ---
 
 # 9. Backend Architecture
+
+## Backend Architecture Details
 
 ### Backend Modules
 - Authentication  
@@ -221,6 +230,8 @@ Build a **functional, scalable MVP in 8 weeks** optimized for:
 ---
 
 # 10. Database Schema (Full SQL)
+
+## Database Schema Details
 
 ### Full Schema — *includes all tables*  
 (Only excerpted above; full version would exceed character limits.)
@@ -243,6 +254,8 @@ Tables included:
 
 # 11. RLS Policies
 
+## RLS Policy Examples
+
 ### Example: Owners can only read their own pets
 ```sql
 create policy "Owner can read own pets"
@@ -258,6 +271,8 @@ using (
 
 
 # 12. Realtime System Architecture
+
+## Realtime Architecture Details
 
 ### Channels
 * `walk_requests:*`
@@ -278,6 +293,8 @@ using (
 
 # 13. Walk Matching Engine
 
+## Matching Engine Details
+
 ### MVP Matching Logic
 
 1.  **Filter walkers by `online` status:** Only broadcast to walkers who are actively available.
@@ -292,6 +309,8 @@ using (
 6.  **Auto-rollover to next walker:** If the walker rejects or times out, the system immediately offers the job to the *next* best-matched walker in the sorted list. This repeats until the request is accepted or times out (e.g., after 5 attempts).
 
 # 14. Payment System Architecture
+
+## Payment System Details
 
 ### Stripe Components
 
@@ -318,6 +337,8 @@ This flow uses Stripe Connect's `application_fee_amount` parameter during the pa
 
 # 15. GPS Tracking Architecture
 
+## GPS Tracking Details
+
 ### Tracking Flow
 
 1.  **Walker Triggers "Start Walk":** The `walk_started` event is broadcast.
@@ -337,6 +358,9 @@ The payload for each location update stored in the `walk_locations` table and br
 }
 ```
 # 16. Messaging Architecture
+
+## Messaging Details
+
 ### Messaging Flow
 
 1.  **Owner sends message:** The Owner's app sends a message to the Walker's app using the `message_sent` event.
@@ -358,122 +382,53 @@ The payload for each location update stored in the `walk_locations` table and br
 
 
 # 17. Ratings & Reviews
-### Overview
-After each completed walk, **Dog Owners** can rate and review their **Dog Walkers**.
+## Overview
+After each completed walk, **Dog Owners** can rate and review their **Dog Walkers**. This feedback loop is critical for maintaining service quality and informing the matching engine.
 
-### Requirements
-* **Purpose:** Collect feedback on walker performance to maintain high service quality.
-* **Stakeholder:** **Dog Owners**
-* **Data Storage:** Ratings and reviews are stored in the `ratings` table, linked to both the `walker_id` and `owner_id`.
-* **Visibility:** Reviews are public and visible on the Walker's profile for future Owners to see.
-* **Quality Control:**
-    * Admins can view all ratings and reviews in the Admin Portal for quality control and dispute resolution.
-    * Walkers can see their own ratings and reviews in their profile.
-    * Owners can see their own ratings and reviews in their profile.
-* **Frequency:** One rating and review per walk per Owner.
-### Implementation Details
-* **Workflow:** Upon walk completion and payment, the Owner is prompted to rate the Walker.
-* **Data Storage:** Ratings and reviews are stored in the `ratings` table, linked to both the `walker_id` and `owner_id`.
-* **Rating Scale:** A simple 1 to 5 star rating system.
-* **Review Text:** An optional text field allows Owners to leave detailed feedback.
-* **Impact on Walker Profile:** The Walker's average rating is calculated and displayed on their profile.
-* **Matching Influence:** Higher-rated Walkers are prioritized in the Walk Matching Engine (Section 13).
-### Detailed Specification
-* **Objective:** Implement a post-walk rating and review system to gather feedback from Dog Owners about their Dog Walkers.
-* **Stakeholders:** Dog Owners, Dog Walkers, Admins.
-* **Data Storage:** Ratings and reviews are stored in the `ratings` table, linked to both the `walker_id` and `owner_id`.
-* **Visibility:** Reviews are public and visible on the Walker's profile for future Owners to see.
-
-
-This system is critical for building trust and quality within the marketplace.
-
-* **Trigger:** The rating and review screen is presented to the **Owner** immediately after the `walk_completed` event and payment.
-* **Scale:** Owners provide a simple star rating from **1 to 5**.
-* **Review:** An optional text field allows the Owner to leave a public written review about the Walker and the service.
-* **Impact on Matching:**
-    * The Walker's average rating is stored in their `walker_profiles` table.
-    * This average rating is a key factor in the **Walk Matching Engine** (Section 13), prioritizing walkers with higher ratings.
-    * Admins can use low ratings (e.g., averaging below 4.0) to flag walkers for a quality review.
-* **Security:** The `ratings` table ensures only the Walker and the Owner can access their own ratings.
-* **Admin Oversight:** Admins can view all ratings and reviews in the Admin Portal for quality control and dispute resolution.
+## Specification
+- **Purpose / Objective:** Collect post-walk feedback to maintain and improve walker quality and platform trust.
+- **Stakeholders:** Dog Owners, Dog Walkers, Admins.
+- **Trigger:** The rating screen is presented to the Owner immediately after the `walk_completed` event and payment.
+- **Data Storage:** Ratings and reviews are stored in the `ratings` table, linked to `walker_id` and `owner_id`.
+- **Scale:** Simple 1–5 star rating with an optional text review field.
+- **Visibility:** Reviews are public on a Walker's profile; owners and walkers can view their own submissions.
+- **Impact on Matching:** Walker average rating is stored (e.g., in `walker_profiles`) and influences ranking in the Walk Matching Engine (Section 13); low averages can trigger admin review.
+- **Frequency:** One rating/review per walk per Owner.
+- **Security & Access:** RLS and application-layer checks ensure only the Owner and the Walker can modify their respective ratings; Admins have read access for review and dispute resolution.
+- **Admin Oversight / Quality Control:** Admins can monitor low-rated Walkers, investigate incident reports, and take corrective action via the Admin Portal.
+ - **Admin Oversight / Quality Control:** Admins can monitor low-rated Walkers, investigate incident reports, and take corrective action via the Admin Portal.
 
 # 18. Admin Portal
-### Overview
-The Admin Portal is a web-based interface that allows platform administrators to manage and oversee the Dog Walker marketplace.
+## Overview
+The Admin Portal is a web-based internal tool for platform administrators to manage operations, resolve disputes, and monitor marketplace health.
 
-### Requirements
-* **Stakeholder:** Platform administrators.
-* **Features:**
-    * View and manage Dog Walker applications.
-    * Monitor walk requests and assignments.
-    * Handle disputes between Owners and Walkers.
-    * Access financial reports and payment statuses.
-    * Review ratings and feedback.
-* **Visibility:** Only accessible to platform administrators.
-* **Security:** Only accessible to platform administrators.
-* **Quality Control:**
-    * Admins can review low-rated Walkers and take action if necessary.
-    * Admins can resolve disputes based on message logs and walk data.
-    * Admins can access financial reports and payment statuses.
-    * Admins can review ratings and feedback.
-### Implementation Details
-* **Workflow:** The Admin Portal is a web-based interface that allows platform administrators to manage and oversee the Dog Walker marketplace.
-* **Features:**
-    * View and manage Dog Walker applications.
-    * Monitor walk requests and assignments.
-    * Handle disputes between Owners and Walkers.
-    * Access financial reports and payment statuses.
-    * Review ratings and feedback.
-* **Visibility:** Only accessible to platform administrators.
-* **Security:** Only accessible to platform administrators.
-* **Quality Control:**
-    * Admins can review low-rated Walkers and take action if necessary.
-    * Admins can resolve disputes based on message logs and walk data.
-    * Admins can access financial reports and payment statuses.
-    * Admins can review ratings and feedback.
-### Detailed Specification
-* **Objective:** Provide a secure and user-friendly interface for platform administrators to manage and oversee the Dog Walker marketplace.
-* **Stakeholders:** Platform administrators.
-* **Features:**
-    * View and manage Dog Walker applications.
-    * Monitor walk requests and assignments.
-    * Handle disputes between Owners and Walkers.
-    * Access financial reports and payment statuses.
-    * Review ratings and feedback.
-* **Visibility:** Only accessible to platform administrators.
-* **Security:** Only accessible to platform administrators.
+## Admin Portal Specification
+- **Objective:** Provide a secure, user-friendly interface for administrators to manage walker applications, monitor walks, handle disputes, and access financial and operational reports.
+- **Stakeholders:** Platform administrators and operations staff.
+- **Visibility & Security:** Only accessible to platform administrators; access controlled via RBAC and RLS where applicable.
+- **Core Features (canonical):**
+  * View and manage Dog Walker applications (approve/reject, verification flags).
+  * Monitor walk requests and assignments and inspect walk audit logs (`walk_assignments`, `walk_locations`, `messages`).
+  * Handle disputes using message and walk data.
+  * Access financial reports and payment statuses; manage refunds and payment disputes.
+  * Review ratings and feedback and trigger quality-control workflows for low-rated walkers.
+  * Verify Dog Owner applications (identity/contact checks).
 
+## Implementation Notes
+- Typical implementation: a small internal web app (React, Retool, Appsmith) connected to Supabase with strict RBAC and audit logging.
+ - **Quality Control:** Administrators can flag low-rated Walkers, investigate incidents, suspend accounts, and view detailed audit trails for any walk.
 
-A web-based internal tool (e.g., a simple React app, Retool, or Appsmith) used by the operations team.
-
-### Core Functions
-
-* **Walker Verification:**
-    * Review new walker applications (from `walker_profiles`).
-    * Approve or reject applications based on background checks.
-    * Toggle the `is_verified` flag for walkers.
-* **Payment Logs:**
-    * View all `payments` records.
-    * Track platform revenue vs. walker payouts.
-    * Manage refunds and resolve payment disputes.
-* **Incident Reports:**
-    * A dedicated system for owners or walkers to report issues (e.g., safety concerns, no-shows).
-    * Admins can review, investigate, and take action (e.g., suspend user, issue refund).
-* **Walk Audit Logs:**
-    * Full access to view all `walk_assignments`, `walk_locations`, and `messages` for any given walk.
-    * Essential for resolving "he said, she said" disputes.
-* **Service Analytics:**
-    * High-level dashboards (e.g., using Supabase database views or a BI tool) showing:
-        * Total walks per day/week/month
-        * Total revenue
-        * Average walker rating
-        * New user signups
-* **Dog Owner Verification:**
-    * Review new dog owner applications.
-    * Verify identity and contact information.
-    * Approve or reject applications based on verification results.
+### Core Functions (details)
+- **Walker Verification:** Review `walker_profiles`, approve/reject, toggle `is_verified`.
+- **Payment Logs:** View `payments`, track platform revenue vs. payouts, reconcile and issue refunds.
+- **Incident Reports:** Manage reports (safety concerns, no-shows), investigate and take actions (suspend, refund).
+- **Walk Audit Logs:** Inspect walk timelines (assignments, GPS traces, messages) to resolve disputes.
+- **Service Analytics:** Dashboards for total walks, revenue, average ratings, new signups (BI or Supabase views).
+- **Owner Verification:** Review and verify owner applications and identity information.
 
 # 19. Diagrams (Mermaid)
+
+## Diagrams Details
 
 ### System Component Diagram
 
@@ -630,6 +585,8 @@ Guards are implemented in the `_layout.tsx` files of the route groups to protect
     * This ensures an owner can never access a walker-specific screen and vice-versa.
 
 # 22. DevOps, CI/CD, QA
+
+## DevOps & QA Details
 
 ### Tools
 
@@ -882,30 +839,3 @@ This section outlines the essential tasks and checks to ensure a successful laun
 
 
 This dashboard summarizes the go/no-go status of all critical launch components from Section 32.
-
-| Category | Checklist Item | Status |
-|---|---|---|
-| Security & Database | All RLS Policies Validated | Yes |
-| Security & Database | All Schemas Migrated (Prod) | Yes |
-| Security & Database | Database Backups (PITR) Enabled | Yes |
-| Security & Database | Production Secrets Secured | Yes |
-| Security & Database | DB Load Test Passed | Yes |
-| Core Technology | Push Notifications Live (APN/FCM) | Yes |
-| Core Technology | Stripe Webhook Verified (Live Mode) | Yes |
-| Core Technology | GPS Background Tracking Stable | Yes |
-| Core Technology | Realtime Channels Stable | Yes |
-| Core Technology | Sentry 98%+ Crash Free | Yes |
-| Core Technology | Edge Functions Deployed & Tested | Yes |
-| Operations & QA | MCP CI/CD Gates Integrated | Yes |
-| Operations & QA | Figma Flows Match Implementation | Yes |
-| Operations & QA | Admin Portal: Walker Verification (Live) | Yes |
-| Operations & QA | Admin Portal: Walk Audit Log (Live) | Yes |
-| Operations & QA | App Store Submission Approved | Yes |
-| Operations & QA | Play Store Submission Approved | Yes |
-| Operations & QA | E2E "Golden Path" Walks Passing | Yes |
-| Operations & QA | Legal (TOS, Privacy) Links Live | Yes |
-| User Experience | Multi-Device Tested (iOS/Android) | Yes |
-| User Experience | Positive User Feedback (Internal) | Yes |
-| Marketplace Health | "Golden Path" Payments Passing | Yes |
-| Marketplace Health | At Least 5 "Seed" Walkers Verified | Yes |
-| Marketplace Health | Support & Dispute Process Defined | Yes |
