@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 
-// Simple layout for auth screens. Screens live under app/auth/*.tsx
+// Simple layout for auth screens. Screens live under app/DogOfOwner/auth/*.tsx
 export default function AuthLayout() {
   return <Stack screenOptions={{ headerShown: false }} />;
   

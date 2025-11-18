@@ -34,3 +34,18 @@ export interface WalkPhoto {
 }
 
 export type WalkerId = string;
+
+// Domain model for a Walker (canonical type used across the app/back-end integrations)
+export interface Walker {
+  id: string;
+  display_name?: string;
+  avatar_url?: string | null;
+  distance_km?: number | null;
+  avg_rating?: number | null;
+  bio?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  services?: string[] | null;
+  created_at?: string;
+  updated_at?: string;
+}

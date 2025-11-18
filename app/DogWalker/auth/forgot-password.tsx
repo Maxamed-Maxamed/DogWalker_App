@@ -1,3 +1,4 @@
+import { isSupabaseConfigured, supabase } from '@/utils/supabase';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
@@ -7,6 +8,10 @@ import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+const isValidEmail = (value: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+};
+
 export default function ForgotPasswordScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -15,18 +20,37 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleReset = () => {
-    if (!email) { Alert.alert('Please enter your email'); return; }
-    
-    void (async () => {
-      setLoading(true);
-      // Mock sending reset link
-      setTimeout(() => {
-        setLoading(false);
-        Alert.alert('Reset link sent', `A password reset link was sent to ${email} (mock)`);
-        router.back();
-      }, 900);
-    })();
+  const PASSWORD_RESET_REDIRECT = process.env.PASSWORD_RESET_REDIRECT || 'dogwalker://auth/password-reset-confirmation';
+
+  const handleReset = async () => {
+    if (!email) {
+      Alert.alert('Please enter your email');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      Alert.alert('Invalid email', 'Please enter a valid email address');
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      Alert.alert('Service unavailable', 'Password reset service is not configured.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: PASSWORD_RESET_REDIRECT } as any);
+      if (error) throw error;
+
+      Alert.alert('Password reset link sent', 'If an account exists for that email, a reset link has been sent.');
+      router.back();
+    } catch (err: any) {
+      console.error('Failed to request password reset', err);
+      Alert.alert('Error', err?.message || 'Failed to send reset link. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

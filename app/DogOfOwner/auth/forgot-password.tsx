@@ -48,7 +48,17 @@ export default function ForgotPasswordScreen() {
       Alert.alert('Password reset link sent', 'If an account exists for that email, a reset link has been sent.');
       router.back();
     } catch (err) {
-      console.error('Failed to request password reset', err);
+      const safeErrInfo = (() => {
+        if (!err) return 'Unknown error';
+        if (err instanceof Error) return err.message;
+        try {
+          const e = err as any;
+          return e?.message ?? e?.code ?? String(e);
+        } catch {
+          return String(err);
+        }
+      })();
+      console.error('Failed to request password reset:', safeErrInfo);
       Alert.alert('Error', 'Failed to send reset link. Please try again.');
     } finally {
       setLoading(false);

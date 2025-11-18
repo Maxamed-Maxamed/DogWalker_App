@@ -32,6 +32,13 @@ export async function createBooking(payload: Partial<Booking>) {
     throw new Error('ValidationError: scheduled_at must be a valid ISO timestamp');
   }
 
+  // Ensure provided status is one of the allowed booking statuses
+  if (!ALLOWED_BOOKING_STATUSES.includes(payload.status as any)) {
+    throw new Error(
+      `ValidationError: invalid status '${payload.status}'. Allowed values: ${ALLOWED_BOOKING_STATUSES.join(', ')}`
+    );
+  }
+
   const { data, error } = await supabase
     .from('bookings')
     .insert([payload])
@@ -97,6 +104,25 @@ export async function startWalk(bookingId: string, walkerId: string) {
 
 // End a walk
 export async function endWalk(walkId: string, updates?: Partial<Walk>) {
+  if (!walkId || typeof walkId !== 'string') {
+    throw new Error('Invalid walkId');
+  }
+
+  // Fetch the existing walk so we can attempt a rollback if marking the booking fails.
+  // This mirrors the defensive pattern in `startWalk` where we rollback the created
+  // walk when booking update fails.
+  const { data: existingWalk, error: fetchErr } = await supabase
+    .from('walks')
+    .select('*')
+    .eq('id', walkId)
+    .single();
+
+  if (fetchErr) {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      console.warn('Could not fetch existing walk for potential rollback:', fetchErr.message || fetchErr);
+    }
+  }
+
   const endedAt = new Date().toISOString();
   const safeUpdates = { ...(updates || {}) } as Partial<Walk>;
   // Prevent caller from overriding our generated ended_at
@@ -115,14 +141,65 @@ export async function endWalk(walkId: string, updates?: Partial<Walk>) {
   // Make this deterministic: updateBookingStatus performs retries with exponential backoff
   // and will throw if retries exhaust. We await it here so callers observe failures.
   if (data?.booking_id) {
-    await updateBookingStatus(data.booking_id, 'completed');
+    try {
+      await updateBookingStatus(data.booking_id, 'completed');
+    } catch (bookingError) {
+      // Try to rollback the walk update to the previous state to avoid inconsistent state
+      // where the walk is marked ended but the booking remains incomplete. Best-effort only.
+      try {
+        const rollbackPayload: Partial<Walk> = {};
+        // restore ended_at (could be null)
+        (rollbackPayload as any).ended_at = (existingWalk as any)?.ended_at ?? null;
+        // restore any other fields that were part of safeUpdates
+        for (const key of Object.keys(safeUpdates)) {
+          (rollbackPayload as any)[key] = (existingWalk as any)?.[key];
+        }
+
+        await supabase.from('walks').update(rollbackPayload).eq('id', walkId);
+      } catch (rbErr) {
+        console.error('Failed to rollback walk update after booking update failure', rbErr);
+      }
+
+      throw bookingError;
+    }
   }
 
   return data as Walk;
 }
-
 // Upload a photo for a walk
 export async function uploadWalkPhoto(walkerId: string, walkId: string, fileUri: string) {
+  // Validate parameters early to fail-fast with clear errors
+  if (!walkerId || typeof walkerId !== 'string' || !walkerId.trim()) {
+    throw new TypeError('Invalid walkerId');
+  }
+
+  if (!walkId || typeof walkId !== 'string' || !walkId.trim()) {
+    throw new TypeError('Invalid walkId');
+  }
+
+  if (!fileUri || typeof fileUri !== 'string' || !fileUri.trim()) {
+    throw new TypeError('Invalid fileUri');
+  }
+
+  // Accept data: and blob: URIs, otherwise ensure it's a valid absolute URL
+  let isValidUri = false;
+  if (fileUri.startsWith('blob:') || fileUri.startsWith('data:')) {
+    isValidUri = true;
+  } else {
+    try {
+      // URL constructor will throw for invalid URLs
+       
+      new URL(fileUri);
+      isValidUri = true;
+    } catch {
+      isValidUri = false;
+    }
+  }
+
+  if (!isValidUri) {
+    throw new TypeError('Invalid fileUri');
+  }
+
   // Fetch file and convert to ArrayBuffer
   const response = await fetch(fileUri);
   const blob = await response.blob();
@@ -228,6 +305,10 @@ export async function updateBookingStatus(
   if (!bookingId || typeof bookingId !== 'string') {
     throw new Error('Invalid bookingId');
   }
+  // Validate status is a permitted booking status to avoid writing unexpected values
+  if (!status || typeof status !== 'string' || !ALLOWED_BOOKING_STATUSES.includes(status as any)) {
+    throw new Error('Invalid status');
+  }
 
   let attempt = 0;
   let lastError: any = null;
@@ -277,7 +358,8 @@ export async function searchWalkers(
 
   if (query) {
     // Try to match name or bio; keep query simple to avoid complex DB expressions
-    q = q.ilike('name', `%${query}%`);
+    // Use an OR clause to match either field using ilike
+    q = q.or(`name.ilike.%${query}%,bio.ilike.%${query}%`);
   }
 
   const { data, error, count } = await q;

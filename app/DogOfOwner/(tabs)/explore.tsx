@@ -15,9 +15,15 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { mapDomainWalkerToExploreWalker } from '@/services/walkerAdapter';
 import { searchWalkers } from '@/services/walkerService';
 
-type Walker = {
+// ExploreWalker: UI-specific model adapted from the domain `Walker` type.
+// This UI model is intentionally separate from the domain `Walker` because
+// presentation needs (e.g., `distanceKm`, `rating`) are normalized for the
+// view layer. Import `DomainWalker` from `types/walker.ts` if you need the
+// canonical server/domain shape.
+type ExploreWalker = {
   id: string;
   name: string;
   avatar?: string;
@@ -47,7 +53,7 @@ export default function ExploreScreen() {
 
   const [page, setPage] = useState(1);
   const pageSize = 12;
-  const [walkers, setWalkers] = useState<Walker[]>([]);
+  const [walkers, setWalkers] = useState<ExploreWalker[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,18 +66,8 @@ export default function ExploreScreen() {
       try {
         const currentPage = next ? page + 1 : 1;
         const resp = await searchWalkers(currentPage, pageSize, query);
-        // Map DB rows to UI Walker shape with sensible fallbacks
-        const mapped = (resp.walkers || []).map((r: any) => ({
-          id: String(r.id ?? r.walker_id ?? r.user_id ?? ''),
-          name: r.display_name || r.name || r.full_name || 'Walker',
-          avatar: r.avatar_url || r.photo_url || r.profile_image_url || undefined,
-          distanceKm: typeof r.distance_km === 'number' ? r.distance_km : (r.distanceKm ?? 0),
-          rating: typeof r.rating === 'number' ? r.rating : (r.avg_rating ?? 0),
-          bio: r.bio || r.description || undefined,
-          lat: typeof r.lat === 'number' ? r.lat : (r.latitude ?? undefined),
-          lng: typeof r.lng === 'number' ? r.lng : (r.longitude ?? undefined),
-          services: r.services || r.offered_services || undefined,
-        } as Walker));
+        // Map DB rows to UI ExploreWalker shape using adapter
+        const mapped = (resp.walkers || []).map((r: any) => mapDomainWalkerToExploreWalker(r) as ExploreWalker);
 
         setTotal(resp.total);
         setPage(currentPage);
@@ -99,13 +95,13 @@ export default function ExploreScreen() {
     void load(true);
   }, [loading, walkers, total, load]);
 
-  const onSelectWalker = (w: Walker) => {
+  const onSelectWalker = (w: ExploreWalker) => {
     sendAnalytics('explore.select_walker', { id: w.id, name: w.name });
     // navigate to walker detail (typed routes may be strict; cast to any to avoid mismatch)
     router.push((`/DogOfOwner/walker/${w.id}`) as any);
   };
 
-  const renderWalker = ({ item }: { item: Walker }) => (
+  const renderWalker = ({ item }: { item: ExploreWalker }) => (
     <Pressable
       onPress={() => onSelectWalker(item)}
       accessibilityLabel={`Open profile for ${item.name}`}
