@@ -38,7 +38,7 @@ export function PetProfileCard({ pet }: PetProfileCardProps) {
   };
 
   const handleEdit = () => {
-    router.push(`/pets/${pet.id}/edit`);
+    router.push({ pathname: '/DogWalker/pets/[id]/edit', params: { id: pet.id } });
   };
 
   return (
