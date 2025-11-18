@@ -395,7 +395,7 @@ After each completed walk, **Dog Owners** can rate and review their **Dog Walker
 - **Impact on Matching:** Walker average rating is stored (e.g., in `walker_profiles`) and influences ranking in the Walk Matching Engine (Section 13); low averages can trigger admin review.
 - **Frequency:** One rating/review per walk per Owner.
 - **Security & Access:** RLS and application-layer checks ensure only the Owner and the Walker can modify their respective ratings; Admins have read access for review and dispute resolution.
-- **Admin Oversight / Quality Control:** Admins can monitor low-rated Walkers, investigate incident reports, and take corrective action via the Admin Portal.
+
  - **Admin Oversight / Quality Control:** Admins can monitor low-rated Walkers, investigate incident reports, and take corrective action via the Admin Portal.
 
 # 18. Admin Portal
