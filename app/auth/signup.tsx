@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FormInput from '@/components/ui/FormInput';
-import {PasswordStrengthIndicator} from '@/components/ui/PasswordStrengthIndicator';
+import { PasswordStrengthIndicator } from '@/components/ui/PasswordStrengthIndicator';
 import { DesignTokens } from '@/constants/designTokens';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { usePasswordStrength } from '@/hooks/usePasswordStrength';
@@ -46,7 +46,15 @@ export default function SignupScreen() {
   } = useAuthForm(
     async (fields) => {
       try {
-        await signup(fields.fullName, fields.email, fields.password);
+        const name = fields.fullName?.trim() ?? '';
+        const emailVal = fields.email ?? '';
+        const passVal = fields.password ?? '';
+
+        if (!name || !emailVal || !passVal) {
+          throw new Error('All fields are required');
+        }
+
+        await signup(name, emailVal, passVal);
         router.replace('/(tabs)/dashboard');
       } catch (error: unknown) {
         Alert.alert('Signup Error', (error as Error).message || 'Failed to create account');

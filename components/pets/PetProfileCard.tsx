@@ -37,10 +37,12 @@ export function PetProfileCard({ pet }: PetProfileCardProps) {
     );
   };
 
-  const handleEdit = () => {
-    router.push({ pathname: '/DogWalker/pets/[id]/edit', params: { id: pet.id } });
-  };
-
+const handleEdit = () => {
+  router.push({
+    pathname: "/DogWalker/pets/:id/edit",
+    params: { id: pet.id },
+  });
+};
   return (
     <View
       style={[styles.card, { backgroundColor: colors.background }]}
