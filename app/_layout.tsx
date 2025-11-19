@@ -32,20 +32,24 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 // Initialize Sentry as early as possible so native errors are captured
+// Safely shape `Constants.manifest` without using `any`
+const _manifest = Constants.manifest as unknown as
+  | { extra?: Record<string, unknown>; version?: string }
+  | undefined;
+
+const _manifestDsn = _manifest?.extra?.EXPO_PUBLIC_SENTRY_DSN;
 const SENTRY_DSN =
   process.env.EXPO_PUBLIC_SENTRY_DSN ||
   // Expo's Constants may include extra config with env vars
-  (Constants.manifest as any)?.extra?.EXPO_PUBLIC_SENTRY_DSN ||
+  (typeof _manifestDsn === 'string' ? _manifestDsn : '') ||
   '';
 
 if (SENTRY_DSN) {
   try {
     // Build a release identifier: version[+commitSha]
-    const appVersion = (Constants.manifest as any)?.version || 'dev';
+    const appVersion = _manifest?.version || 'dev';
     const commitSha =
-      (Constants.manifest as any)?.extra?.commitSha ||
-      (Constants.manifest as any)?.extra?.commitSHA ||
-      '';
+      _manifest?.extra?.commitSha || _manifest?.extra?.commitSHA || '';
     const release = commitSha ? `${appVersion}+${commitSha}` : appVersion;
 
     Sentry.init({
@@ -56,26 +60,28 @@ if (SENTRY_DSN) {
       enableNative: true,
       attachStacktrace: true,
       // Use a sampler so we can adjust sampling logic later; keep 0 in dev.
-      tracesSampler: (_samplingContext: any) => {
+      tracesSampler: (_samplingContext: unknown) => {
         return __DEV__ ? 0.0 : 0.1;
       },
       // Scrub PII and tokens before sending
       beforeSend(event) {
         try {
-          if (event.user && (event.user as any).email) {
-            delete (event.user as any).email;
+          const user = event.user as Record<string, unknown> | undefined;
+          if (user && 'email' in user) {
+            delete user['email'];
           }
 
-          if (event.request && (event.request as any).headers) {
-            const headers = (event.request as any).headers as Record<string, any>;
-            if (headers.authorization) delete headers.authorization;
-            if (headers.Authorization) delete headers.Authorization;
+          const request = event.request as Record<string, unknown> | undefined;
+          if (request && 'headers' in request) {
+            const headers = request['headers'] as Record<string, unknown> | undefined;
+            if (headers && 'authorization' in headers) delete (headers as Record<string, any>)['authorization'];
+            if (headers && 'Authorization' in headers) delete (headers as Record<string, any>)['Authorization'];
           }
 
-          if (event.extra) {
-            const extra = event.extra as Record<string, any>;
+          if (event.extra && typeof event.extra === 'object') {
+            const extra = event.extra as Record<string, unknown>;
             ['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password'].forEach(k => {
-              if (k in extra) delete extra[k];
+              if (k in extra) delete (extra as Record<string, unknown>)[k];
             });
           }
         } catch {
@@ -107,8 +113,8 @@ if (__DEV__) {
     // so you can run `__sentryTest('my message')` from the browser debugger.
     // Use in Expo DevTools Console or React Native debugger.
     // Example: __sentryTest('manual test from console')
-    (global as any).__sentryTest = sendSentryTest;
-    (globalThis as any).__sentryTest = sendSentryTest;
+    (global as unknown as { __sentryTest?: (msg?: string) => void }).__sentryTest = sendSentryTest;
+    (globalThis as unknown as { __sentryTest?: (msg?: string) => void }).__sentryTest = sendSentryTest;
   } catch {
     // ignore attach errors in exotic runtimes
   }

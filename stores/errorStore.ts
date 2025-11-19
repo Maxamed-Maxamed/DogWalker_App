@@ -9,18 +9,25 @@ const REPORT_DEDUPE_WINDOW_MS = 60_000; // 60s
 const SENSITIVE_KEY_RE = /(password|pass|token|secret|ssn|card|cvv|authorization|auth|email|phone)/i;
 
 function maskEmail(value: string) {
-  const parts = value.split('@');
-  if (parts.length !== 2) return '[REDACTED]';
-  const local = parts[0];
+  // Use the last '@' to support malformed inputs with multiple '@' characters
+  const at = value.lastIndexOf('@');
+  if (at === -1) return '[REDACTED]';
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  // Guard: require both local and domain to be non-empty
+  if (!local || !domain) return '[REDACTED]';
   const maskedLocal = local.length > 2 ? local[0] + '***' + local[local.length - 1] : '***';
-  return `${maskedLocal}@${parts[1]}`;
+  return `${maskedLocal}@${domain}`;
 }
+
+// Simple, safe email regex: local@domain.tld (not exhaustive, avoids false positives)
+const SIMPLE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
 function scrubContext(value: unknown): unknown {
   if (value == null) return value;
   if (typeof value === 'string') {
-    // mask obvious emails
-    if (value.includes('@')) return maskEmail(value);
+    // mask only valid-looking emails, avoid misclassifying other strings
+    if (SIMPLE_EMAIL_RE.test(value)) return maskEmail(value);
     // limit long strings
     if (value.length > 200) return value.slice(0, 200) + '...[TRUNCATED]';
     return value;

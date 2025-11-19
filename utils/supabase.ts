@@ -97,20 +97,21 @@ async function secureStoreRemoveChunked(baseKey: string) {
   // Also remove potential single value
   try {
     await SecureStore.deleteItemAsync(baseKey);
-  } catch {
+  } catch (error) {
     // Intentionally ignore: key may not exist, which is fine during cleanup
-    // No need to log as this is expected behavior
-  }
-}
+    if (__DEV__ && error instanceof Error && !error.message.includes('not exist')) {
+      console.warn('Unexpected SecureStore delete error:', error.message);
+    }
+  }}
 
 // Storage interface expected by supabase-js auth
 const ChunkedSecureStoreAdapter = {
   getItem: async (key: string) => {
     try {
       return await secureStoreGetChunked(key);
-    } catch {
+    } catch (err) {
       if (__DEV__) {
-        console.error('SecureStore (chunked) getItem error:');
+        console.error('SecureStore (chunked) getItem error:', err instanceof Error ? err.message : String(err));
       }
       return null;
     }
@@ -118,22 +119,20 @@ const ChunkedSecureStoreAdapter = {
   setItem: async (key: string, value: string) => {
     try {
       await secureStoreSetChunked(key, value);
-    } catch {
+    } catch (error) {
       if (__DEV__) {
-        console.error('SecureStore (chunked) setItem error:');
+        console.error('SecureStore (chunked) setItem error:', error instanceof Error ? error.message : String(error));
       }
     }
-  },
-  removeItem: async (key: string) => {
+  },  removeItem: async (key: string) => {
     try {
       await secureStoreRemoveChunked(key);
-    } catch {
+    } catch (error) {
       if (__DEV__) {
-        console.error('SecureStore (chunked) removeItem error:');
+        console.error('SecureStore (chunked) removeItem error:', error instanceof Error ? error.message : String(error));
       }
     }
-  },
-};
+  },};
 
 // Validate environment variables
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
