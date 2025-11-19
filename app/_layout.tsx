@@ -19,6 +19,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { clearRecentReportsCleanupInterval } from '@/stores/errorStore';
 import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
@@ -37,19 +38,20 @@ const _manifest = Constants.manifest as unknown as
   | { extra?: Record<string, unknown>; version?: string }
   | undefined;
 
-const _manifestDsn = _manifest?.extra?.EXPO_PUBLIC_SENTRY_DSN;
+const _manifestExtra = _manifest?.extra;
+const _manifestDsn = typeof _manifestExtra?.EXPO_PUBLIC_SENTRY_DSN === 'string' ? _manifestExtra.EXPO_PUBLIC_SENTRY_DSN : '';
 const SENTRY_DSN =
   process.env.EXPO_PUBLIC_SENTRY_DSN ||
   // Expo's Constants may include extra config with env vars
-  (typeof _manifestDsn === 'string' ? _manifestDsn : '') ||
+  _manifestDsn ||
   '';
 
 if (SENTRY_DSN) {
   try {
     // Build a release identifier: version[+commitSha]
-    const appVersion = _manifest?.version || 'dev';
-    const commitSha =
-      _manifest?.extra?.commitSha || _manifest?.extra?.commitSHA || '';
+    const appVersion = typeof _manifest?.version === 'string' ? _manifest!.version : 'dev';
+    const commitShaRaw = _manifestExtra?.commitSha ?? _manifestExtra?.commitSHA;
+    const commitSha = typeof commitShaRaw === 'string' ? commitShaRaw : '';
     const release = commitSha ? `${appVersion}+${commitSha}` : appVersion;
 
     Sentry.init({
@@ -67,22 +69,34 @@ if (SENTRY_DSN) {
       beforeSend(event) {
         try {
           const user = event.user as Record<string, unknown> | undefined;
-          if (user && 'email' in user) {
-            delete user['email'];
+          if (user && typeof user === 'object' && 'email' in user) {
+            // remove email if present
+            delete (user as Record<string, unknown>)['email'];
           }
 
           const request = event.request as Record<string, unknown> | undefined;
-          if (request && 'headers' in request) {
-            const headers = request['headers'] as Record<string, unknown> | undefined;
-            if (headers && 'authorization' in headers) delete (headers as Record<string, any>)['authorization'];
-            if (headers && 'Authorization' in headers) delete (headers as Record<string, any>)['Authorization'];
+          if (request && typeof request === 'object' && 'headers' in request) {
+            const headers = request['headers'] as unknown;
+            if (headers && typeof headers === 'object') {
+              const h = headers as Record<string, unknown>;
+              // remove common auth headers
+              delete h['authorization'];
+              delete h['Authorization'];
+            }
           }
 
           if (event.extra && typeof event.extra === 'object') {
-            const extra = event.extra as Record<string, unknown>;
-            ['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password'].forEach(k => {
-              if (k in extra) delete (extra as Record<string, unknown>)[k];
-            });
+            const extraRaw = event.extra as Record<string, unknown>;
+            const sensitive = new Set(['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password']);
+            const sanitized: Record<string, unknown> = {};
+            for (const [k, v] of Object.entries(extraRaw)) {
+              if (sensitive.has(k)) continue;
+              sanitized[k] = v;
+            }
+            // replace event.extra with the sanitized copy
+             
+            // @ts-ignore - Sentry event shape is dynamic here
+            event.extra = sanitized;
           }
         } catch {
           // ignore scrub errors
@@ -141,6 +155,18 @@ export default Sentry.wrap(function RootLayout() {
       });
     }
   }, [phase]);
+
+  // Clear the periodic cleanup interval from `errorStore` when the app
+  // JS runtime is torn down (or during tests). This avoids leaking timers.
+  useEffect(() => {
+    return () => {
+      try {
+        clearRecentReportsCleanupInterval();
+      } catch {
+        // best-effort cleanup; don't crash on shutdown
+      }
+    };
+  }, []);
 
   return (
     <SplashScreenProvider>

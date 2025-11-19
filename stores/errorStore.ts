@@ -6,6 +6,29 @@ import { create } from 'zustand';
 const recentReports = new Map<string, number>();
 const REPORT_DEDUPE_WINDOW_MS = 60_000; // 60s
 
+// Clean up old entries periodically to prevent memory leaks.
+// Store the interval handle so it can be cleared during app shutdown or tests.
+let recentReportsCleanupInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
+  const now = Date.now();
+  for (const [key, timestamp] of recentReports.entries()) {
+    if (now - timestamp > REPORT_DEDUPE_WINDOW_MS) {
+      recentReports.delete(key);
+    }
+  }
+}, REPORT_DEDUPE_WINDOW_MS);
+
+/**
+ * Clear the periodic cleanup interval. Call this on application shutdown/tests to avoid
+ * leaving timers running.
+ */
+export function clearRecentReportsCleanupInterval() {
+  if (recentReportsCleanupInterval != null) {
+    // cast to any to satisfy platform timer typing differences
+    clearInterval(recentReportsCleanupInterval as any);
+    recentReportsCleanupInterval = null;
+  }
+}
+
 const SENSITIVE_KEY_RE = /(password|pass|token|secret|ssn|card|cvv|authorization|auth|email|phone)/i;
 
 function maskEmail(value: string) {
@@ -35,8 +58,13 @@ function scrubContext(value: unknown): unknown {
   if (typeof value !== 'object') return value;
   if (Array.isArray(value)) return value.map(scrubContext);
   try {
-    const out: Record<string, unknown> = {};
+    // Use a null-prototype object to avoid prototype pollution via dangerous keys
+    const out: Record<string, unknown> = Object.create(null);
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      // only accept string keys and skip dangerous prototype keys
+      if (typeof k !== 'string') continue;
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+
       if (SENSITIVE_KEY_RE.test(k)) {
         out[k] = '[REDACTED]';
       } else {
@@ -145,7 +173,11 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
             scope.setLevel('fatal');
             scope.setTag('source', 'useErrorStore');
             // Attach scrubbed extras (safe-serializable)
-            scope.setExtras(typeof scrubbed === 'object' ? (scrubbed as Record<string, unknown>) : { info: scrubbed });
+            scope.setExtras(
+              scrubbed != null && typeof scrubbed === 'object' && !Array.isArray(scrubbed)
+                ? (scrubbed as Record<string, unknown>)
+                : { info: scrubbed }
+            );
             Sentry.captureException(ex);
           });
         }
