@@ -49,7 +49,7 @@ const SENTRY_DSN =
 if (SENTRY_DSN) {
   try {
     // Build a release identifier: version[+commitSha]
-    const appVersion = typeof _manifest?.version === 'string' ? _manifest!.version : 'dev';
+    const appVersion = _manifest && typeof _manifest.version === 'string' ? _manifest.version : 'dev';
     const commitShaRaw = _manifestExtra?.commitSha ?? _manifestExtra?.commitSHA;
     const commitSha = typeof commitShaRaw === 'string' ? commitShaRaw : '';
     const release = commitSha ? `${appVersion}+${commitSha}` : appVersion;
@@ -89,12 +89,13 @@ if (SENTRY_DSN) {
             const extraRaw = event.extra as Record<string, unknown>;
             const sensitive = new Set(['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password']);
             const sanitized: Record<string, unknown> = {};
+            const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
             for (const [k, v] of Object.entries(extraRaw)) {
               if (sensitive.has(k)) continue;
+              if (!SAFE_KEY_RE.test(k)) continue;
               sanitized[k] = v;
             }
             // replace event.extra with the sanitized copy
-             
             // @ts-ignore - Sentry event shape is dynamic here
             event.extra = sanitized;
           }

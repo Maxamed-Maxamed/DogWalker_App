@@ -8,7 +8,9 @@ const REPORT_DEDUPE_WINDOW_MS = 60_000; // 60s
 
 // Clean up old entries periodically to prevent memory leaks.
 // Store the interval handle so it can be cleared during app shutdown or tests.
-let recentReportsCleanupInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
+let recentReportsCleanupInterval: ReturnType<typeof setInterval> | null = null;
+// start the interval and keep the handle in a typed variable (nullable)
+recentReportsCleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [key, timestamp] of recentReports.entries()) {
     if (now - timestamp > REPORT_DEDUPE_WINDOW_MS) {
@@ -23,8 +25,8 @@ let recentReportsCleanupInterval: ReturnType<typeof setInterval> | null = setInt
  */
 export function clearRecentReportsCleanupInterval() {
   if (recentReportsCleanupInterval != null) {
-    // cast to any to satisfy platform timer typing differences
-    clearInterval(recentReportsCleanupInterval as any);
+    // clear the interval in a type-safe way
+    clearInterval(recentReportsCleanupInterval);
     recentReportsCleanupInterval = null;
   }
 }
@@ -60,10 +62,13 @@ function scrubContext(value: unknown): unknown {
   try {
     // Use a null-prototype object to avoid prototype pollution via dangerous keys
     const out: Record<string, unknown> = Object.create(null);
+    // Only allow simple, safe keys to be copied into the sanitized object
+    const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
       // only accept string keys and skip dangerous prototype keys
       if (typeof k !== 'string') continue;
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+      if (!SAFE_KEY_RE.test(k)) continue;
 
       if (SENSITIVE_KEY_RE.test(k)) {
         out[k] = '[REDACTED]';
