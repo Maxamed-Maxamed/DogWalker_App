@@ -32,6 +32,8 @@ export function clearRecentReportsCleanupInterval() {
 }
 
 const SENSITIVE_KEY_RE = /(password|pass|token|secret|ssn|card|cvv|authorization|auth|email|phone)/i;
+// Allowed simple keys for extras and sanitized context
+const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
 
 function maskEmail(value: string) {
   // Use the last '@' to support malformed inputs with multiple '@' characters
@@ -62,9 +64,9 @@ function scrubContext(value: unknown): unknown {
   try {
     // Use a null-prototype object to avoid prototype pollution via dangerous keys
     const out: Record<string, unknown> = Object.create(null);
-    // Only allow simple, safe keys to be copied into the sanitized object
-    const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    for (const k of Object.keys(value as Record<string, unknown>)) {
+      if (!Object.prototype.hasOwnProperty.call(value as Record<string, unknown>, k)) continue;
+      const v = (value as Record<string, unknown>)[k];
       // only accept string keys and skip dangerous prototype keys
       if (typeof k !== 'string') continue;
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
@@ -80,6 +82,51 @@ function scrubContext(value: unknown): unknown {
   } catch {
     return '[UNSERIALIZABLE]';
   }
+}
+
+/**
+ * Build a safe, null-prototype extras object suitable for sending to Sentry.
+ * This function enforces a key whitelist and ensures values are plain serializable
+ * primitives or truncated strings to avoid passing untrusted objects directly.
+ */
+function buildSafeExtras(input: unknown): Record<string, unknown> {
+  const out: Record<string, unknown> = Object.create(null);
+  if (input == null) return out;
+  if (typeof input === 'object' && !Array.isArray(input)) {
+    const src = input as Record<string, unknown>;
+    for (const k of Object.keys(src)) {
+      if (!SAFE_KEY_RE.test(k)) continue;
+      if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
+
+      try {
+        const v = src[k];
+        if (v == null) {
+          out[k] = v;
+          continue;
+        }
+        if (typeof v === 'string') {
+          out[k] = v.length > 200 ? v.slice(0, 200) + '...[TRUNCATED]' : v;
+          continue;
+        }
+        if (typeof v === 'number' || typeof v === 'boolean') {
+          out[k] = v;
+          continue;
+        }
+        // For any nested objects/arrays, attempt to JSON-safe copy; on failure, stringify
+        try {
+          out[k] = JSON.parse(JSON.stringify(v));
+        } catch {
+          out[k] = String(v);
+        }
+      } catch {
+        // ignore individual key failures
+      }
+    }
+    return out;
+  }
+  // Fallback: put a stringified summary under `info`
+  out['info'] = typeof input === 'string' ? input : String(input);
+  return out;
 }
 
 function shouldReportFingerprint(fingerprint: string) {
@@ -177,12 +224,8 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
           Sentry.withScope((scope) => {
             scope.setLevel('fatal');
             scope.setTag('source', 'useErrorStore');
-            // Attach scrubbed extras (safe-serializable)
-            scope.setExtras(
-              scrubbed != null && typeof scrubbed === 'object' && !Array.isArray(scrubbed)
-                ? (scrubbed as Record<string, unknown>)
-                : { info: scrubbed }
-            );
+            // Attach scrubbed extras as a null-prototype, whitelisted object
+            scope.setExtras(buildSafeExtras(scrubbed));
             Sentry.captureException(ex);
           });
         }

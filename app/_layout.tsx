@@ -88,13 +88,39 @@ if (SENTRY_DSN) {
           if (event.extra && typeof event.extra === 'object') {
             const extraRaw = event.extra as Record<string, unknown>;
             const sensitive = new Set(['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password']);
-            const sanitized: Record<string, unknown> = {};
             const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
+
+            // Use a null-prototype object to avoid prototype pollution
+            const sanitized: Record<string, unknown> = Object.create(null);
+
+            // Deep-sanitize values to avoid injecting untrusted objects or functions.
+            const MAX_SANITIZE_DEPTH = 5;
+            const sanitizeValue = (val: unknown, depth = 0): unknown => {
+              if (depth > MAX_SANITIZE_DEPTH) return '[truncated]';
+              if (val === null) return null;
+              const t = typeof val;
+              if (t === 'string' || t === 'number' || t === 'boolean') return val;
+              if (Array.isArray(val)) return val.map((item) => sanitizeValue(item, depth + 1));
+              if (t === 'object') {
+                const obj = val as Record<string, unknown>;
+                const out: Record<string, unknown> = Object.create(null);
+                for (const [subk, subv] of Object.entries(obj)) {
+                  if (sensitive.has(subk)) continue;
+                  if (!SAFE_KEY_RE.test(subk)) continue;
+                  out[subk] = sanitizeValue(subv, depth + 1);
+                }
+                return out;
+              }
+              // drop functions, symbols, etc.
+              return undefined;
+            };
+
             for (const [k, v] of Object.entries(extraRaw)) {
               if (sensitive.has(k)) continue;
               if (!SAFE_KEY_RE.test(k)) continue;
-              sanitized[k] = v;
+              sanitized[k] = sanitizeValue(v, 0);
             }
+
             // replace event.extra with the sanitized copy
             // @ts-ignore - Sentry event shape is dynamic here
             event.extra = sanitized;
