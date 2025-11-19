@@ -12,6 +12,7 @@
  * is complete (all stores initialized).
  */
 
+import { clearRecentReportsCleanupInterval } from '@/stores/errorStore';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
@@ -19,7 +20,6 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { clearRecentReportsCleanupInterval } from '@/stores/errorStore';
 import 'react-native-reanimated';
 
 import { CustomSplashScreen } from '@/components/splash-screen';
