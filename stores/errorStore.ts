@@ -1,5 +1,54 @@
+import * as Sentry from '@sentry/react-native';
 import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
+
+// Small in-memory dedupe map to avoid spamming Sentry with identical errors
+const recentReports = new Map<string, number>();
+const REPORT_DEDUPE_WINDOW_MS = 60_000; // 60s
+
+const SENSITIVE_KEY_RE = /(password|pass|token|secret|ssn|card|cvv|authorization|auth|email|phone)/i;
+
+function maskEmail(value: string) {
+  const parts = value.split('@');
+  if (parts.length !== 2) return '[REDACTED]';
+  const local = parts[0];
+  const maskedLocal = local.length > 2 ? local[0] + '***' + local[local.length - 1] : '***';
+  return `${maskedLocal}@${parts[1]}`;
+}
+
+function scrubContext(value: unknown): unknown {
+  if (value == null) return value;
+  if (typeof value === 'string') {
+    // mask obvious emails
+    if (value.includes('@')) return maskEmail(value);
+    // limit long strings
+    if (value.length > 200) return value.slice(0, 200) + '...[TRUNCATED]';
+    return value;
+  }
+  if (typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map(scrubContext);
+  try {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (SENSITIVE_KEY_RE.test(k)) {
+        out[k] = '[REDACTED]';
+      } else {
+        out[k] = scrubContext(v);
+      }
+    }
+    return out;
+  } catch {
+    return '[UNSERIALIZABLE]';
+  }
+}
+
+function shouldReportFingerprint(fingerprint: string) {
+  const now = Date.now();
+  const last = recentReports.get(fingerprint) || 0;
+  if (now - last < REPORT_DEDUPE_WINDOW_MS) return false;
+  recentReports.set(fingerprint, now);
+  return true;
+}
 
 export type ErrorLevel = 'warning' | 'error' | 'critical';
 
@@ -65,7 +114,37 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
       if (__DEV__) {
         console.error('[CRITICAL ERROR]', error.message, error.context);
       }
-      // TODO: Send to error tracking service (Sentry, etc.)
+
+      // Prepare scrubbed context to avoid leaking PII into Sentry
+      const scrubbed = scrubContext(error.context ?? {});
+
+      // Create a simple fingerprint to dedupe identical reports
+      let fingerprintKey: string;
+      try {
+        fingerprintKey = `${error.message}::${JSON.stringify(scrubbed)}`;
+      } catch {
+        fingerprintKey = error.message;
+      }
+
+      if (!shouldReportFingerprint(fingerprintKey)) return;
+
+      // Send to error tracking service (Sentry) if available
+      try {
+        if (Sentry && typeof Sentry.captureException === 'function') {
+          const ex = new Error(error.message);
+
+          // Use a scope so we only attach allowed metadata
+          Sentry.withScope((scope) => {
+            scope.setLevel('fatal');
+            scope.setTag('source', 'useErrorStore');
+            // Attach scrubbed extras (safe-serializable)
+            scope.setExtras(typeof scrubbed === 'object' ? (scrubbed as Record<string, unknown>) : { info: scrubbed });
+            Sentry.captureException(ex);
+          });
+        }
+      } catch {
+        // ignore Sentry reporting failures
+      }
     }
   },
 

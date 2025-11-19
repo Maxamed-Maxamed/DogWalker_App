@@ -21,10 +21,10 @@ export default function PetsScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { pets, loading, fetchPets } = usePetStore();
 
-  // Fetch pets on mount only - fetchPets is stable from Zustand store
+  // Fetch pets on mount only - `fetchPets` is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  }, []);
+  }, [fetchPets]);
 
   const handleRefresh = useCallback(() => {
     fetchPets();

@@ -29,7 +29,6 @@
       "expo-router",
       [
         "expo-splash-screen",
-        
         {
           "image": "./assets/images/doglogo.png",
           "imageWidth": 200,
@@ -40,12 +39,19 @@
           }
         }
       ],
-      
       "expo-font",
       "expo-web-browser",
       "expo-sqlite",
       "expo-secure-store",
-      "expo-image-picker"
+      "expo-image-picker",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "dogwalker",
+          "organization": "max-uh"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -13,13 +13,13 @@ export default function EditPetScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { pets, fetchPets, loading } = usePetStore();
 
-  // Fetch pets on mount if not loaded - fetchPets is stable from Zustand store
+  // Fetch pets on mount if not loaded - `fetchPets` is stable from Zustand store
   useEffect(() => {
     // Fetch pets if not already loaded
     if (pets.length === 0) {
       fetchPets();
     }
-  }, []);
+  }, [fetchPets, pets.length]);
 
   // Memoize pet lookup to avoid recalculation on every render
   const pet = useMemo(() => pets.find((p) => p.id === id) || null, [pets, id]);

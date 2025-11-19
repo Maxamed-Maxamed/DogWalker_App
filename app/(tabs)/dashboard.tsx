@@ -20,10 +20,10 @@ export default function DashboardScreen() {
   const { user } = useAuthStore();
   const { pets, fetchPets } = usePetStore();
 
-  // Fetch pets on mount only - fetchPets is stable from Zustand store
+  // Fetch pets on mount only - `fetchPets` is stable from Zustand store
   useEffect(() => {
     fetchPets();
-  }, []);
+  }, [fetchPets]);
 
   const handleLogout = useCallback(() => {
     Alert.alert(

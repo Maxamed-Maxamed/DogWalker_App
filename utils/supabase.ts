@@ -97,7 +97,7 @@ async function secureStoreRemoveChunked(baseKey: string) {
   // Also remove potential single value
   try {
     await SecureStore.deleteItemAsync(baseKey);
-  } catch (error) {
+  } catch {
     // Intentionally ignore: key may not exist, which is fine during cleanup
     // No need to log as this is expected behavior
   }
@@ -108,10 +108,9 @@ const ChunkedSecureStoreAdapter = {
   getItem: async (key: string) => {
     try {
       return await secureStoreGetChunked(key);
-    } catch (error) {
+    } catch {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('SecureStore (chunked) getItem error:', error);
+        console.error('SecureStore (chunked) getItem error:');
       }
       return null;
     }
@@ -119,20 +118,18 @@ const ChunkedSecureStoreAdapter = {
   setItem: async (key: string, value: string) => {
     try {
       await secureStoreSetChunked(key, value);
-    } catch (error) {
+    } catch {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('SecureStore (chunked) setItem error:', error);
+        console.error('SecureStore (chunked) setItem error:');
       }
     }
   },
   removeItem: async (key: string) => {
     try {
       await secureStoreRemoveChunked(key);
-    } catch (error) {
+    } catch {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.error('SecureStore (chunked) removeItem error:', error);
+        console.error('SecureStore (chunked) removeItem error:');
       }
     }
   },
@@ -141,7 +138,6 @@ const ChunkedSecureStoreAdapter = {
 // Validate environment variables
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   if (__DEV__) {
-    // eslint-disable-next-line no-console
     console.warn(
       '⚠️ Supabase environment variables missing!\n' +
       'Please ensure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'

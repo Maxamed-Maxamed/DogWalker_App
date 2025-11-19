@@ -1,3 +1,6 @@
+ignoredBuiltDependencies:
+  - '@sentry/cli'
+
 nodeLinker: hoisted
 
 onlyBuiltDependencies:
