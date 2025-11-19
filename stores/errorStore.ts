@@ -203,12 +203,14 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
       }
 
       // Prepare scrubbed context to avoid leaking PII into Sentry
-      const scrubbed = scrubContext(error.context ?? {});
+      const scrubbedRaw = scrubContext(error.context ?? {});
+      // Build a strictly whitelisted, serializable extras object for Sentry
+      const safeExtras = buildSafeExtras(scrubbedRaw);
 
-      // Create a simple fingerprint to dedupe identical reports
+      // Create a simple fingerprint to dedupe identical reports using the safe extras
       let fingerprintKey: string;
       try {
-        fingerprintKey = `${error.message}::${JSON.stringify(scrubbed)}`;
+        fingerprintKey = `${error.message}::${JSON.stringify(safeExtras)}`;
       } catch {
         fingerprintKey = error.message;
       }
@@ -224,8 +226,8 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
           Sentry.withScope((scope) => {
             scope.setLevel('fatal');
             scope.setTag('source', 'useErrorStore');
-            // Attach scrubbed extras as a null-prototype, whitelisted object
-            scope.setExtras(buildSafeExtras(scrubbed));
+            // Attach the already-built, whitelisted + serializable extras
+            scope.setExtras(safeExtras);
             Sentry.captureException(ex);
           });
         }

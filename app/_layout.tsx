@@ -121,9 +121,19 @@ if (SENTRY_DSN) {
               sanitized[k] = sanitizeValue(v, 0);
             }
 
-            // replace event.extra with the sanitized copy
-            // @ts-ignore - Sentry event shape is dynamic here
-            event.extra = sanitized;
+            // replace event.extra with a JSON-roundtripped sanitized copy so
+            // the assigned value is a plain, serializable object (no functions,
+            // symbols, or hidden prototypes). This avoids object-injection sinks.
+            try {
+              // JSON roundtrip removes any remaining non-serializable values
+              const safeExtra = JSON.parse(JSON.stringify(sanitized));
+              // @ts-ignore - Sentry event shape is dynamic here
+              event.extra = safeExtra;
+            } catch {
+              // Fallback to the null-prototype sanitized object if JSON fails
+              // @ts-ignore
+              event.extra = sanitized;
+            }
           }
         } catch {
           // ignore scrub errors
