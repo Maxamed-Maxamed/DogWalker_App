@@ -29,7 +29,7 @@ try {
   }
 } catch (e) {
   // Keep app resilient if Sentry fails to initialize
-  // eslint-disable-next-line no-console
+  /// eslint-disable-next-line no-console
   console.warn('Sentry initialization failed', e);
 }
 

@@ -11,7 +11,7 @@ Local usage
 1. Ensure `SENTRY_AUTH_TOKEN` is available locally. Example (PowerShell):
 
 ```powershell
-setx SENTRY_AUTH_TOKEN "${env:SENTRY_AUTH_TOKEN}"
+setx SENTRY_AUTH_TOKEN "your-sentry-auth-token-here"
 # Or set in current session: $env:SENTRY_AUTH_TOKEN = 'token-here'
 ```
 
