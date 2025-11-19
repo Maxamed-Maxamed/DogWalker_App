@@ -1,11 +1,37 @@
 import { ActivityIndicator, StyleSheet } from 'react-native';
 
+import * as Sentry from '@sentry/react-native';
+import Constants from 'expo-constants';
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useAppStateStore } from '@/stores/appStateStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useBootstrapStore } from '@/stores/bootstrapStore';
 import { Redirect } from 'expo-router';
-import { useAppStateStore } from '@/stores/appStateStore';
+
+// Initialize Sentry early during app startup
+try {
+  const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN || '';
+  const slug = (Constants.expoConfig && Constants.expoConfig.slug) || Constants.manifest?.slug || 'dogwalker';
+  const version = (Constants.expoConfig && Constants.expoConfig.version) || Constants.manifest?.version || '0.0.0';
+  const release = `${slug}@${version}`;
+
+  if (dsn) {
+    Sentry.init({
+      dsn,
+      environment: __DEV__ ? 'development' : 'production',
+      release,
+      tracesSampleRate: __DEV__ ? 0.0 : 0.1,
+      autoInitializeNativeSdk: true,
+      enableNative: true,
+    });
+  }
+} catch (e) {
+  // Keep app resilient if Sentry fails to initialize
+  // eslint-disable-next-line no-console
+  console.warn('Sentry initialization failed', e);
+}
 
 /**
  * Entry point screen that handles navigation based on app state

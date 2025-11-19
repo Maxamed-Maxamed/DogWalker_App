@@ -9,7 +9,12 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "sentry:releases:new": "sentry-cli releases new $npm_package_name@$npm_package_version",
+    "sentry:releases:set-commits": "sentry-cli releases set-commits --auto $npm_package_name@$npm_package_version",
+    "sentry:releases:upload-sourcemaps": "sentry-cli releases files $npm_package_name@$npm_package_version upload-sourcemaps ./ --rewrite --strip-prefix ./",
+    "sentry:releases:finalize": "sentry-cli releases finalize $npm_package_name@$npm_package_version",
+    "sentry:release:all": "npm run sentry:releases:new && npm run sentry:releases:set-commits && npm run sentry:releases:upload-sourcemaps && npm run sentry:releases:finalize"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -19,6 +24,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "@rneui/themed": "4.0.0-rc.8",
+    "@sentry/react-native": "^7.6.0",
     "@supabase/supabase-js": "^2.77.0",
     "expo": "~54.0.25",
     "expo-clipboard": "~8.0.7",

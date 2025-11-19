@@ -23,6 +23,26 @@ import { CustomSplashScreen } from '@/components/splash-screen';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useBootstrapStore } from '@/stores/bootstrapStore';
 import { SplashScreenProvider } from '@/stores/splashScreenStore';
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://f648bd35e92e9f14d404ad2387b5a54d@o4510297697353728.ingest.de.sentry.io/4510364394651728',
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // Configure Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 // Prevent Expo splash from auto-hiding during initialization
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -33,7 +53,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
  * Main RootLayout component
  * Wraps the entire app with necessary providers and coordinates bootstrap
  */
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   const colorScheme = useColorScheme();
   const { phase, bootstrap } = useBootstrapStore();
 
@@ -70,4 +90,4 @@ export default function RootLayout() {
       </ThemeProvider>
     </SplashScreenProvider>
   );
-}
+});
