@@ -51,15 +51,7 @@
       "expo-web-browser",
       "expo-sqlite",
       "expo-secure-store",
-      "expo-image-picker",
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "dogwalker",
-          "organization": "max-uh"
-        }
-      ]
+      "expo-image-picker"
     ],
     "experiments": {
       "typedRoutes": true,
