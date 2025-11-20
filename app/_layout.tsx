@@ -106,6 +106,7 @@ if (SENTRY_DSN) {
                 const out: Record<string, unknown> = Object.create(null);
                 for (const [subk, subv] of Object.entries(obj)) {
                   if (sensitive.has(subk)) continue;
+                  if (subk === '__proto__' || subk === 'constructor' || subk === 'prototype') continue;
                   if (!SAFE_KEY_RE.test(subk)) continue;
                   out[subk] = sanitizeValue(subv, depth + 1);
                 }
@@ -117,6 +118,7 @@ if (SENTRY_DSN) {
 
             for (const [k, v] of Object.entries(extraRaw)) {
               if (sensitive.has(k)) continue;
+              if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
               if (!SAFE_KEY_RE.test(k)) continue;
               sanitized[k] = sanitizeValue(v, 0);
             }

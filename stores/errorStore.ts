@@ -34,6 +34,8 @@ export function clearRecentReportsCleanupInterval() {
 const SENSITIVE_KEY_RE = /(password|pass|token|secret|ssn|card|cvv|authorization|auth|email|phone)/i;
 // Allowed simple keys for extras and sanitized context
 const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
+// Maximum recursion depth for scrubber to avoid stack overflows on deep inputs
+const SCRUB_MAX_DEPTH = 5;
 
 function maskEmail(value: string) {
   // Use the last '@' to support malformed inputs with multiple '@' characters
@@ -50,8 +52,13 @@ function maskEmail(value: string) {
 // Simple, safe email regex: local@domain.tld (not exhaustive, avoids false positives)
 const SIMPLE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
-function scrubContext(value: unknown): unknown {
+function scrubContext(
+  value: unknown,
+  depth = 0,
+  seen: WeakSet<object> = new WeakSet()
+): unknown {
   if (value == null) return value;
+  if (depth > SCRUB_MAX_DEPTH) return '[TRUNCATED]';
   if (typeof value === 'string') {
     // mask only valid-looking emails, avoid misclassifying other strings
     if (SIMPLE_EMAIL_RE.test(value)) return maskEmail(value);
@@ -60,22 +67,37 @@ function scrubContext(value: unknown): unknown {
     return value;
   }
   if (typeof value !== 'object') return value;
-  if (Array.isArray(value)) return value.map(scrubContext);
+
+  if (Array.isArray(value)) {
+    const arrObj = value as unknown as object;
+    if (seen.has(arrObj)) return '[CYCLE]';
+    seen.add(arrObj);
+    return (value as unknown[]).map((item) => scrubContext(item, depth + 1, seen));
+  }
   try {
+    const obj = value as Record<string, unknown>;
+    if (seen.has(obj as object)) return '[CYCLE]';
+    seen.add(obj as object);
     // Use a null-prototype object to avoid prototype pollution via dangerous keys
     const out: Record<string, unknown> = Object.create(null);
-    for (const k of Object.keys(value as Record<string, unknown>)) {
-      if (!Object.prototype.hasOwnProperty.call(value as Record<string, unknown>, k)) continue;
-      const v = (value as Record<string, unknown>)[k];
+    for (const k of Object.keys(obj)) {
+      if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
       // only accept string keys and skip dangerous prototype keys
       if (typeof k !== 'string') continue;
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       if (!SAFE_KEY_RE.test(k)) continue;
-
+      // Only allow keys from a strict whitelist (add more if needed)
+      const allowedKeys = ['message', 'code', 'details', 'info', 'type', 'level', 'context', 'timestamp', 'dismissed'];
+      if (!allowedKeys.includes(k)) continue;
+      let v = obj[k];
+      // Prevent assignment of objects with dangerous prototypes
+      if (typeof v === 'object' && v !== null && Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) {
+        v = '[UNSAFE_OBJECT]';
+      }
       if (SENSITIVE_KEY_RE.test(k)) {
         out[k] = '[REDACTED]';
       } else {
-        out[k] = scrubContext(v);
+        out[k] = scrubContext(v, depth + 1, seen);
       }
     }
     return out;
@@ -97,9 +119,15 @@ function buildSafeExtras(input: unknown): Record<string, unknown> {
     for (const k of Object.keys(src)) {
       if (!SAFE_KEY_RE.test(k)) continue;
       if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
-
+      // Only allow keys from a strict whitelist (add more if needed)
+      const allowedKeys = ['message', 'code', 'details', 'info', 'type', 'level', 'context', 'timestamp', 'dismissed'];
+      if (!allowedKeys.includes(k)) continue;
       try {
-        const v = src[k];
+        let v = src[k];
+        // Prevent assignment of objects with dangerous prototypes
+        if (typeof v === 'object' && v !== null && Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) {
+          v = '[UNSAFE_OBJECT]';
+        }
         if (v == null) {
           out[k] = v;
           continue;
