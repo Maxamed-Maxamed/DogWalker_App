@@ -759,13 +759,19 @@ CREATE TABLE public.walker_profiles (
   service_radius_km INTEGER DEFAULT 5,
   is_verified BOOLEAN DEFAULT false,
   is_online BOOLEAN DEFAULT false,
+  last_known_location GEOGRAPHY(POINT, 4326),
   stripe_account_id TEXT,
   average_rating DECIMAL(3,2) DEFAULT 0,
+  total_rating_points INTEGER DEFAULT 0,
+  total_reviews INTEGER DEFAULT 0,
   total_walks INTEGER DEFAULT 0,
   completion_rate DECIMAL(3,2) DEFAULT 100,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Indexes
+CREATE INDEX idx_walker_profiles_location ON public.walker_profiles USING GIST(last_known_location);
 
 -- Enable RLS
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -876,7 +882,7 @@ CREATE POLICY "Walker can read nearby pending requests"
         AND wp.is_online = true
         AND ST_DWithin(
           pickup_location,
-          (SELECT last_known_location FROM public.walker_profiles WHERE user_id = auth.uid()),
+          wp.last_known_location,
           wp.service_radius_km * 1000
         )
     )
@@ -929,8 +935,6 @@ CREATE TABLE public.walk_locations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   walk_assignment_id UUID REFERENCES public.walk_assignments(id) ON DELETE CASCADE,
   location GEOGRAPHY(POINT, 4326) NOT NULL,
-  lat DECIMAL(10, 8) NOT NULL,
-  lng DECIMAL(11, 8) NOT NULL,
   accuracy_meters DECIMAL(6, 2),
   recorded_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -1028,17 +1032,19 @@ CREATE POLICY "Anyone can read reviews"
   ON public.reviews FOR SELECT
   USING (true);
 
--- Trigger to update walker average rating
+-- Trigger to update walker average rating (incremental aggregation)
 CREATE OR REPLACE FUNCTION update_walker_rating()
 RETURNS TRIGGER AS $$
 BEGIN
   UPDATE public.walker_profiles
-  SET average_rating = (
-    SELECT AVG(rating)::DECIMAL(3,2)
-    FROM public.reviews
-    WHERE walker_id = NEW.walker_id
-  ),
-  total_walks = total_walks + 1
+  SET 
+    total_rating_points = total_rating_points + NEW.rating,
+    total_reviews = total_reviews + 1,
+    average_rating = CASE 
+      WHEN total_reviews + 1 > 0 THEN ((total_rating_points + NEW.rating)::DECIMAL / (total_reviews + 1))::DECIMAL(3,2)
+      ELSE 0
+    END,
+    total_walks = total_walks + 1
   WHERE user_id = NEW.walker_id;
   RETURN NEW;
 END;

@@ -534,14 +534,14 @@ This document breaks down the Dog Walker MVP implementation into prioritized, ac
   - Check for SQL injection vulnerabilities
   - **Acceptance:** No critical security issues
 
-- [ ] **INFRA-005: Production Deployment** ⏱️ L | 🎯 P0
+- [ ] **INFRA-008: Production Deployment** ⏱️ L | 🎯 P0
   - Apply all migrations to production Supabase
   - Configure production Stripe webhooks
   - Set production environment variables
   - Deploy Edge Functions
   - **Acceptance:** Production environment ready
 
-- [ ] **INFRA-006: App Store Submission** ⏱️ L | 🎯 P0
+- [ ] **INFRA-009: App Store Submission** ⏱️ L | 🎯 P0
   - Build production app with EAS
   - Submit to TestFlight
   - Submit to Google Play Console (Internal Testing)
@@ -554,13 +554,13 @@ This document breaks down the Dog Walker MVP implementation into prioritized, ac
 
 ### Monitoring & Support
 
-- [ ] **INFRA-007: Set Up Error Monitoring** ⏱️ M | 🎯 P0
+- [ ] **INFRA-010: Set Up Production Error Monitoring** ⏱️ M | 🎯 P0
   - Integrate Sentry for crash reporting
   - Set up error alerts
   - Create error dashboard
   - **Acceptance:** Errors tracked in Sentry
 
-- [ ] **INFRA-008: Set Up Analytics** ⏱️ M | 🎯 P2
+- [ ] **INFRA-011: Set Up Analytics** ⏱️ M | 🎯 P2
   - Integrate analytics (Mixpanel/Amplitude)
   - Track key events (signups, requests, completions)
   - Create analytics dashboard
