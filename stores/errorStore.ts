@@ -48,6 +48,51 @@ const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
 // Maximum recursion depth for scrubber to avoid stack overflows on deep inputs
 const SCRUB_MAX_DEPTH = 5;
 
+// Validate keys from untrusted objects to avoid prototype pollution
+function sanitizeKey(k: unknown): string | null {
+  if (typeof k !== 'string') return null;
+  if (k === '__proto__' || k === 'constructor' || k === 'prototype') return null;
+  if (!SAFE_KEY_RE.test(k)) return null;
+  return k;
+}
+
+// Make a deep, safe copy of unknown input into a null-prototype structure
+function safeCopy(value: unknown, depth = 0, seen: WeakSet<object> = new WeakSet()): unknown {
+  if (value == null) return value;
+  if (depth > SCRUB_MAX_DEPTH) return '[TRUNCATED]';
+  const t = typeof value;
+  if (t === 'string' || t === 'number' || t === 'boolean') return value;
+  if (Array.isArray(value)) {
+    if (seen.has(value as unknown as object)) return '[CYCLE]';
+    seen.add(value as unknown as object);
+    return (value as unknown[]).map((v) => safeCopy(v, depth + 1, seen));
+  }
+  if (t === 'object') {
+    const obj = value as Record<string, unknown>;
+    if (seen.has(obj as object)) return '[CYCLE]';
+    seen.add(obj as object);
+    const out: Record<string, unknown> = Object.create(null);
+    for (const rawK of Object.keys(obj)) {
+      const k = sanitizeKey(rawK);
+      if (!k) continue;
+      try {
+        const v = obj[rawK];
+        // Recurse and assign safe copies only
+        out[k] = safeCopy(v, depth + 1, seen);
+      } catch {
+        // ignore
+      }
+    }
+    return out;
+  }
+  // fallback to string representation
+  try {
+    return String(value);
+  } catch {
+    return '[UNSERIALIZABLE]';
+  }
+}
+
 function maskEmail(value: string) {
   // Use the last '@' to support malformed inputs with multiple '@' characters
   const at = value.lastIndexOf('@');
@@ -91,18 +136,19 @@ function scrubContext(
     seen.add(obj as object);
     // Use a null-prototype object to avoid prototype pollution via dangerous keys
     const out: Record<string, unknown> = Object.create(null);
-    for (const k of Object.keys(obj)) {
-      if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
-      const v = obj[k];
-      // only accept string keys and skip dangerous prototype keys
-      if (typeof k !== 'string') continue;
-      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
-      if (!SAFE_KEY_RE.test(k)) continue;
-
-      if (SENSITIVE_KEY_RE.test(k)) {
-        out[k] = '[REDACTED]';
-      } else {
-        out[k] = scrubContext(v, depth + 1, seen);
+    for (const rawK of Object.keys(obj)) {
+      if (!Object.prototype.hasOwnProperty.call(obj, rawK)) continue;
+      const k = sanitizeKey(rawK);
+      if (!k) continue;
+      try {
+        const v = obj[rawK];
+        if (SENSITIVE_KEY_RE.test(k)) {
+          out[k] = '[REDACTED]';
+        } else {
+          out[k] = scrubContext(v, depth + 1, seen);
+        }
+      } catch {
+        // ignore per-key failures
       }
     }
     return out;
@@ -121,12 +167,12 @@ function buildSafeExtras(input: unknown): Record<string, unknown> {
   if (input == null) return out;
   if (typeof input === 'object' && !Array.isArray(input)) {
     const src = input as Record<string, unknown>;
-    for (const k of Object.keys(src)) {
-      if (!SAFE_KEY_RE.test(k)) continue;
-      if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
-
+    for (const rawK of Object.keys(src)) {
+      const k = sanitizeKey(rawK);
+      if (!k) continue;
+      if (!Object.prototype.hasOwnProperty.call(src, rawK)) continue;
       try {
-        const v = src[k];
+        const v = src[rawK];
         if (v == null) {
           out[k] = v;
           continue;
@@ -139,12 +185,8 @@ function buildSafeExtras(input: unknown): Record<string, unknown> {
           out[k] = v;
           continue;
         }
-        // For any nested objects/arrays, attempt to JSON-safe copy; on failure, stringify
-        try {
-          out[k] = JSON.parse(JSON.stringify(v));
-        } catch {
-          out[k] = String(v);
-        }
+        // Use safeCopy to produce a null-prototype, sanitized copy of nested objects/arrays
+        out[k] = safeCopy(v);
       } catch {
         // ignore individual key failures
       }

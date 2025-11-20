@@ -90,6 +90,14 @@ if (SENTRY_DSN) {
             const sensitive = new Set(['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password']);
             const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
 
+            // Helper to validate and normalize keys coming from untrusted input.
+            const sanitizeKey = (k: unknown): string | null => {
+              if (typeof k !== 'string') return null;
+              if (k === '__proto__' || k === 'constructor' || k === 'prototype') return null;
+              if (!SAFE_KEY_RE.test(k)) return null;
+              return k;
+            };
+
             // Use a null-prototype object to avoid prototype pollution
             const sanitized: Record<string, unknown> = Object.create(null);
 
@@ -104,11 +112,12 @@ if (SENTRY_DSN) {
               if (t === 'object') {
                 const obj = val as Record<string, unknown>;
                 const out: Record<string, unknown> = Object.create(null);
-                for (const [subk, subv] of Object.entries(obj)) {
+                for (const [rawSubk, subv] of Object.entries(obj)) {
+                  const subk = sanitizeKey(rawSubk);
+                  if (!subk) continue;
                   if (sensitive.has(subk)) continue;
-                  if (subk === '__proto__' || subk === 'constructor' || subk === 'prototype') continue;
-                  if (!SAFE_KEY_RE.test(subk)) continue;
-                  out[subk] = sanitizeValue(subv, depth + 1);
+                  const sanitizedVal = sanitizeValue(subv, depth + 1);
+                  out[subk] = sanitizedVal;
                 }
                 return out;
               }
@@ -116,10 +125,10 @@ if (SENTRY_DSN) {
               return undefined;
             };
 
-            for (const [k, v] of Object.entries(extraRaw)) {
+            for (const [rawK, v] of Object.entries(extraRaw)) {
+              const k = sanitizeKey(rawK);
+              if (!k) continue;
               if (sensitive.has(k)) continue;
-              if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
-              if (!SAFE_KEY_RE.test(k)) continue;
               sanitized[k] = sanitizeValue(v, 0);
             }
 
