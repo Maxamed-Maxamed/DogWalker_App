@@ -9,15 +9,26 @@ const REPORT_DEDUPE_WINDOW_MS = 60_000; // 60s
 // Clean up old entries periodically to prevent memory leaks.
 // Store the interval handle so it can be cleared during app shutdown or tests.
 let recentReportsCleanupInterval: ReturnType<typeof setInterval> | null = null;
-// start the interval and keep the handle in a typed variable (nullable)
-recentReportsCleanupInterval = setInterval(() => {
+
+function cleanupRecentReports() {
   const now = Date.now();
   for (const [key, timestamp] of recentReports.entries()) {
     if (now - timestamp > REPORT_DEDUPE_WINDOW_MS) {
       recentReports.delete(key);
     }
   }
-}, REPORT_DEDUPE_WINDOW_MS);
+}
+
+/**
+ * Start the periodic cleanup interval if it's not already running.
+ * This avoids creating the interval at module import time which can cause
+ * persistent timers during tests or hot reloads.
+ */
+export function startCleanupInterval() {
+  if (recentReportsCleanupInterval == null) {
+    recentReportsCleanupInterval = setInterval(cleanupRecentReports, REPORT_DEDUPE_WINDOW_MS);
+  }
+}
 
 /**
  * Clear the periodic cleanup interval. Call this on application shutdown/tests to avoid
@@ -82,18 +93,12 @@ function scrubContext(
     const out: Record<string, unknown> = Object.create(null);
     for (const k of Object.keys(obj)) {
       if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+      const v = obj[k];
       // only accept string keys and skip dangerous prototype keys
       if (typeof k !== 'string') continue;
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       if (!SAFE_KEY_RE.test(k)) continue;
-      // Only allow keys from a strict whitelist (add more if needed)
-      const allowedKeys = ['message', 'code', 'details', 'info', 'type', 'level', 'context', 'timestamp', 'dismissed'];
-      if (!allowedKeys.includes(k)) continue;
-      let v = obj[k];
-      // Prevent assignment of objects with dangerous prototypes
-      if (typeof v === 'object' && v !== null && Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) {
-        v = '[UNSAFE_OBJECT]';
-      }
+
       if (SENSITIVE_KEY_RE.test(k)) {
         out[k] = '[REDACTED]';
       } else {
@@ -119,15 +124,9 @@ function buildSafeExtras(input: unknown): Record<string, unknown> {
     for (const k of Object.keys(src)) {
       if (!SAFE_KEY_RE.test(k)) continue;
       if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
-      // Only allow keys from a strict whitelist (add more if needed)
-      const allowedKeys = ['message', 'code', 'details', 'info', 'type', 'level', 'context', 'timestamp', 'dismissed'];
-      if (!allowedKeys.includes(k)) continue;
+
       try {
-        let v = src[k];
-        // Prevent assignment of objects with dangerous prototypes
-        if (typeof v === 'object' && v !== null && Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) {
-          v = '[UNSAFE_OBJECT]';
-        }
+        const v = src[k];
         if (v == null) {
           out[k] = v;
           continue;
@@ -210,6 +209,8 @@ export const useErrorStore = create<ErrorState>((set, get) => ({
   errors: [],
 
   addError: (error) => {
+    // Ensure the periodic cleanup is running (start lazily on first error)
+    startCleanupInterval();
     // Generate cryptographically secure random ID instead of Math.random()
     const id = Crypto.randomUUID();
     const newError: AppError = {
