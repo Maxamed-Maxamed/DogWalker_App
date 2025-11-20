@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document breaks down the Dog Walker MVP implementation into prioritized, actionable tasks organized by 2-week sprints. Each task includes acceptance criteria and estimated effort.
+This document breaks down the Dog Walker MVP implementation (see [Baseline Specification](../specifications/baseline-specification.md) and [Implementation Plan](../plans/implementation-plan.md)) into prioritized, actionable tasks organized by 2-week sprints. Each task includes acceptance criteria and estimated effort.
 
 ### Task Legend
 - ⏱️ **Effort:** S (Small: 0.5-1 day), M (Medium: 1-3 days), L (Large: 3-5 days)
