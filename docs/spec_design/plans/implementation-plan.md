@@ -9,7 +9,7 @@
 
 ## Goal Description
 
-Build a **production-ready MVP** of the Dog Walker marketplace app in 8 weeks, based on the [Baseline Specification](../specifications/baseline-specification.md) and tracked in [Development Tasks](../tasks/development-tasks.md), delivering core functionality for dog owners to request walks and dog walkers to accept and complete them with real-time GPS tracking, secure payments, and quality ratings.
+Build a **production-ready MVP** of the Dog Walker marketplace app in 8 weeks. Based on the [Baseline Specification](../specifications/baseline-specification.md) and tracked in [Development Tasks](../tasks/development-tasks.md), this MVP will deliver core functionality for dog owners to request walks and dog walkers to accept and complete them with real-time GPS tracking, secure payments, and quality ratings.
 
 ### Success Criteria
 - ✅ End-to-end walk flow functional (request → match → track → complete → pay → rate)
