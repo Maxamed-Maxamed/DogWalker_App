@@ -98,8 +98,10 @@ async function secureStoreRemoveChunked(baseKey: string) {
   try {
     await SecureStore.deleteItemAsync(baseKey);
   } catch (error) {
-    // Intentionally ignore: key may not exist, which is fine during cleanup
-    // No need to log as this is expected behavior
+    
+      console.warn(`Failed to delete base key ${baseKey}:`, error);
+
+    
   }
 }
 
@@ -110,7 +112,7 @@ const ChunkedSecureStoreAdapter = {
       return await secureStoreGetChunked(key);
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+
         console.error('SecureStore (chunked) getItem error:', error);
       }
       return null;
@@ -121,7 +123,7 @@ const ChunkedSecureStoreAdapter = {
       await secureStoreSetChunked(key, value);
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+
         console.error('SecureStore (chunked) setItem error:', error);
       }
     }
@@ -131,7 +133,7 @@ const ChunkedSecureStoreAdapter = {
       await secureStoreRemoveChunked(key);
     } catch (error) {
       if (__DEV__) {
-        // eslint-disable-next-line no-console
+
         console.error('SecureStore (chunked) removeItem error:', error);
       }
     }
@@ -141,7 +143,7 @@ const ChunkedSecureStoreAdapter = {
 // Validate environment variables
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   if (__DEV__) {
-    // eslint-disable-next-line no-console
+
     console.warn(
       '⚠️ Supabase environment variables missing!\n' +
       'Please ensure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'
@@ -155,10 +157,10 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     // Use chunked SecureStore on native; AsyncStorage on web
     storage: Platform.OS === 'web'
       ? {
-          getItem: AsyncStorage.getItem,
-          setItem: AsyncStorage.setItem,
-          removeItem: AsyncStorage.removeItem,
-        }
+        getItem: AsyncStorage.getItem,
+        setItem: AsyncStorage.setItem,
+        removeItem: AsyncStorage.removeItem,
+      }
       : ChunkedSecureStoreAdapter,
     autoRefreshToken: true,
     persistSession: true,
