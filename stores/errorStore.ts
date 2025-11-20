@@ -1,3 +1,4 @@
+import { sanitizeKey } from '@/utils/sanitization';
 import * as Sentry from '@sentry/react-native';
 import * as Crypto from 'expo-crypto';
 import { create } from 'zustand';
@@ -43,18 +44,10 @@ export function clearRecentReportsCleanupInterval() {
 }
 
 const SENSITIVE_KEY_RE = /(password|pass|token|secret|ssn|card|cvv|authorization|auth|email|phone)/i;
-// Allowed simple keys for extras and sanitized context
-const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
 // Maximum recursion depth for scrubber to avoid stack overflows on deep inputs
 const SCRUB_MAX_DEPTH = 5;
 
-// Validate keys from untrusted objects to avoid prototype pollution
-function sanitizeKey(k: unknown): string | null {
-  if (typeof k !== 'string') return null;
-  if (k === '__proto__' || k === 'constructor' || k === 'prototype') return null;
-  if (!SAFE_KEY_RE.test(k)) return null;
-  return k;
-}
+// `sanitizeKey` is shared from `utils/sanitization.ts` to avoid duplication
 
 // Make a deep, safe copy of unknown input into a null-prototype structure
 function safeCopy(value: unknown, depth = 0, seen: WeakSet<object> = new WeakSet()): unknown {

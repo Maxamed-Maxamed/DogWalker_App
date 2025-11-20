@@ -26,6 +26,7 @@ import { CustomSplashScreen } from '@/components/splash-screen';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useBootstrapStore } from '@/stores/bootstrapStore';
 import { SplashScreenProvider } from '@/stores/splashScreenStore';
+import { sanitizeKey } from '@/utils/sanitization';
 
 // Prevent Expo splash from auto-hiding during initialization
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -86,17 +87,8 @@ if (SENTRY_DSN) {
           }
 
           if (event.extra && typeof event.extra === 'object') {
-            const extraRaw = event.extra as Record<string, unknown>;
-            const sensitive = new Set(['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password']);
-            const SAFE_KEY_RE = /^[a-zA-Z0-9_.-]{1,100}$/;
-
-            // Helper to validate and normalize keys coming from untrusted input.
-            const sanitizeKey = (k: unknown): string | null => {
-              if (typeof k !== 'string') return null;
-              if (k === '__proto__' || k === 'constructor' || k === 'prototype') return null;
-              if (!SAFE_KEY_RE.test(k)) return null;
-              return k;
-            };
+              const extraRaw = event.extra as Record<string, unknown>;
+              const sensitive = new Set(['token', 'authToken', 'SENTRY_AUTH_TOKEN', 'password']);
 
             // Use a null-prototype object to avoid prototype pollution
             const sanitized: Record<string, unknown> = Object.create(null);
