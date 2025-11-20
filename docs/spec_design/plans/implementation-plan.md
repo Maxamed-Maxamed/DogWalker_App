@@ -186,15 +186,14 @@ interface WalkRequest {
 }
 
 function isWalkRequest(value: unknown): value is WalkRequest {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    'id' in value &&
-    'pet_id' in value &&
-    'duration_minutes' in value &&
-    typeof (value as WalkRequest).id === 'string' &&
-    typeof (value as WalkRequest).pet_id === 'string' &&
-    typeof (value as WalkRequest).duration_minutes === 'number'
+    typeof obj.id === 'string' &&
+    typeof obj.pet_id === 'string' &&
+    typeof obj.duration_minutes === 'number'
   );
 }
 
@@ -232,11 +231,13 @@ function isStringArray(value: unknown): value is string[] {
 import { PostgrestError } from '@supabase/supabase-js';
 
 function isPostgrestError(error: unknown): error is PostgrestError {
+  if (!isObject(error)) {
+    return false;
+  }
   return (
-    isObject(error) &&
-    'message' in error &&
-    'code' in error &&
-    'details' in error
+    'message' in error && typeof error.message === 'string' &&
+    'code' in error && typeof error.code === 'string' &&
+    'details' in error && typeof error.details === 'string'
   );
 }
 
@@ -268,14 +269,13 @@ interface StripePaymentIntent {
 }
 
 function isStripePaymentIntent(value: unknown): value is StripePaymentIntent {
+  if (!isObject(value)) {
+    return false;
+  }
   return (
-    isObject(value) &&
-    'id' in value &&
-    'amount' in value &&
-    'status' in value &&
-    'client_secret' in value &&
     typeof value.id === 'string' &&
     typeof value.amount === 'number' &&
+    typeof value.currency === 'string' &&
     typeof value.status === 'string' &&
     typeof value.client_secret === 'string'
   );
@@ -761,11 +761,11 @@ CREATE TABLE public.walker_profiles (
   is_online BOOLEAN DEFAULT false,
   last_known_location GEOGRAPHY(POINT, 4326),
   stripe_account_id TEXT,
-  average_rating DECIMAL(3,2) DEFAULT 0,
+  average_rating DECIMAL(5,2) DEFAULT 0,
   total_rating_points INTEGER DEFAULT 0,
   total_reviews INTEGER DEFAULT 0,
   total_walks INTEGER DEFAULT 0,
-  completion_rate DECIMAL(3,2) DEFAULT 100,
+  completion_rate DECIMAL(5,2) DEFAULT 100,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -169,10 +169,11 @@ To become the most trusted and convenient dog walking service, establishing DogW
 4. **Receipt:** Detailed receipt with walk summary
 
 #### Revenue Split
-- **Example Walk Fee:** $20.00
-- **Platform Fee (20%):** $4.00
-- **Walker Earnings:** $16.00
-- **Stripe Fees:** Deducted from total (~2.9% + $0.30)
+- **Example Walk Fee (Gross):** $20.00
+- **Stripe Fees (~2.9% + $0.30):** $0.88
+- **Net Amount:** $19.12
+- **Walker Earnings (e.g., 80% of Gross):** $16.00
+- **Platform Earnings (Net - Walker):** $3.12
 
 #### Walker Payout System
 - **Connected Accounts:** Stripe Standard Connect per walker
