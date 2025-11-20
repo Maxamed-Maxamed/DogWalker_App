@@ -42,8 +42,7 @@ export const testSupabaseConnection = async () => {
     console.log('\n✨ Supabase is ready to use!\n');
     return true;
 
-  } 
-    catch (error: unknown) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('❌ Connection test failed:', errorMessage);
     console.error('   Please verify your Supabase URL and key are correct\n');

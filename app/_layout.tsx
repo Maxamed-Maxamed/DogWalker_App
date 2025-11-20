@@ -29,12 +29,12 @@ import { SplashScreenProvider } from '@/stores/splashScreenStore';
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   // Adds more context data to events (IP address, cookies, user, etc.)
-  sendDefaultPii: true,
+  sendDefaultPii: false,
   // Enable performance monitoring - capture 100% of transactions for tracing
   // Adjust this value in production to reduce load on quota
-  tracesSampleRate: 1.0,
+    tracesSampleRate: __DEV__ ? 1.0 : 0.2,
   // Enable profiling - capture profiles for 100% of transactions
-  profilesSampleRate: 1.0,
+  profilesSampleRate: __DEV__ ? 1.0 : 0.2,
   // Enable session replay - 100% of errors and 10% of normal sessions
   replaysOnErrorSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,

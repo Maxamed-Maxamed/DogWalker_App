@@ -100,7 +100,6 @@ async function secureStoreRemoveChunked(baseKey: string) {
   } catch (error) {
     
       console.warn(`Failed to delete base key ${baseKey}:`, error);
-
     
   }
 }
