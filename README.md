@@ -174,6 +174,15 @@ utils/                     # Utility functions
 └── supabaseTest.ts        # Connection testing utilities
 ```
 
+## 📚 Documentation
+
+Key project documentation is maintained in the `docs/` directory:
+
+- **[Baseline Specification](docs/spec_design/specifications/baseline-specification.md)**: Core product requirements and user personas.
+- **[Implementation Plan](docs/spec_design/plans/implementation-plan.md)**: Technical approach, tool usage guidelines, and architecture.
+- **[System Analysis](docs/spec_design/analysis/system-analysis.md)**: Architectural trade-offs, risk assessment, and competitive analysis.
+- **[Development Tasks](docs/spec_design/tasks/development-tasks.md)**: Sprint-by-sprint task breakdown and progress tracking.
+
 ## 🎨 Design System
 
 The app follows a clean, professional design inspired by Uber's simplicity:

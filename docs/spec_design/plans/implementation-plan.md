@@ -9,7 +9,7 @@
 
 ## Goal Description
 
-Build a **production-ready MVP** of the Dog Walker marketplace app in 8 weeks, delivering core functionality for dog owners to request walks and dog walkers to accept and complete them with real-time GPS tracking, secure payments, and quality ratings.
+Build a **production-ready MVP** of the Dog Walker marketplace app in 8 weeks. Based on the [Baseline Specification](../specifications/baseline-specification.md#executive-summary) and tracked in [Development Tasks](../tasks/development-tasks.md#overview), this MVP will deliver core functionality for dog owners to request walks and dog walkers to accept and complete them with real-time GPS tracking, secure payments, and quality ratings.
 
 ### Success Criteria
 - ✅ End-to-end walk flow functional (request → match → track → complete → pay → rate)
@@ -24,7 +24,8 @@ Build a **production-ready MVP** of the Dog Walker marketplace app in 8 weeks, d
 
 > [!IMPORTANT]
 > **Database Design Decision**
-> Using Supabase (PostgreSQL) with Row-Level Security (RLS) for all data access. This provides strong security guarantees but requires careful policy design and testing. Alternative would be custom backend API with application-layer auth.
+> Using Supabase (PostgreSQL) with Row-Level Security (RLS) for all data access. This provides strong security guarantees but requires careful policy design and testing. Alternative would be custom backend API with application-layer auth. See [System Analysis](../analysis/system-analysis.md) for full trade-off details.
+> Using Supabase (PostgreSQL) with Row-Level Security (RLS) for all data access. This provides strong security guarantees but requires careful policy design and testing. Alternative would be custom backend API with application-layer auth. See [System Analysis](../analysis/system-analysis.md#trade-off-analysis) for full trade-off details.
 
 > [!IMPORTANT]
 > **Real-time Architecture**
