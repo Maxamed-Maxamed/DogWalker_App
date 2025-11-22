@@ -4,14 +4,17 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "owner": "expo start --project-root apps/owner-app",
+    "owner:android": "expo start --android --project-root apps/owner-app",
+    "owner:ios": "expo start --ios --project-root apps/owner-app",
+    "walker": "expo start --project-root apps/walker-app",
+    "walker:android": "expo start --android --project-root apps/walker-app",
+    "walker:ios": "expo start --ios --project-root apps/walker-app",
+    "typecheck": "tsc --noEmit",
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-clipboard/clipboard": "^1.14.2",
@@ -60,6 +63,8 @@
     "codacy-cli": "^0.2.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.6.2",
     "typescript": "~5.9.2"
   },

@@ -2,16 +2,22 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "module": "esnext",
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/owner/*": ["apps/owner-app/*"],
+      "@/*": ["apps/owner-app/*"],
+      "@/walker/*": ["apps/walker-app/*"],
+      "@/shared/*": ["packages/shared/src/*"],
+      "@/shared": ["packages/shared/src"]
+      
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "apps/**/*",
+    "packages/**/*"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
