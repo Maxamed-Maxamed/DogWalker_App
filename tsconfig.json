@@ -5,17 +5,77 @@
     "module": "esnext",
     "baseUrl": ".",
     "paths": {
-      "@/owner/*": ["apps/owner-app/*"],
-      "@/*": ["apps/owner-app/*"],
-      "@/walker/*": ["apps/walker-app/*"],
-      "@/shared/*": ["packages/shared/src/*"],
-      "@/shared": ["packages/shared/src"]
-      
+      "@/app/*": [
+        "app/*"
+      ],
+      "@/owner/*": [
+        "app/(owner)/*"
+      ],
+      "@/walker/*": [
+        "app/(walker)/*"
+      ],
+      "@/constants": [
+        "./constants"
+      ],
+      "@/constants/*": [
+        "./constants/*"
+      ],
+      "@/utils": [
+        "./utils"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/database": [
+        "./database"
+      ],
+      "@/database/*": [
+        "./database/*"
+      ],
+      "@/hooks": [
+        "./hooks"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/stores": [
+        "./stores"
+      ],
+      "@/stores/*": [
+        "./stores/*"
+      ],
+      "@/ui": [
+        "./ui"
+      ],
+      "@/ui/*": [
+        "./ui/*"
+      ],
+      "@/components": [
+        "./components"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/assets": [
+        "./assets"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ]
     }
   },
   "include": [
-    "apps/**/*",
-    "packages/**/*"
+    "app/**/*",
+    "constants/**/*",
+    "database/**/*",
+    "hooks/**/*",
+    "stores/**/*",
+    "ui/**/*",
+    "utils/**/*",
+    "components/**/*",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "assets/**/*"
   ],
   "exclude": [
     "node_modules"
