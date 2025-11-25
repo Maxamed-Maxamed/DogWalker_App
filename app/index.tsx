@@ -28,7 +28,7 @@ const CARD_WIDTH = width > 600 ? 280 : width * 0.42;
  * Premium UI for users to choose between Owner or Walker roles
  */
 export default function RoleSelectionScreen() {
-  const { role, isLoading, setRole } = useRoleStore();
+  const { isLoading, setRole } = useRoleStore();
   const [selecting, setSelecting] = useState(false);
 
   // Pulse animation for cards
@@ -47,20 +47,15 @@ export default function RoleSelectionScreen() {
     scale
   ]);
 
-  // Redirect if role already selected
-  useEffect(() => {
-    if (!isLoading && role) {
-      const route = role === 'owner' ? '/(owner)/(tabs)' : '/(walker)/(tabs)';
-      router.replace(route as unknown as '/');
-    }
-  }, [role, isLoading]);
-
   const handleRoleSelect = async (selectedRole: 'owner' | 'walker') => {
     try {
       setSelecting(true);
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await setRole(selectedRole);
-      // Navigation handled by useEffect
+      
+      // Navigate to the selected role's dashboard
+      const route = selectedRole === 'owner' ? '/(owner)/(tabs)/dashboard' : '/(walker)/(tabs)/dashboard';
+      router.push(route as any);
     } catch (error) {
       console.error('Failed to set role:', error);
       setSelecting(false);
