@@ -1,4 +1,5 @@
 import { Colors } from '@/constants';
+import { useRoleStore } from '@/stores/roleStore';
 import { ThemedText } from '@/ui/ThemedText';
 import { ThemedView } from '@/ui/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +14,7 @@ type SlideAction = 'next' | 'createAccount' | 'signIn';
 type SlideType = 'welcome' | 'why' | 'how' | 'peace' | 'final';
 
 type Slide = {
-  id: number;
+  id: number; 
   type: SlideType;
   title: string;
   description?: string;
@@ -79,6 +80,7 @@ const slides: Slide[] = [
 ];
 
 export default function OnboardingScreen() {
+  const { clearRole } = useRoleStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(1));
   const [slideAnim] = useState(new Animated.Value(0));
@@ -126,6 +128,16 @@ export default function OnboardingScreen() {
     Haptics.selectionAsync();
     // Skip to the final slide to show account creation options
     animateOutAnd(() => { setCurrentIndex(slides.length - 1); });
+  };
+
+  const handleGoBack = async () => {
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await clearRole();
+      router.back();
+    } catch (error) {
+      console.error('Failed to go back:', error);
+    }
   };
 
   const handleCreateAccount = () => {
@@ -292,6 +304,11 @@ export default function OnboardingScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       
       <ThemedView style={styles.content}>
+        {/* Back button in top-left corner */}
+        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+          <Ionicons name="arrow-back" size={24} color="#475569" />
+        </TouchableOpacity>
+
         {currentSlide.showSkip && (
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <ThemedText style={styles.skipText}>Skip</ThemedText>
@@ -363,6 +380,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 24,
+    zIndex: 10,
+    padding: 8,
   },
   skipButton: {
     // alignSelf: 'flex-end',

@@ -1,9 +1,10 @@
+import { useRoleStore } from '@/stores/roleStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import React, { useCallback } from 'react';
-import { Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Image, Linking, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets, } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants';
 import { useColorScheme } from '@/hooks';
@@ -24,6 +25,8 @@ const KEY_FEATURES: { icon: IconName; title: string; color: string }[] = [
 export default function WelcomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { clearRole } = useRoleStore();
+  const insets = useSafeAreaInsets();
 
   const handleGetStarted = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -49,8 +52,38 @@ export default function WelcomeScreen() {
     })();
   }, []);
 
+  const handleBack = useCallback(async () => {
+    try {
+      void Haptics.selectionAsync();
+      console.log('[Owner Welcome] Back pressed - clearing role');
+      await clearRole();
+      
+      // Clear stack and navigate to root to ensure we see role selection
+      if (router.canDismiss()) {
+        router.dismissAll();
+      }
+      router.replace('/');
+    } catch (error) {
+      console.error('Failed to clear role and go back:', error);
+      Alert.alert('Navigation error', 'Could not return to role selection.');
+    }
+  }, [clearRole]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {/* Back button to return to role selection */}
+      <Pressable
+        onPress={handleBack}
+        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+        style={[styles.backButton, { top: insets.top + 8,}]}
+        accessibilityRole="button"
+        accessibilityLabel="Go back to role selection"
+        accessibilityHint="Clears chosen role and returns to the role selection screen"
+      >
+        <View style={styles.backButtonInner}>
+          <Ionicons name="arrow-back" size={22} color={PRIMARY_COLOR} />
+        </View>
+      </Pressable>
       {/* Hero Section - Top Half */}
       <View style={styles.heroSection}>
         <Image
@@ -108,6 +141,16 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     flex: 0.5, // Takes 50% of available space
+  },
+  backButton: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   heroImage: {
     width: '100%',
@@ -200,4 +243,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 16,
   },
+  backButtonInner: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
+
