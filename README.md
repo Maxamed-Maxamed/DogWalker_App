@@ -129,26 +129,15 @@ pnpm reset-project
 ```
 app/
 ├── _layout.tsx              # Root layout with theme provider
-├── index.tsx                # App entry point
-├── (tabs)/                  # Main tab navigation
-│   ├── _layout.tsx         # Tab layout configuration
-│   ├── dashboard.tsx       # Pet owner dashboard
-│   └── explore.tsx         # Walker discovery
-├── auth/                   # Authentication flow
-│   ├── _layout.tsx
-│   ├── login.tsx
-│   ├── register.tsx
-│   └── forgot-password.tsx
-├── profile-setup/          # User profile setup
-│   ├── index.tsx
-│   ├── phone.tsx
-│   ├── photo.tsx
-│   └── location.tsx
-└── welcome/                # Onboarding flow
-    ├── index.tsx
-    ├── onboarding.tsx
-    └── get-started.tsx
-
+├── index.tsx                # Role selection / Entry point
+├── (owner)/                 # Pet Owner Application
+│   ├── (tabs)/              # Owner main tabs (Dashboard, Explore, etc.)
+│   ├── auth/                # Owner authentication flow
+│   ├── pets/                # Pet management screens
+│   └── welcome/             # Owner onboarding flow
+├── (walker)/                # Dog Walker Application
+│   └── (tabs)/              # Walker main tabs (Dashboard, Walks, etc.)
+│
 components/                 # Reusable UI components
 ├── ui/                    # Base UI components
 │   ├── icon-symbol.tsx
@@ -195,12 +184,13 @@ The app follows a clean, professional design inspired by Uber's simplicity:
 
 ## 🌐 Navigation Architecture
 
-Built with Expo Router v6 using file-based routing:
+Built with Expo Router v6 using file-based routing with a dual-role architecture:
 
 - **Root Layout**: Theme provider and stack navigation
-- **Tab Navigation**: Main app navigation using bottom tabs
-- **Authentication Flow**: Login, register, forgot password screens
-- **Onboarding Flow**: Welcome and user setup screens
+- **Role Selection**: Initial entry point to choose between Owner and Walker interfaces
+- **Owner App**: Dedicated flow for pet owners (Booking, Pet Profiles)
+- **Walker App**: Dedicated flow for dog walkers (Schedule, Earnings)
+- **Authentication**: Separate auth flows managed by Supabase
 - **Deep Linking**: Support for `dogwalker://` and `https://dogwalker.app` schemes
 
 ## 🔐 Security & Privacy
