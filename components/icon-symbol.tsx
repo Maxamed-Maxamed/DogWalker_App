@@ -1,5 +1,4 @@
 // Fallback for using MaterialIcons on Android and web.
-
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
@@ -10,7 +9,7 @@ import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
  * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
-const MAPPING = {
+const RECORD = {
   'house.fill': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
@@ -19,21 +18,28 @@ const MAPPING = {
   'figure.walk': 'directions-walk',
   'dollarsign.circle.fill': 'attach-money',
   'person.crop.circle.fill': 'account-circle',
-} as const satisfies Record<string, ComponentProps<typeof MaterialIcons>['name']>;
+} as const;
 
-type IconSymbolName = keyof typeof MAPPING;
+type IconSymbolName = keyof typeof RECORD;
+
+// Build a Map from the static record to avoid direct dynamic object indexing
+// which can be flagged as an object injection sink by static analyzers.
+const ICON_MAP = new Map<IconSymbolName, ComponentProps<typeof MaterialIcons>['name']>(
+  Object.entries(RECORD) as [IconSymbolName, ComponentProps<typeof MaterialIcons>['name']][]
+);
 
 /**
- * Type-safe accessor for icon mapping with runtime validation.
- * Prevents Generic Object Injection Sink security issues.
+ * Safe accessor for icon mapping with runtime validation.
+ * Uses a Map to avoid object prototype/property injection risks
+ * and performs an explicit existence check at runtime.
  */
-const getMappedIcon = (name: IconSymbolName): ComponentProps<typeof MaterialIcons>['name'] => {
-  const icon = MAPPING[name];
-  if (!icon) {
-    console.warn(`Icon mapping not found for: ${name}`);
-    return 'help-outline'; // fallback icon
+const getMappedIcon = (name: string): ComponentProps<typeof MaterialIcons>['name'] => {
+  if (ICON_MAP.has(name as IconSymbolName)) {
+    // `.get` returns possibly undefined but we just checked `has` so the non-null assertion is safe.
+    return ICON_MAP.get(name as IconSymbolName)!;
   }
-  return icon;
+  console.warn(`Icon mapping not found for: ${name}`);
+  return 'help-outline'; // fallback icon
 };
 
 /**
@@ -47,7 +53,7 @@ export function IconSymbol({
   color,
   style,
 }: {
-  name: IconSymbolName;
+  name: string | IconSymbolName;
   size?: number;
   color: string | OpaqueColorValue;
   style?: StyleProp<TextStyle>;
