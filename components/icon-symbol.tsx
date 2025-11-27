@@ -34,9 +34,9 @@ const ICON_MAP = new Map<IconSymbolName, ComponentProps<typeof MaterialIcons>['n
  * and performs an explicit existence check at runtime.
  */
 const getMappedIcon = (name: string): ComponentProps<typeof MaterialIcons>['name'] => {
-  if (ICON_MAP.has(name as IconSymbolName)) {
-    // `.get` returns possibly undefined but we just checked `has` so the non-null assertion is safe.
-    return ICON_MAP.get(name as IconSymbolName)!;
+  const mappedIcon = ICON_MAP.get(name as IconSymbolName);
+  if (mappedIcon) {
+    return mappedIcon;
   }
   console.warn(`Icon mapping not found for: ${name}`);
   return 'help-outline'; // fallback icon
