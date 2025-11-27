@@ -40,7 +40,7 @@ export default function LoginScreen() {
     async (fields) => {
       try {
         await login(fields.email, fields.password);
-        router.replace('/dashboard');
+        router.replace('/home');
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Login failed';
         Alert.alert('Login Error', message);

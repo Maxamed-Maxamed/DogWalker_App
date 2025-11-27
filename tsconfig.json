@@ -7,7 +7,7 @@
     "paths": {
       "@/app/*": [
         "app/*"
-      ],  
+      ],
       "@/owner/*": [
         "app/(owner)/*"
       ],

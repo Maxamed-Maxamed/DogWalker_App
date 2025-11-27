@@ -5,7 +5,8 @@ import { HapticTab } from '@/components';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks';
 import { IconSymbol } from '@/ui';
-
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -17,17 +18,24 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="dashboard"
+        name="home"
         options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Home',
+          tabBarIcon: ({ color }) => <Feather name = "home"  color={color} size={28} 
+          
+          />,
         }}
       />
       <Tabs.Screen
         name="pets"
         options={{
           title: 'My Pets',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="pawprint.fill" color={color} />,
+          // tabBarIcon: ({ color }) => <IconSymbol size={28} name="pawprint.fill" color={color} />,
+          tabBarIcon: ({ color }) => < FontAwesome5 size={28} name='paw' color={color} />,
+          tabBarIconStyle: {
+            
+            
+          }
         }}
       />
       <Tabs.Screen
@@ -36,8 +44,14 @@ export default function TabLayout() {
           title: 'Explore',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
-      />
-     
+      /> 
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+        }}
+      /> 
     </Tabs>
   );
 }

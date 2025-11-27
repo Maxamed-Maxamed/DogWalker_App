@@ -46,9 +46,9 @@ function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(owner)" options={{ headerShown: false }} />
-        <Stack.Screen name="(walker)" options={{ headerShown: false }} />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(owner)" />
+        <Stack.Screen name="(walker)" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

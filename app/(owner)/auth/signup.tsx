@@ -53,7 +53,7 @@ export default function SignupScreen() {
         }
 
         await signup(name, emailVal, passVal);
-        router.replace('/dashboard');
+        router.replace('/home');
       } catch (error: unknown) {
         Alert.alert('Signup Error', (error as Error).message || 'Failed to create account');
       }

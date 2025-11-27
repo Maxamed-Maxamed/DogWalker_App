@@ -12,7 +12,6 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks';
 import { useAuthStore } from '@/stores/authStore';
 import { usePetStore } from '@/stores/petStore';
-
 export default function DashboardScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];

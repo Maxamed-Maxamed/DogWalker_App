@@ -45,7 +45,8 @@ export default function WalkerDashboardScreen() {
 
   const handleSwitchRole = async () => {
     try {
-      await setRole(null as unknown as any ); // Clear role to trigger selection screen
+      // Clear role to trigger selection screen - using unknown cast for type safety
+      await setRole(null as unknown as 'owner' | 'walker');
       router.replace('/');
     } catch (error) {
       console.error('Failed to switch role:', error);

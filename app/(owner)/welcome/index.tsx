@@ -59,9 +59,6 @@ export default function WelcomeScreen() {
       await clearRole();
       
       // Clear stack and navigate to root to ensure we see role selection
-      if (router.canDismiss()) {
-        router.dismissAll();
-      }
       router.replace('/');
     } catch (error) {
       console.error('Failed to clear role and go back:', error);

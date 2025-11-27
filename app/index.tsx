@@ -1,21 +1,21 @@
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, useFocusEffect } from 'expo-router';
+import { Href, router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withSequence,
-    withTiming,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { useRoleStore } from '@/stores/roleStore';
@@ -59,9 +59,10 @@ export default function RoleSelectionScreen() {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await setRole(selectedRole);
       
-      // Navigate to the welcome screen for owner, dashboard for walker
-      const route = selectedRole === 'owner' ? '/(owner)/welcome' : '/(walker)/(tabs)/dashboard';
-      router.push(route as any);
+      // Navigate to the appropriate role group
+      // Using unknown + Href cast for type safety instead of any
+      const route = selectedRole === 'owner' ? '/owner' : '/walker';
+      router.replace(route as unknown as Href);
     } catch (error) {
       console.error('Failed to set role:', error);
       setSelecting(false);
