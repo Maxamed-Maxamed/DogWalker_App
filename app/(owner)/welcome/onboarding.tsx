@@ -305,7 +305,7 @@ export default function OnboardingScreen() {
       
       <ThemedView style={styles.content}>
         {/* Back button in top-left corner */}
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+        <TouchableOpacity style={styles.backButton} onPress={() => { void handleGoBack(); }}>
           <Ionicons name="arrow-back" size={24} color="#475569" />
         </TouchableOpacity>
 

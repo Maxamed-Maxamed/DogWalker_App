@@ -98,7 +98,7 @@ export default function RoleSelectionScreen() {
         {/* Owner Card */}
         <Animated.View style={[styles.cardWrapper, animatedStyle]}>
           <Pressable
-            onPress={() => handleRoleSelect('owner')}
+            onPress={() => { void handleRoleSelect('owner'); }}
             style={({ pressed }) => [
               styles.pressable,
               pressed && styles.pressed,
@@ -124,7 +124,7 @@ export default function RoleSelectionScreen() {
         {/* Walker Card */}
         <Animated.View style={[styles.cardWrapper, animatedStyle]}>
           <Pressable
-            onPress={() => handleRoleSelect('walker')}
+            onPress={() => { void handleRoleSelect('walker'); }}
             style={({ pressed }) => [
               styles.pressable,
               pressed && styles.pressed,

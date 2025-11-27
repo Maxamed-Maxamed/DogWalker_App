@@ -124,7 +124,7 @@ export default function WalkerDashboardScreen() {
         <View style={styles.section}>
           <TouchableOpacity
             style={[styles.secondaryButton, { borderColor: colors.tint }]}
-            onPress={handleSwitchRole}
+            onPress={() => { void handleSwitchRole(); }}
           >
             <Ionicons name="swap-horizontal" size={20} color={colors.tint} />
             <ThemedText style={[styles.secondaryButtonText, { color: colors.tint }]}>Switch to Owner View</ThemedText>

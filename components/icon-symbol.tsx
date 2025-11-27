@@ -1,7 +1,7 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
+import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
@@ -21,6 +21,19 @@ const MAPPING = {
 } as IconMapping;
 
 /**
+ * Type-safe accessor for icon mapping with runtime validation.
+ * Prevents Generic Object Injection Sink security issues.
+ */
+const getMappedIcon = (name: IconSymbolName): ComponentProps<typeof MaterialIcons>['name'] => {
+  const icon = MAPPING[name];
+  if (!icon) {
+    console.warn(`Icon mapping not found for: ${name}`);
+    return 'help-outline'; // fallback icon
+  }
+  return icon;
+};
+
+/**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
  * This ensures a consistent look across platforms, and optimal resource usage.
  * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
@@ -37,5 +50,5 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return <MaterialIcons color={color} size={size} name={getMappedIcon(name)} style={style} />;
 }

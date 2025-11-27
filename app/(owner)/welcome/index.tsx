@@ -70,7 +70,7 @@ export default function WelcomeScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Back button to return to role selection */}
       <Pressable
-        onPress={handleBack}
+        onPress={() => { void handleBack(); }}
         hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
         style={[styles.backButton, { top: insets.top + 8,}]}
         accessibilityRole="button"
