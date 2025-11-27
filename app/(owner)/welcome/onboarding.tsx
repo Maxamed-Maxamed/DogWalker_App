@@ -14,7 +14,7 @@ type SlideAction = 'next' | 'createAccount' | 'signIn';
 type SlideType = 'welcome' | 'why' | 'how' | 'peace' | 'final';
 
 type Slide = {
-  id: number; 
+  id: number;
   type: SlideType;
   title: string;
   description?: string;
@@ -85,8 +85,16 @@ export default function OnboardingScreen() {
   const [fadeAnim] = useState(new Animated.Value(1));
   const [slideAnim] = useState(new Animated.Value(0));
 
-  const currentSlide = slides[currentIndex];
-  const isFinalSlide = currentSlide.type === 'final';
+  // Safely access slide with bounds validation to prevent object injection
+  const getSafeSlide = (index: number): Slide | null => {
+    if (typeof index === 'number' && index >= 0 && index < slides.length) {
+      return slides[index];
+    }
+    return null;
+  };
+
+  const currentSlide = getSafeSlide(currentIndex);
+  const isFinalSlide = currentSlide?.type === 'final';
 
   useEffect(() => {
     Animated.parallel([
@@ -151,7 +159,7 @@ export default function OnboardingScreen() {
   };
 
   const handlePrimaryPress = () => {
-    if (currentSlide.primaryAction === 'createAccount') {
+    if (currentSlide?.primaryAction === 'createAccount') {
       handleCreateAccount();
       return;
     }
@@ -161,7 +169,7 @@ export default function OnboardingScreen() {
   };
 
   const handleSecondaryPress = () => {
-    if (!currentSlide.secondaryAction) return;
+    if (!currentSlide?.secondaryAction) return;
 
     Haptics.selectionAsync();
 
@@ -185,8 +193,8 @@ export default function OnboardingScreen() {
         <Image source={require('@/assets/images/newlogo.png')} style={styles.brandLogo} resizeMode="contain" />
         <ThemedText style={styles.brandName}>DogWalker</ThemedText>
       </View>
-      <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
-      <ThemedText style={styles.subtitle}>{currentSlide.description}</ThemedText>
+      <ThemedText style={styles.title}>{currentSlide?.title}</ThemedText>
+      <ThemedText style={styles.subtitle}>{currentSlide?.description}</ThemedText>
     </View>
   );
 
@@ -207,8 +215,8 @@ export default function OnboardingScreen() {
           </View>
         ))}
       </View>
-      <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
-      <ThemedText style={styles.subtitle}>{currentSlide.description}</ThemedText>
+      <ThemedText style={styles.title}>{currentSlide?.title}</ThemedText>
+      <ThemedText style={styles.subtitle}>{currentSlide?.description}</ThemedText>
     </View>
   );
 
@@ -221,8 +229,8 @@ export default function OnboardingScreen() {
 
     return (
       <View style={styles.centerContent}>
-        <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
-        <ThemedText style={styles.subtitle}>{currentSlide.description}</ThemedText>
+        <ThemedText style={styles.title}>{currentSlide?.title}</ThemedText>
+        <ThemedText style={styles.subtitle}>{currentSlide?.description}</ThemedText>
         <View style={styles.cardGrid}>
           {steps.map((step) => (
             <View key={step.title} style={styles.infoCard}>
@@ -256,20 +264,20 @@ export default function OnboardingScreen() {
               </View>
             ))}
           </View>
-          <ThemedText style={styles.ratingQuote}>“Always on time, always caring.”</ThemedText>
+          <ThemedText style={styles.ratingQuote}>Always on time, always caring.</ThemedText>
           <ThemedText style={styles.ratingAuthor}>— Maria & Max</ThemedText>
         </View>
       </View>
-      <ThemedText style={styles.title}>{currentSlide.title}</ThemedText>
-      <ThemedText style={styles.subtitle}>{currentSlide.description}</ThemedText>
+      <ThemedText style={styles.title}>{currentSlide?.title}</ThemedText>
+      <ThemedText style={styles.subtitle}>{currentSlide?.description}</ThemedText>
     </View>
   );
 
   const renderFinal = () => (
     <View style={styles.centerContent}>
       <View style={styles.finalCard}>
-        <ThemedText style={styles.finalTitle}>{currentSlide.title}</ThemedText>
-        <ThemedText style={styles.finalBody}>{currentSlide.description}</ThemedText>
+        <ThemedText style={styles.finalTitle}>{currentSlide?.title}</ThemedText>
+        <ThemedText style={styles.finalBody}>{currentSlide?.description}</ThemedText>
         <View style={styles.finalHighlights}>
           {['Schedule in 60 seconds', 'Background-checked walkers', 'Live GPS + photo recap'].map((item) => (
             <View key={item} style={styles.highlightRow}>
@@ -283,7 +291,7 @@ export default function OnboardingScreen() {
   );
 
   const renderSlideContent = () => {
-    switch (currentSlide.type) {
+    switch (currentSlide?.type) {
       case 'welcome':
         return renderWelcome();
       case 'why':
@@ -300,73 +308,80 @@ export default function OnboardingScreen() {
   };
 
   return (
-    // <SafeAreaView style={styles.container}>
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      
       <ThemedView style={styles.content}>
-        {/* Back button in top-left corner */}
-        <TouchableOpacity style={styles.backButton} onPress={() => { void handleGoBack(); }}>
-          <Ionicons name="arrow-back" size={24} color="#475569" />
-        </TouchableOpacity>
-
-        {currentSlide.showSkip && (
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <ThemedText style={styles.skipText}>Skip</ThemedText>
-          </TouchableOpacity>
-        )}
-
-        <Animated.View
-          style={[
-            styles.slideContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          {renderSlideContent()}
-        </Animated.View>
-
-        <ThemedView style={styles.bottomContainer}>
-          <View style={styles.pagination}>
-            {slides.map((_, index) => (
-              <Ionicons
-                key={index}
-                name={index === currentIndex ? 'paw' : 'paw-outline'}
-                size={index === currentIndex ? 14 : 12}
-                color={index === currentIndex ? primaryColor : '#CBD5E1'}
-                style={styles.paginationIcon}
-              />
-            ))}
+        {/* Guard: Don't render if no slide available */}
+        {!currentSlide ? (
+          <View style={styles.centerContent}>
+            <ThemedText>Loading...</ThemedText>
           </View>
+        ) : (
+          <>
+            {/* Back button in top-left corner */}
+            <TouchableOpacity style={styles.backButton} onPress={() => { void handleGoBack(); }}>
+              <Ionicons name="arrow-back" size={24} color="#475569" />
+            </TouchableOpacity>
 
-          {!isFinalSlide ? (
-            <View style={styles.actionsStack}>
-              <TouchableOpacity style={styles.primaryButton} onPress={handlePrimaryPress} activeOpacity={0.9}>
-                <ThemedText style={styles.primaryButtonText}>{currentSlide.primaryCta}</ThemedText>
+            {currentSlide.showSkip && (
+              <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                <ThemedText style={styles.skipText}>Skip</ThemedText>
               </TouchableOpacity>
-              {currentSlide.secondaryCta && (
-                <Pressable style={styles.secondaryLink} onPress={handleSecondaryPress} hitSlop={8}>
-                  <ThemedText style={styles.secondaryLinkText}>{currentSlide.secondaryCta}</ThemedText>
-                </Pressable>
+            )}
+
+            <Animated.View
+              style={[
+                styles.slideContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }],
+                },
+              ]}
+            >
+              {renderSlideContent()}
+            </Animated.View>
+
+            <ThemedView style={styles.bottomContainer}>
+              <View style={styles.pagination}>
+                {slides.map((_, index) => (
+                  <Ionicons
+                    key={index}
+                    name={index === currentIndex ? 'paw' : 'paw-outline'}
+                    size={index === currentIndex ? 14 : 12}
+                    color={index === currentIndex ? primaryColor : '#CBD5E1'}
+                    style={styles.paginationIcon}
+                  />
+                ))}
+              </View>
+
+              {!isFinalSlide ? (
+                <View style={styles.actionsStack}>
+                  <TouchableOpacity style={styles.primaryButton} onPress={handlePrimaryPress} activeOpacity={0.9}>
+                    <ThemedText style={styles.primaryButtonText}>{currentSlide.primaryCta}</ThemedText>
+                  </TouchableOpacity>
+                  {currentSlide.secondaryCta && (
+                    <Pressable style={styles.secondaryLink} onPress={handleSecondaryPress} hitSlop={8}>
+                      <ThemedText style={styles.secondaryLinkText}>{currentSlide.secondaryCta}</ThemedText>
+                    </Pressable>
+                  )}
+                </View>
+              ) : (
+                <View style={styles.actionsStack}>
+                  <TouchableOpacity style={styles.finalPrimaryButton} onPress={handlePrimaryPress} activeOpacity={0.9}>
+                    <ThemedText style={styles.finalPrimaryButtonText}>{currentSlide.primaryCta}</ThemedText>
+                  </TouchableOpacity>
+                  {currentSlide.secondaryCta && (
+                    <TouchableOpacity style={styles.finalSecondaryButton} onPress={handleSecondaryPress} activeOpacity={0.8}>
+                      <ThemedText style={styles.finalSecondaryButtonText}>{currentSlide.secondaryCta}</ThemedText>
+                    </TouchableOpacity>
+                  )}
+                  <Pressable style={styles.legalLink} onPress={handleLegalPress}>
+                    <ThemedText style={styles.legalText}>Terms & Privacy</ThemedText>
+                  </Pressable>
+                </View>
               )}
-            </View>
-          ) : (
-            <View style={styles.actionsStack}>
-              <TouchableOpacity style={styles.finalPrimaryButton} onPress={handlePrimaryPress} activeOpacity={0.9}>
-                <ThemedText style={styles.finalPrimaryButtonText}>{currentSlide.primaryCta}</ThemedText>
-              </TouchableOpacity>
-              {currentSlide.secondaryCta && (
-                <TouchableOpacity style={styles.finalSecondaryButton} onPress={handleSecondaryPress} activeOpacity={0.8}>
-                  <ThemedText style={styles.finalSecondaryButtonText}>{currentSlide.secondaryCta}</ThemedText>
-                </TouchableOpacity>
-              )}
-              <Pressable style={styles.legalLink} onPress={handleLegalPress}>
-                <ThemedText style={styles.legalText}>Terms & Privacy</ThemedText>
-              </Pressable>
-            </View>
-          )}
-        </ThemedView>
+            </ThemedView>
+          </>
+        )}
       </ThemedView>
     </SafeAreaView>
   );
@@ -389,10 +404,6 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   skipButton: {
-    // alignSelf: 'flex-end',
-    // paddingTop: 20,
-    // paddingBottom: 16,
-    // paddingHorizontal: 4,
     alignSelf: 'flex-end',
     paddingTop: 20,
     paddingBottom: 16,
@@ -488,9 +499,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 18,
     backgroundColor: '#F8FAFC',
-    
-    
-    
   },
   infoIconWrap: {
     width: 48,
@@ -595,7 +603,7 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     paddingBottom: Platform.OS === 'ios' ? 16 : 40,
-  alignItems: 'center',
+    alignItems: 'center',
   },
   pagination: {
     flexDirection: 'row',
