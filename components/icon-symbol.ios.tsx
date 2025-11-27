@@ -1,6 +1,11 @@
 import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
-import { StyleProp, ViewStyle } from 'react-native';
+import { OpaqueColorValue, StyleProp, ViewStyle } from 'react-native';
 
+/**
+ * An icon component that uses native SF Symbols on iOS.
+ * This ensures optimal performance and native iOS appearance.
+ * Icon `name`s are based on SF Symbols - see https://developer.apple.com/sf-symbols/
+ */
 export function IconSymbol({
   name,
   size = 24,
@@ -10,7 +15,7 @@ export function IconSymbol({
 }: {
   name: SymbolViewProps['name'];
   size?: number;
-  color: string;
+  color: string | OpaqueColorValue;
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
