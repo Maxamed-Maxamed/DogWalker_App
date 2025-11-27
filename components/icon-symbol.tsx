@@ -46,6 +46,10 @@ const getMappedIcon = (name: string): ComponentProps<typeof MaterialIcons>['name
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
  * This ensures a consistent look across platforms, and optimal resource usage.
  * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * 
+ * @param weight - Optional SymbolWeight parameter accepted for API parity with iOS implementation.
+ * On Android and web, this parameter is intentionally unused but can be passed safely for
+ * cross-platform compatibility.
  */
 export function IconSymbol({
   name,
