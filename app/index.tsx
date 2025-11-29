@@ -248,11 +248,11 @@ const styles = StyleSheet.create({
   
   /* Role Cards */
   roleCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.light.background,
     borderRadius: 16,
     padding: 32,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: Colors.light.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.light.tint,
   },
   walkerCard: {
-    borderLeftColor: '#10B981',
+    borderLeftColor: Colors.light.tint,
   },
   cardRow: {
     flexDirection: 'row',
