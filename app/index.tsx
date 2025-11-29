@@ -1,38 +1,28 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Href, router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
-  Pressable,
+  Image,
   StyleSheet,
   Text,
-  View,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Colors } from '@/constants';
 import { useRoleStore } from '@/stores/roleStore';
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width > 600 ? 280 : width * 0.42;
 
 /**
  * Role Selection Screen
- * Premium UI for users to choose between Owner or Walker roles
+ * Hero-driven card selection matching welcome and home screen patterns
  */
 export default function RoleSelectionScreen() {
   const { isLoading, setRole } = useRoleStore();
   const [selecting, setSelecting] = useState(false);
-
-  // Pulse animation for cards
-  const scale = useSharedValue(1);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,27 +30,12 @@ export default function RoleSelectionScreen() {
     }, [])
   );
 
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.02, { duration: 1500 }),
-        withTiming(1, { duration: 1500 })
-      ),
-      -1,
-      true
-    );
-  }, [
-    scale
-  ]);
-
   const handleRoleSelect = async (selectedRole: 'owner' | 'walker') => {
     try {
       setSelecting(true);
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await setRole(selectedRole);
       
-      // Navigate to the appropriate role group
-      // Using unknown + Href cast for type safety instead of any
       const route = selectedRole === 'owner' ? '/owner' : '/walker';
       router.replace(route as unknown as Href);
     } catch (error) {
@@ -69,14 +44,10 @@ export default function RoleSelectionScreen() {
     }
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   if (isLoading || selecting) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={Colors.light.tint} />
         <Text style={styles.loadingText}>
           {selecting ? 'Setting up your experience...' : 'Loading...'}
         </Text>
@@ -85,167 +56,267 @@ export default function RoleSelectionScreen() {
   }
 
   return (
-    <LinearGradient
-      colors={['#0f172a', '#1e1b4b', '#312e81']}
-      style={styles.container}
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>DogWalker</Text>
-        <Text style={styles.subtitle}>Choose Your Role</Text>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <StatusBar style="dark" translucent />
+      {/* Hero Section */}
+      <View style={styles.heroSection}>
+        <Image
+          source={require('@/assets/images/newlogo.png')}
+          style={styles.heroLogo}
+          resizeMode="contain"
+        />
+        <View style={styles.heroContent}>
+          <Text style={styles.title}>DogWalker</Text>
+          <Text style={styles.subtitle}>Choose Your Role</Text>
+        </View>
       </View>
 
-      <View style={styles.cardsContainer}>
+      {/* Content Section */}
+      <View style={styles.contentSection}>
         {/* Owner Card */}
-        <Animated.View style={[styles.cardWrapper, animatedStyle]}>
-          <Pressable
-            onPress={() => { void handleRoleSelect('owner'); }}
-            style={({ pressed }) => [
-              styles.pressable,
-              pressed && styles.pressed,
-            ]}
-          >
-            <LinearGradient
-              colors={['#f59e0b', '#f97316', '#ea580c']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.card}
-            >
-              <View style={styles.iconContainer}>
-                <Text style={styles.icon}>🏠</Text>
-              </View>
+        <TouchableOpacity
+          style={[styles.roleCard, styles.ownerCard]}
+          onPress={() => { void handleRoleSelect('owner'); }}
+          activeOpacity={0.7}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Owner role"
+          accessibilityHint="Select to use the app as a pet owner"
+        >
+          <View style={styles.cardRow}>
+            <View style={[
+              styles.iconBadge,
+              { backgroundColor: 'rgba(10, 126, 164, 0.15)' }
+            ]}>
+              <Ionicons 
+                name="home-outline" 
+                size={28} 
+                color={Colors.light.tint} 
+              />
+            </View>
+            <View style={styles.cardContent}>
               <Text style={styles.roleTitle}>Owner</Text>
               <Text style={styles.roleDescription}>
                 Find trusted walkers for your furry friends
               </Text>
-            </LinearGradient>
-          </Pressable>
-        </Animated.View>
+            </View>
+            <Ionicons 
+              name="chevron-forward" 
+              size={24} 
+              color={Colors.light.icon} 
+              style={styles.chevron}
+            />
+          </View>
+          
+          {/* Feature highlights */}
+          <View style={styles.featuresRow}>
+            <View style={styles.featureItem}>
+              <Ionicons 
+                name="navigate" 
+                size={16} 
+                color="#3B82F6" 
+              />
+              <Text style={styles.featureText}>GPS tracking</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons 
+                name="shield-checkmark" 
+                size={16} 
+                color="#10B981" 
+              />
+              <Text style={styles.featureText}>Vetted walkers</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
 
         {/* Walker Card */}
-        <Animated.View style={[styles.cardWrapper, animatedStyle]}>
-          <Pressable
-            onPress={() => { void handleRoleSelect('walker'); }}
-            style={({ pressed }) => [
-              styles.pressable,
-              pressed && styles.pressed,
-            ]}
-          >
-            <LinearGradient
-              colors={['#0ea5e9', '#06b6d4', '#14b8a6']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.card}
-            >
-              <View style={styles.iconContainer}>
-                <Text style={styles.icon}>🐕</Text>
-              </View>
+        <TouchableOpacity
+          style={[styles.roleCard, styles.walkerCard]}
+          onPress={() => { void handleRoleSelect('walker'); }}
+          activeOpacity={0.7}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Walker role"
+          accessibilityHint="Select to use the app as a dog walker"
+        >
+          <View style={styles.cardRow}>
+            <View style={[
+              styles.iconBadge,
+              { backgroundColor: 'rgba(16, 185, 129, 0.15)' }
+            ]}>
+              <Ionicons 
+                name="walk-outline" 
+                size={28} 
+                color="#10B981" 
+              />
+            </View>
+            <View style={styles.cardContent}>
               <Text style={styles.roleTitle}>Walker</Text>
               <Text style={styles.roleDescription}>
                 Help pet owners and earn money
               </Text>
-            </LinearGradient>
-          </Pressable>
-        </Animated.View>
-      </View>
+            </View>
+            <Ionicons 
+              name="chevron-forward" 
+              size={24} 
+              color={Colors.light.icon} 
+              style={styles.chevron}
+            />
+          </View>
+          
+          {/* Feature highlights */}
+          <View style={styles.featuresRow}>
+            <View style={styles.featureItem}>
+              <Ionicons 
+                name="cash-outline" 
+                size={16} 
+                color="#10B981" 
+              />
+              <Text style={styles.featureText}>Earn income</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Ionicons 
+                name="time-outline" 
+                size={16} 
+                color="#3B82F6" 
+              />
+              <Text style={styles.featureText}>Flexible hours</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
 
-      <Text style={styles.footer}>
-        You can change this anytime in settings
-      </Text>
-    </LinearGradient>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: Colors.light.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: Colors.light.background,
   },
   loadingText: {
     marginTop: 16,
-    color: '#94a3b8',
+    color: Colors.light.icon,
     fontSize: 16,
+    fontWeight: '500',
   },
-  header: {
+  
+  /* Hero Section */
+  heroSection: {
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 60,
+    paddingHorizontal: 24,
+    backgroundColor: Colors.light.background,
+    paddingVertical: 32,
+  },
+  heroLogo: {
+    width: 80,
+    height: 80,
+    marginBottom: 24,
+  },
+  heroContent: {
+    alignItems: 'center',
   },
   title: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 8,
-    letterSpacing: 1,
+    fontWeight: '800',
+    color: Colors.light.text,
+    marginBottom: 4,
+    letterSpacing: -1,
   },
   subtitle: {
     fontSize: 20,
-    color: '#94a3b8',
-    fontWeight: '300',
+    fontWeight: '500',
+    color: Colors.light.icon,
+    letterSpacing: 0.5,
   },
-  cardsContainer: {
-    flexDirection: width > 600 ? 'row' : 'column',
-    gap: 24,
-    marginBottom: 40,
-  },
-  cardWrapper: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  pressable: {
-    borderRadius: 24,
-  },
-  pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.98 }],
-  },
-  card: {
-    width: CARD_WIDTH,
-    paddingVertical: 40,
+  
+  /* Content Section */
+  contentSection: {
+    flex: 1,
     paddingHorizontal: 24,
-    borderRadius: 24,
-    alignItems: 'center',
-    minHeight: 280,
-    justifyContent: 'space-between',
+    paddingTop: 24,
+    paddingBottom: 24,
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  
+  /* Role Cards */
+  roleCard: {
+    backgroundColor: Colors.light.background,
+    borderRadius: 16,
+    padding: 32,
+    marginBottom: 16,
+    shadowColor: Colors.light.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    borderLeftWidth: 3,
+  },
+  ownerCard: {
+    borderLeftColor: Colors.light.tint,
+  },
+  walkerCard: {
+    borderLeftColor: Colors.light.tint,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
-  icon: {
-    fontSize: 40,
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingVertical: 4, 
+  },
+  chevron: {
+    marginLeft: 8,
+    opacity: 0.5,
   },
   roleTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 12,
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.light.text,
+    marginBottom: 4,
+    letterSpacing: 0.3,
   },
   roleDescription: {
-    fontSize: 14,
-    color: '#ffffff',
-    textAlign: 'center',
-    opacity: 0.9,
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: '400',
+    color: Colors.light.icon,
+    lineHeight: 24,
   },
-  footer: {
+  
+  /* Feature Highlights */
+  featuresRow: {
+    flexDirection: 'row',
+    gap: 16,
+    paddingLeft: 72,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  featureText: {
     fontSize: 12,
-    color: '#64748b',
-    textAlign: 'center',
-    fontStyle: 'italic',
+    fontWeight: '400',
+    color: Colors.light.icon,
+    lineHeight: 24,
   },
 });

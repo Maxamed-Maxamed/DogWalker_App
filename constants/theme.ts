@@ -16,6 +16,12 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    // Feature highlight colors
+    featureBlue: '#3B82F6',
+    featureGreen: '#10B981',
+    // Icon badge backgrounds
+    ownerBadgeBg: 'rgba(10, 126, 164, 0.15)',
+    walkerBadgeBg: 'rgba(16, 185, 129, 0.15)',
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +30,12 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    // Feature highlight colors
+    featureBlue: '#3B82F6',
+    featureGreen: '#10B981',
+    // Icon badge backgrounds
+    ownerBadgeBg: 'rgba(10, 126, 164, 0.25)',
+    walkerBadgeBg: 'rgba(16, 185, 129, 0.25)',
   },
 };
 
