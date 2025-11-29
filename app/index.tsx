@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Href, router, useFocusEffect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -8,14 +9,12 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors, DesignTokens } from '@/constants';
+import { Colors } from '@/constants';
 import { useRoleStore } from '@/stores/roleStore';
-
-
 
 /**
  * Role Selection Screen
@@ -58,6 +57,7 @@ export default function RoleSelectionScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <StatusBar style="dark" translucent />
       {/* Hero Section */}
       <View style={styles.heroSection}>
         <Image
@@ -75,7 +75,7 @@ export default function RoleSelectionScreen() {
       <View style={styles.contentSection}>
         {/* Owner Card */}
         <TouchableOpacity
-          style={styles.roleCard}
+          style={[styles.roleCard, styles.ownerCard]}
           onPress={() => { void handleRoleSelect('owner'); }}
           activeOpacity={0.7}
           accessible={true}
@@ -86,7 +86,7 @@ export default function RoleSelectionScreen() {
           <View style={styles.cardRow}>
             <View style={[
               styles.iconBadge,
-              { backgroundColor: `${Colors.light.tint}15` }
+              { backgroundColor: 'rgba(10, 126, 164, 0.15)' }
             ]}>
               <Ionicons 
                 name="home-outline" 
@@ -100,6 +100,12 @@ export default function RoleSelectionScreen() {
                 Find trusted walkers for your furry friends
               </Text>
             </View>
+            <Ionicons 
+              name="chevron-forward" 
+              size={24} 
+              color={Colors.light.icon} 
+              style={styles.chevron}
+            />
           </View>
           
           {/* Feature highlights */}
@@ -108,7 +114,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="navigate" 
                 size={16} 
-                color={DesignTokens.colors.semantic.info} 
+                color="#3B82F6" 
               />
               <Text style={styles.featureText}>GPS tracking</Text>
             </View>
@@ -116,7 +122,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="shield-checkmark" 
                 size={16} 
-                color={DesignTokens.colors.semantic.success} 
+                color="#10B981" 
               />
               <Text style={styles.featureText}>Vetted walkers</Text>
             </View>
@@ -125,7 +131,7 @@ export default function RoleSelectionScreen() {
 
         {/* Walker Card */}
         <TouchableOpacity
-          style={styles.roleCard}
+          style={[styles.roleCard, styles.walkerCard]}
           onPress={() => { void handleRoleSelect('walker'); }}
           activeOpacity={0.7}
           accessible={true}
@@ -136,12 +142,12 @@ export default function RoleSelectionScreen() {
           <View style={styles.cardRow}>
             <View style={[
               styles.iconBadge,
-              { backgroundColor: `${DesignTokens.colors.semantic.success}15` }
+              { backgroundColor: 'rgba(16, 185, 129, 0.15)' }
             ]}>
               <Ionicons 
                 name="walk-outline" 
                 size={28} 
-                color={DesignTokens.colors.semantic.success} 
+                color="#10B981" 
               />
             </View>
             <View style={styles.cardContent}>
@@ -150,6 +156,12 @@ export default function RoleSelectionScreen() {
                 Help pet owners and earn money
               </Text>
             </View>
+            <Ionicons 
+              name="chevron-forward" 
+              size={24} 
+              color={Colors.light.icon} 
+              style={styles.chevron}
+            />
           </View>
           
           {/* Feature highlights */}
@@ -158,7 +170,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="cash-outline" 
                 size={16} 
-                color={DesignTokens.colors.semantic.success} 
+                color="#10B981" 
               />
               <Text style={styles.featureText}>Earn income</Text>
             </View>
@@ -166,17 +178,13 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="time-outline" 
                 size={16} 
-                color={DesignTokens.colors.semantic.info} 
+                color="#3B82F6" 
               />
               <Text style={styles.featureText}>Flexible hours</Text>
             </View>
           </View>
         </TouchableOpacity>
 
-        {/* Footer */}
-        <Text style={styles.footer}>
-          You can change this anytime in settings
-        </Text>
       </View>
     </SafeAreaView>
   );
@@ -194,62 +202,73 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.background,
   },
   loadingText: {
-    marginTop: DesignTokens.spacing.md,
+    marginTop: 16,
     color: Colors.light.icon,
-    fontSize: DesignTokens.typography.sizes.base,
-    fontWeight: DesignTokens.typography.weights.medium,
+    fontSize: 16,
+    fontWeight: '500',
   },
   
   /* Hero Section */
   heroSection: {
-    flex: 0.4,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: DesignTokens.spacing.lg,
+    paddingHorizontal: 24,
     backgroundColor: Colors.light.background,
+    paddingVertical: 32,
   },
   heroLogo: {
-    width: 100,
-    height: 100,
-    marginBottom: DesignTokens.spacing.lg,
+    width: 80,
+    height: 80,
+    marginBottom: 24,
   },
   heroContent: {
     alignItems: 'center',
   },
   title: {
-    fontSize: DesignTokens.typography.sizes['5xl'],
-    fontWeight: DesignTokens.typography.weights.extrabold,
+    fontSize: 48,
+    fontWeight: '800',
     color: Colors.light.text,
-    marginBottom: DesignTokens.spacing.xs,
+    marginBottom: 4,
     letterSpacing: -1,
   },
   subtitle: {
-    fontSize: DesignTokens.typography.sizes.xl,
-    fontWeight: DesignTokens.typography.weights.medium,
+    fontSize: 20,
+    fontWeight: '500',
     color: Colors.light.icon,
     letterSpacing: 0.5,
   },
   
   /* Content Section */
   contentSection: {
-    flex: 0.6,
-    paddingHorizontal: DesignTokens.spacing.lg,
-    paddingTop: DesignTokens.spacing.lg,
-    paddingBottom: DesignTokens.spacing.lg,
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 24,
   },
   
   /* Role Cards */
   roleCard: {
     backgroundColor: '#F8FAFC',
-    borderRadius: DesignTokens.borderRadius.xl,
-    padding: DesignTokens.spacing.lg,
-    marginBottom: DesignTokens.spacing.md,
-    ...DesignTokens.shadows.md,
+    borderRadius: 16,
+    padding: 32,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    borderLeftWidth: 3,
+  },
+  ownerCard: {
+    borderLeftColor: Colors.light.tint,
+  },
+  walkerCard: {
+    borderLeftColor: '#10B981',
   },
   cardRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: DesignTokens.spacing.md,
+    marginBottom: 16,
   },
   iconBadge: {
     width: 56,
@@ -257,51 +276,47 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: DesignTokens.spacing.md,
+    marginRight: 16,
   },
   cardContent: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingVertical: 4, 
+  },
+  chevron: {
+    marginLeft: 8,
+    opacity: 0.5,
   },
   roleTitle: {
-    fontSize: DesignTokens.typography.sizes['2xl'],
-    fontWeight: DesignTokens.typography.weights.bold,
+    fontSize: 24,
+    fontWeight: '700',
     color: Colors.light.text,
-    marginBottom: DesignTokens.spacing.xs,
+    marginBottom: 4,
     letterSpacing: 0.3,
   },
   roleDescription: {
-    fontSize: DesignTokens.typography.sizes.base,
-    fontWeight: DesignTokens.typography.weights.regular,
+    fontSize: 16,
+    fontWeight: '400',
     color: Colors.light.icon,
-    lineHeight: DesignTokens.typography.sizes.base * DesignTokens.typography.lineHeights.normal,
+    lineHeight: 24,
   },
   
   /* Feature Highlights */
   featuresRow: {
     flexDirection: 'row',
-    gap: DesignTokens.spacing.md,
-    paddingLeft: 56 + DesignTokens.spacing.md, // Align with card content
+    gap: 16,
+    paddingLeft: 72,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: DesignTokens.spacing.xs,
+    gap: 4,
   },
   featureText: {
-    fontSize: DesignTokens.typography.sizes.sm,
-    fontWeight: DesignTokens.typography.weights.medium,
+    fontSize: 12,
+    fontWeight: '400',
     color: Colors.light.icon,
-  },
-  
-  /* Footer */
-  footer: {
-    fontSize: DesignTokens.typography.sizes.sm,
-    fontWeight: DesignTokens.typography.weights.regular,
-    color: Colors.light.icon,
-    textAlign: 'center',
-    marginTop: DesignTokens.spacing.lg,
-    fontStyle: 'italic',
-    opacity: 0.7,
+    lineHeight: 24,
   },
 });
