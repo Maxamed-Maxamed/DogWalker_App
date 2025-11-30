@@ -15,4 +15,5 @@ tools:
   - name: eslint
     version: 9.38.0
     config:
-      file: .eslintrc.json
+      # Point Codacy to the repository's ESLint flat config
+      file: eslint.config.js
