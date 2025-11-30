@@ -38,8 +38,8 @@ export default function RoleSelectionScreen() {
       
       // Type the route correctly using as const assertion
       const routeMap: Record<'owner' | 'walker', Href> = {
-        owner: '/owner' as Href,
-        walker: '/walker' as Href,
+        owner: '/owner' ,
+        walker: '/walker',
       };
       
       const route = routeMap[selectedRole];
@@ -90,11 +90,8 @@ export default function RoleSelectionScreen() {
           accessibilityHint="Select to use the app as a pet owner"
         >
           <View style={styles.cardRow}>
-            <View style={[
-              styles.iconBadge,
-              { backgroundColor: Colors.light.ownerBadgeBg }
-            ]}>
-              <Ionicons 
+            <View style={[styles.iconBadge, styles.ownerIconBadge]}>
+              <Ionicons  
                 name="home-outline" 
                 size={28} 
                 color={Colors.light.tint} 
@@ -146,10 +143,11 @@ export default function RoleSelectionScreen() {
           accessibilityHint="Select to use the app as a dog walker"
         >
           <View style={styles.cardRow}>
-            <View style={[
+            {/* <View style={[
               styles.iconBadge,
               { backgroundColor: Colors.light.walkerBadgeBg }
-            ]}>
+            ]}> */}
+            <View style={[styles.iconBadge, styles.walkerIconBadge]}>
               <Ionicons 
                 name="walk-outline" 
                 size={28} 
@@ -266,16 +264,21 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
   },
   ownerCard: {
-    borderLeftColor: Colors.light.tint,
+    borderLeftColor: Colors.light.featureBlue,
   },
   walkerCard: {
-    borderLeftColor: Colors.light.tint,
+    borderLeftColor: Colors.light.featureGreen,
   },
   cardRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 16,
   },
+
+walkerIconBadge: {
+   backgroundColor: Colors.light.walkerBadgeBg,
+ },
+
   iconBadge: {
     width: 56,
     height: 56,
@@ -283,6 +286,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+  },
+
+  ownerIconBadge: {
+    backgroundColor: Colors.light.ownerBadgeBg,
   },
   cardContent: {
     flex: 1,
