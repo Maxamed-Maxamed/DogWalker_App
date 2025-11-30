@@ -8,8 +8,9 @@ tools:
   - name: pmd
     version: 7.0.0
     config:
+      # Use the existing ruleset file under tools-configs
       rulesets:
-        - pmd-ruleset.xml
+        - tools-configs/ruleset.xml
 
   - name: eslint
     version: 9.38.0
