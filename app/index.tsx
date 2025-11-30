@@ -86,7 +86,7 @@ export default function RoleSelectionScreen() {
           <View style={styles.cardRow}>
             <View style={[
               styles.iconBadge,
-              { backgroundColor: 'rgba(10, 126, 164, 0.15)' }
+              { backgroundColor: Colors.light.ownerBadgeBg }
             ]}>
               <Ionicons 
                 name="home-outline" 
@@ -114,7 +114,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="navigate" 
                 size={16} 
-                color="#3B82F6" 
+                color={Colors.light.featureBlue} 
               />
               <Text style={styles.featureText}>GPS tracking</Text>
             </View>
@@ -122,7 +122,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="shield-checkmark" 
                 size={16} 
-                color="#10B981" 
+                color={Colors.light.featureGreen} 
               />
               <Text style={styles.featureText}>Vetted walkers</Text>
             </View>
@@ -142,12 +142,12 @@ export default function RoleSelectionScreen() {
           <View style={styles.cardRow}>
             <View style={[
               styles.iconBadge,
-              { backgroundColor: 'rgba(16, 185, 129, 0.15)' }
+              { backgroundColor: Colors.light.walkerBadgeBg }
             ]}>
               <Ionicons 
                 name="walk-outline" 
                 size={28} 
-                color="#10B981" 
+                color={Colors.light.featureGreen} 
               />
             </View>
             <View style={styles.cardContent}>
@@ -170,7 +170,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="cash-outline" 
                 size={16} 
-                color="#10B981" 
+                color={Colors.light.featureGreen} 
               />
               <Text style={styles.featureText}>Earn income</Text>
             </View>
@@ -178,7 +178,7 @@ export default function RoleSelectionScreen() {
               <Ionicons 
                 name="time-outline" 
                 size={16} 
-                color="#3B82F6" 
+                color={Colors.light.featureBlue} 
               />
               <Text style={styles.featureText}>Flexible hours</Text>
             </View>
