@@ -36,13 +36,8 @@ export default function RoleSelectionScreen() {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await setRole(selectedRole);
       
-      // Type the route correctly using as const assertion
-      const routeMap: Record<'owner' | 'walker', Href> = {
-        owner: '/owner' ,
-        walker: '/walker',
-      };
-      
-      const route = routeMap[selectedRole];
+      // Static property access to avoid Codacy security flag
+      const route: Href = selectedRole === 'owner' ? '/owner' : '/walker';
       router.replace(route);
     } catch (error) {
       console.error('Failed to set role:', error);
@@ -272,9 +267,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-walkerIconBadge: {
-   backgroundColor: Colors.light.walkerBadgeBg,
- },
 
   iconBadge: {
     width: 56,
@@ -288,6 +280,10 @@ walkerIconBadge: {
   ownerIconBadge: {
     backgroundColor: Colors.light.ownerBadgeBg,
   },
+
+  walkerIconBadge: {
+   backgroundColor: Colors.light.walkerBadgeBg,
+ },
   cardContent: {
     flex: 1,
     justifyContent: 'center',
