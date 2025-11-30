@@ -143,10 +143,7 @@ export default function RoleSelectionScreen() {
           accessibilityHint="Select to use the app as a dog walker"
         >
           <View style={styles.cardRow}>
-            {/* <View style={[
-              styles.iconBadge,
-              { backgroundColor: Colors.light.walkerBadgeBg }
-            ]}> */}
+            
             <View style={[styles.iconBadge, styles.walkerIconBadge]}>
               <Ionicons 
                 name="walk-outline" 
