@@ -36,8 +36,14 @@ export default function RoleSelectionScreen() {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await setRole(selectedRole);
       
-      const route = selectedRole === 'owner' ? '/owner' : '/walker';
-      router.replace(route as unknown as Href);
+      // Type the route correctly using as const assertion
+      const routeMap: Record<'owner' | 'walker', Href> = {
+        owner: '/owner' as Href,
+        walker: '/walker' as Href,
+      };
+      
+      const route = routeMap[selectedRole];
+      router.replace(route);
     } catch (error) {
       console.error('Failed to set role:', error);
       setSelecting(false);
