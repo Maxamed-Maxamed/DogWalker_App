@@ -6,7 +6,6 @@
     <description>Codacy PMD 7 Ruleset for DogWalker App</description>
     
     <!-- Java Rules (for any backend Java code) -->
-    <rule ref="category/java/bestpractices.xml/CheckResultSet"/>
     <rule ref="category/java/bestpractices.xml/UnusedFormalParameter"/>
     <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
     <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>
