@@ -5,23 +5,6 @@
     xsi:schemaLocation="https://pmd.github.io/ruleset/2.0.0 https://pmd.github.io/schemas/pmd-7.0.0.xsd">
     <description>Codacy PMD 7 Ruleset for DogWalker App</description>
     
-    <!-- ECMAScript/JavaScript Rules (Primary for React Native/TypeScript project) -->
-    <rule ref="category/ecmascript/bestpractices.xml/AvoidWithStatement"/>
-    <rule ref="category/ecmascript/bestpractices.xml/ConsistentReturn"/>
-    <rule ref="category/ecmascript/bestpractices.xml/UseBaseWithParseInt"/>
-    <rule ref="category/ecmascript/codestyle.xml/UnnecessaryBlock"/>
-    <rule ref="category/ecmascript/errorprone.xml/EqualComparison"/>
-    <rule ref="category/ecmascript/codestyle.xml/AssignmentInOperand">
-        <properties>
-            <property name="allowFor" value="false"/>
-            <property name="allowIf" value="false"/>
-            <property name="allowIncrementDecrement" value="false"/>
-            <property name="allowTernary" value="false"/>
-            <property name="allowTernaryResults" value="false"/>
-            <property name="allowWhile" value="false"/>
-        </properties>
-    </rule>
-
     <!-- Java Rules (for any backend Java code) -->
     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters"/>
     <rule ref="category/java/bestpractices.xml/CheckResultSet"/>
@@ -41,7 +24,6 @@
             <property name="classPattern" value="[A-Z][a-zA-Z0-9]*"/>
             <property name="enumPattern" value="[A-Z][a-zA-Z0-9]*"/>
             <property name="interfacePattern" value="[A-Z][a-zA-Z0-9]*"/>
-            <property name="testClassPattern" value="^Test.*$|^[A-Z][a-zA-Z0-9]*Test(s|Case)?$"/>
             <property name="utilityClassPattern" value="[A-Z][a-zA-Z0-9]*"/>
         </properties>
     </rule>
