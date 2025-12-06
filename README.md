@@ -131,7 +131,7 @@ app/
 ├── _layout.tsx              # Root layout with theme provider
 ├── index.tsx                # Role selection / Entry point
 ├── (owner)/                 # Pet Owner Application
-│   ├── (tabs)/              # Owner main tabs (Dashboard, Explore, etc.)
+│   ├── (tabs)/              # Owner main tabs (Home, Find Walker, etc.)
 │   ├── auth/                # Owner authentication flow
 │   ├── pets/                # Pet management screens
 │   └── welcome/             # Owner onboarding flow

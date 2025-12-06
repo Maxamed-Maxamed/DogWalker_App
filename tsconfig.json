@@ -3,16 +3,15 @@
   "compilerOptions": {
     "strict": true,
     "module": "esnext",
-    "baseUrl": ".",
     "paths": {
       "@/app/*": [
-        "app/*"
+        "./app/*"
       ],
       "@/owner/*": [
-        "app/(owner)/*"
+        "./app/(owner)/*"
       ],
       "@/walker/*": [
-        "app/(walker)/*"
+        "./app/(walker)/*"
       ],
       "@/constants": [
         "./constants"
@@ -61,6 +60,12 @@
       ],
       "@/assets/*": [
         "./assets/*"
+      ],
+      "@/types": [
+        "./.expo/types"
+      ],
+      "@/types/*": [
+        "./types/*"
       ]
     }
   },

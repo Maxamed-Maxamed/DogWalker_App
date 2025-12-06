@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 type NavigationState = {
-  currentTab: 'dashboard' | 'explore';
+  currentTab: 'dashboard' | 'findWalker';
   setCurrentTab: (tab: NavigationState['currentTab']) => void;
   initialRoute?: string;
   setInitialRoute: (route: string) => void;

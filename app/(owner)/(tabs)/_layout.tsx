@@ -21,11 +21,23 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Feather name = "home"  color={color} size={28} 
+          // tabBarIcon: ({ color }) => <Feather name = "home"  color={color} size={28} 
+          tabBarIcon: ({ color }) => <IconSymbol name="house.fill" color={color} size={28}
           
           />,
         }}
       />
+       <Tabs.Screen
+        name="find-walker"
+        options={{
+          title: 'Find Walker',
+
+          tabBarIcon: ({ color }) => <Feather name="map-pin" color={color} size={28} />,
+        }}
+      />
+
+
+
       <Tabs.Screen
         name="pets"
         options={{
@@ -38,13 +50,7 @@ export default function TabLayout() {
           }
         }}
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      /> 
+      
       <Tabs.Screen
         name="profile"
         options={{
@@ -52,6 +58,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       /> 
+
+      
     </Tabs>
   );
 }
