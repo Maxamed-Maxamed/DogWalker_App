@@ -1,4 +1,4 @@
----
+
 # Codacy Rules
 Configuration for AI behavior when interacting with Codacy's MCP Server
 

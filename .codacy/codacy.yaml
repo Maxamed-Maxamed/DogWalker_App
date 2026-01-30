@@ -3,8 +3,8 @@ runtimes:
     - node@22.2.0
     - python@3.11.11
 tools:
-    - eslint@8.57.0
-    - lizard@1.17.31
-    - pmd@6.55.0
-    - semgrep@1.78.0
-    - trivy@0.66.0
+    - eslint@9.26.0
+    - lizard@1.20.0
+    - pmd@7.21.0
+    - semgrep@1.149.0
+    - trivy@0.69.0

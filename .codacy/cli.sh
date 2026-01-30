@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 set -e +o pipefail
 
 # Set up paths first
@@ -34,6 +33,11 @@ fi
 
 version_file="$CODACY_CLI_V2_TMP_FOLDER/version.yaml"
 
+# Fatal error function
+fatal() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
 
 get_version_from_yaml() {
     if [ -f "$version_file" ]; then
@@ -126,7 +130,6 @@ else
     version=$(get_version_from_yaml)
 fi
 
-
 # Set up version-specific paths
 bin_folder="${CODACY_CLI_V2_TMP_FOLDER}/${version}"
 
@@ -137,10 +140,12 @@ bin_path="$bin_folder"/"$bin_name"
 download_cli "$bin_folder" "$bin_path" "$version"
 chmod +x "$bin_path"
 
-run_command="$bin_path"
-if [ -z "$run_command" ]; then
-    fatal "Codacy cli v2 binary could not be found."
+# ✅ FIXED: Validate bin_path before assigning run_command
+if [ -z "$bin_path" ] || [ ! -x "$bin_path" ]; then
+    fatal "Codacy cli v2 binary could not be found or is not executable at: $bin_path"
 fi
+
+run_command="$bin_path"
 
 if [ "$#" -eq 1 ] && [ "$1" = "download" ]; then
     echo "Codacy cli v2 download succeeded"

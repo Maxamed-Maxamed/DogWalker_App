@@ -1,3 +1,4 @@
+/* biome-ignore css/unknownAtRules: all Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
