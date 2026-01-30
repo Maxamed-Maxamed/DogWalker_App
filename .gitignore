@@ -41,3 +41,7 @@ app-example
 # generated native folders
 /ios
 /android
+
+
+#Ignore insiders AI rules
+.github\instructions\codacy.instructions.md
