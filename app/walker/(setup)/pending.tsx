@@ -1,16 +1,49 @@
+/**
+ * Walker Setup - Pending Verification Screen
+ * Displays verification status and allows navigation to dashboard
+ */
+
 import { Colors } from "@/constants/theme";
 import { saveSetupCompleted } from "@/utils/storage";
 import { useRouter } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useCallback } from "react";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 export default function Pending() {
   const router = useRouter();
 
-  const handleContinue = async () => {
-    // Save setup as completed even though pending approval
-    await saveSetupCompleted("walker");
-    router.replace("/walker/(tabs)/home");
-  };
+  /**
+   * Handles continue action - saves setup completion and navigates
+   * @throws Error if setup completion fails
+   */
+  const handleContinue = useCallback(async (): Promise<void> => {
+    try {
+      // Save setup as completed even though pending approval
+      await saveSetupCompleted("walker");
+
+      // Only navigate on success
+      router.replace("/walker/(tabs)/home");
+    } catch (error) {
+      console.error("Error completing setup:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to complete setup. Please try again.";
+
+      Alert.alert("Setup Error", errorMessage, [
+        {
+          text: "Retry",
+          onPress: () => void handleContinue(),
+          style: "default",
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    }
+  }, [router]);
 
   return (
     <View className="flex-1 bg-white justify-center px-8">
@@ -51,16 +84,18 @@ export default function Pending() {
           className="p-6 rounded-2xl"
           style={{ backgroundColor: Colors.walker.background }}
         >
-          <Text className="font-semibold text-base mb-2">We'll notify you</Text>
+          <Text className="font-semibold text-base mb-2">
+            We&apos;ll notify you
+          </Text>
           <Text className="text-gray-600">
-            You'll receive an email once your application is approved and you're
-            ready to start walking!
+            You&apos;ll receive an email once your application is approved and
+            you&apos;re ready to start walking!
           </Text>
         </View>
       </View>
 
       <TouchableOpacity
-        onPress={handleContinue}
+        onPress={() => void handleContinue()}
         className="rounded-full py-4"
         style={{ backgroundColor: Colors.walker.primary }}
         activeOpacity={0.8}
