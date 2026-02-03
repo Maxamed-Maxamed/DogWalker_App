@@ -45,3 +45,5 @@ app-example
 
 #Ignore insiders AI rules
 .github\instructions\codacy.instructions.md
+.claude/prompt/appskills.prompts.md
+.gitignore
