@@ -39,6 +39,12 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "This app needs face recognition for secure login"
+        }
       ]
     ],
     "experiments": {
