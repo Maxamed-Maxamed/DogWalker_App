@@ -34,13 +34,15 @@ const ExperienceLevelButton = ({
   selected,
   onSelect,
 }: ExperienceLevelButtonProps) => {
-  const borderClass = selected ? `border-2 border-[${Colors.walker.primary}]` : "border border-gray-300";
-  const bgClass = selected ? `bg-[${Colors.walker.primary}]/10` : "bg-transparent";
-
   return (
     <TouchableOpacity
       onPress={onSelect}
-      className={`rounded-xl p-4 ${borderClass} ${bgClass}`}
+      className="rounded-xl p-4"
+      style={{
+        borderWidth: selected ? 2 : 1,
+        borderColor: selected ? Colors.walker.primary : "#D1D5DB",
+        backgroundColor: selected ? `${Colors.walker.primary}1A` : "transparent",
+      }}
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={`${level.label} - ${level.desc}`}
@@ -74,9 +76,10 @@ export default function Experience() {
       const selectedLevelData = EXPERIENCE_LEVELS[selectedLevel];
 
       // TODO: Save experience data to backend
-      console.log("Selected level:", selectedLevelData.label);
-      console.log("Bio:", bio);
-      console.log("Experience:", experience);
+      if (__DEV__) {
+        console.log("Selected level:", selectedLevelData.label);
+        // Note: Bio and experience contain PII and should not be logged
+      }
 
       router.push("/walker/(setup)/availability");
     } catch (error) {

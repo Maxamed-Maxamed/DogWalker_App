@@ -134,6 +134,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (!isValidUserRole(userRole)) {
           console.error("[AUTH] Invalid or missing user role in metadata");
+          await removeAuthToken();
+          await removeUserData();
           setUser(null);
           setError("Invalid user role. Please contact support.");
           return;
@@ -153,6 +155,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.info("[AUTH] User authenticated:", { userId: userData.id });
       } catch (error) {
         console.error("[AUTH] Error handling auth state change:", error);
+        await removeAuthToken();
+        await removeUserData();
         setUser(null);
         setError("Authentication failed. Please try again.");
       }
@@ -188,25 +192,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [handleAuthStateChange]);
 
   const setupTokenRefresh = useCallback(() => {
-    tokenRefreshTimerRef.current = setInterval(async () => {
-      try {
-        if (!supabase?.auth) {
-          return;
-        }
+    tokenRefreshTimerRef.current = setInterval(() => {
+      void (async () => {
+        try {
+          if (!supabase?.auth) {
+            return;
+          }
 
-        const { data, error } = await supabase.auth.refreshSession();
+          const { data, error } = await supabase.auth.refreshSession();
 
-        if (error) {
-          console.error("[AUTH] Token refresh error:", error.message);
-          return;
-        }
+          if (error) {
+            console.error("[AUTH] Token refresh error:", error.message);
+            return;
+          }
 
-        if (data?.session) {
-          await handleAuthStateChange(data.session);
+          if (data?.session) {
+            await handleAuthStateChange(data.session);
+          }
+        } catch (error) {
+          console.error("[AUTH] Token refresh failed:", error);
         }
-      } catch (error) {
-        console.error("[AUTH] Token refresh failed:", error);
-      }
+      })();
     }, SECURITY_CONFIG.TOKEN_REFRESH_INTERVAL);
   }, [handleAuthStateChange]);
 

@@ -176,7 +176,18 @@ export const saveUserRole = async (role: UserRole): Promise<void> => {
 export const getUserRole = async (): Promise<UserRole | null> => {
   try {
     const role = await AsyncStorage.getItem(STORAGE_KEYS.USER_ROLE);
-    return role as UserRole | null;
+    
+    // Validate the role before returning to prevent type casting vulnerabilities
+    if (role === "owner" || role === "walker") {
+      return role;
+    }
+    
+    // If role is invalid or null, return null
+    if (role !== null) {
+      console.warn("[STORAGE] Invalid role value in storage:", role);
+    }
+    
+    return null;
   } catch (error) {
     console.error("[STORAGE] Error getting user role:", error);
     return null;

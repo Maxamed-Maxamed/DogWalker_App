@@ -29,17 +29,22 @@ const SECURITY_COPY = {
 export default function Verification() {
   const router = useRouter();
   const [ssn, setSsn] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [routingNumber, setRoutingNumber] = useState("");
 
   const handleAccountHolderNameChange = (text: string) => {
-    // Placeholder for future validation if needed
-    // Currently just passing through
+    setAccountHolderName(text);
   };
 
   const handleSubmit = async () => {
     try {
-      if (!ssn.trim() || !accountNumber.trim() || !routingNumber.trim()) {
+      if (
+        !accountHolderName.trim() ||
+        !ssn.trim() ||
+        !accountNumber.trim() ||
+        !routingNumber.trim()
+      ) {
         console.warn("Please fill in all required fields");
         return;
       }
@@ -147,6 +152,7 @@ export default function Verification() {
                   <TextInput
                     className="border border-gray-300 rounded-xl px-4 py-3 text-base"
                     placeholder="Full name on account"
+                    value={accountHolderName}
                     onChangeText={handleAccountHolderNameChange}
                     placeholderTextColor="#9ca3af"
                     accessibilityLabel="Account holder name input"
